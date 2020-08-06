@@ -6,7 +6,7 @@ export const primaryKey = {
   primaryKey: true
 };
 
-export const foreignKey = (field, model, { referenceKey = 'id', onDelete = null, onUpdate = 'CACADE', allowNull = true } = {}) => ({
+export const foreignKey = (field, model, { referenceKey = 'id', onDelete = null, onUpdate = 'CASCADE', allowNull = true } = {}) => ({
   type: Sequelize.INTEGER.UNSIGNED,
   allowNull,
   field,
