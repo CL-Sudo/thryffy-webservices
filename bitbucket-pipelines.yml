@@ -1,0 +1,57 @@
+# # This is a sample build configuration for JavaScript.
+# # Check our guides at https://confluence.atlassian.com/x/14UWN for more examples.
+# # Only use spaces to indent your .yml configuration.
+# # -----
+# # You can specify a custom docker image from Docker Hub as your build environment.
+# options:
+#   max-time: 3
+# image: node:6.13.1
+
+# definitions: 
+#   services: 
+#     mysql: 
+#       image: mysql:5.7
+#       variables: 
+#         MYSQL_DATABASE: 'proshare_test'
+#         MYSQL_USER: 'proshare'
+#         MYSQL_PASSWORD: 'proshare'
+#         MYSQL_ROOT_PASSWORD: 'proshare'
+
+# pipelines:
+#   default:
+#     - step:
+#         name: Build and Test
+#         caches:
+#           - node
+#         script:
+#           - npm install
+#           - npm install sequelize-cli --global
+#           - cp .env.pipeline .env
+#           - npm test
+#         services:
+#           - mysql
+
+options:
+  max-time: 3
+image: node:10.20.1
+
+pipelines:
+  default:
+    - step:
+        name: Build and package
+        script:
+          - apt-get update && apt-get install -y zip
+          - zip code.zip ./*
+        artifacts:
+          - code.zip
+    - step:
+        name: Update Lambda code
+        script:
+          - pipe: atlassian/aws-lambda-deploy:0.2.1
+            variables:
+              AWS_ACCESS_KEY_ID: 'AKIAR6M3KUJ7LTY7VZEU'
+              AWS_SECRET_ACCESS_KEY: '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'
+              AWS_DEFAULT_REGION: 'ap-southeast-1'
+              FUNCTION_NAME: 'sbiz-mock-api'
+              COMMAND: 'update'
+              ZIP_FILE: 'code.zip'

@@ -1,0 +1,40 @@
+{
+  "parser": "babel-eslint",
+  "extends": ["airbnb-base", "prettier"],
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": ["error"],
+    "no-plusplus": 0,
+    "import/prefer-default-export": 0,
+    "no-use-before-define": 0,
+    "import/no-cycle": 0,
+    "import/no-unresolved": 0,
+    "import/no-named-as-default": 0,
+    "no-param-reassign": 0
+  },
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "settings": {
+    "import/resolver": {
+      "alias": {
+        "map": [
+          ["@configs", "./src/configs"],
+          ["@constants", "./src/constants"],
+          ["@tools", "./src/tools"],
+          ["@controllers", "./src/controllers"],
+          ["@hooks", "./src/hooks"],
+          ["@filters", "./src/filters"],
+          ["@middlewares", "./src/middlewares"],
+          ["@routes", "./src/routes"],
+          ["@models", "./src/models"],
+          ["@services", "./src/services"],
+          ["@utils", "./src/utils"],
+          ["@templates", "./src/templates"]
+        ],
+        "extensions": [".ts", ".js", ".jsx", ".json"]
+      }
+    }
+  }
+}

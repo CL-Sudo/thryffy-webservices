@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": false,
+    "target": "esnext",
+    "baseUrl": "./",
+    "paths": {
+      "@configs/*": ["src/configs/*"],
+      "@constants/*": ["src/constants/*"],
+      "@tools/*": ["src/tools/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@filters/*": ["src/filters/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@routes/*": ["src/routes/*"],
+      "@models/*": ["src/models/*"],
+      "@services/*": ["src/services/*"],
+      "@utils/*": ["src/utils/*"],
+      "@templates/*": ["src/templates/*"],
+
+      "@configs": ["src/configs/index"],
+      "@constants": ["src/constants/index"],
+      "@tools": ["src/tools/index"],
+      "@controllers": ["src/controllers/index"],
+      "@hooks": ["src/hooks/index"],
+      "@filters": ["src/filters/index"],
+      "@middlewares": ["src/middlewares/index"],
+      "@routes": ["src/routes/index"],
+      "@models": ["src/models/index"],
+      "@services": ["src/services/index"],
+      "@utils": ["src/utils/index"],
+      "@templates": ["src/templates/index"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}
