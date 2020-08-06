@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+npm-debug.log
+.vscode/
+build
+.env
+yarn.lock
+emailed.txt
+logs.txt
+flow-typed/
+package.lock.json
