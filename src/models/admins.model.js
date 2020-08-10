@@ -28,6 +28,19 @@ const Admins = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'last_name'
     },
+    active: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: true
+    },
+    loginFrequency: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+      field: 'login_frequency'
+    },
+    lastLogin: {
+      type: Sequelize.DATE,
+      field: 'last_login'
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -37,10 +50,13 @@ const Admins = SequelizeConnector.define(
     defaultScope: { attributes: { exclude: ['password'] } },
     scopes: {
       search: params => search(Admins, params, [])
+      // attributes: { exclude: ['password'] }
     },
     hooks: {
       beforeCreate: async user => {
-        user.password = hashPassword(user.password);
+        if (user.password) {
+          user.password = hashPassword(user.password);
+        }
       },
       beforeFind: query => {
         parseParanoidToIncludes(query);
