@@ -1,6 +1,6 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, primaryKey, active } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 
@@ -17,8 +17,7 @@ const Users = SequelizeConnector.define(
       }
     },
     password: {
-      type: Sequelize.STRING,
-      allowNull: false
+      type: Sequelize.STRING
     },
     firstName: {
       type: Sequelize.STRING(100),
@@ -48,6 +47,19 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'profile_picture'
     },
+    active,
+    refreshToken: {
+      type: Sequelize.STRING,
+      field: 'refresh_token'
+    },
+    loginFrequency: {
+      type: Sequelize.INTEGER,
+      field: 'login_frequency'
+    },
+    lastLogin: {
+      type: Sequelize.DATE,
+      field: 'last_login'
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -60,7 +72,9 @@ const Users = SequelizeConnector.define(
     },
     hooks: {
       beforeCreate: async user => {
-        user.password = hashPassword(user.password);
+        if (user.password) {
+          user.password = hashPassword(user.password);
+        }
       },
       beforeFind: query => {
         parseParanoidToIncludes(query);

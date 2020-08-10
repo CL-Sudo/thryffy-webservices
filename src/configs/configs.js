@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { contributors } from '../../package.json';
 
 const dotenv = require('dotenv');
 
@@ -23,7 +22,8 @@ export const jwt = {
 export const passport = {
   strategy: {
     dashboard: 'dashboard-auth',
-    portal: 'portal-auth'
+    portal: 'portal-auth',
+    mobile: 'mobile-auth'
   }
 };
 

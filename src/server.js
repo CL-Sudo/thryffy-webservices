@@ -3,8 +3,6 @@ require('./tools/passport');
 require('./scripts');
 // require('./utils/scheduler');
 
-import { Headquarter } from './models';
-
 import dotenv from 'dotenv';
 dotenv.config();
 

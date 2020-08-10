@@ -8,20 +8,21 @@ import _ from 'lodash';
 import { getCookie } from '@utils/cookie.util';
 import * as Config from '@configs';
 import { Users, Admins } from '@models';
-// import { USER_TYPE } from '@constants';
+import FacebookStrategy from 'passport-facebook';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { USER_TYPE } from '@constants';
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;
 const LocalStrategy = passportLocal.Strategy;
 
 passport.use(
-  'login',
+  'mobile-login',
   new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
     try {
       const user = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
 
       if (!user) return done(null, false, { message: "User account doesn't exist" });
-      if (!user.registered) return done(null, false, { message: `User account doesn't exist` });
       if (_.toLower(process.env.NODE_ENV) !== 'dev') {
         if (!user.emailVerified) return done(null, false, { message: `Please verify your email account` });
       }
@@ -38,7 +39,7 @@ passport.use(
 );
 
 passport.use(
-  'adminLogin',
+  'admin-login',
   new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
     try {
       const admin = await Admins.unscoped().findOne({
@@ -46,9 +47,9 @@ passport.use(
       });
 
       if (!admin) return done(null, false, { message: "Admin account doesn't exist" });
-      // if (!user.active) {
-      //   return done(null, false, { message: 'This account is not active' });
-      // }
+      if (!admin.active) {
+        return done(null, false, { message: 'This account is not active' });
+      }
 
       const validPassword = await admin.comparePassword(password);
       if (!validPassword) {
@@ -62,28 +63,31 @@ passport.use(
   })
 );
 
-const portalJwtStrategyCallback = (req, token, done) => {
+const mobileJwtStrategyCallback = (req, token, done) => {
   try {
-    req.authData = token.authData;
-    req.body = _.omit(req.body, ['id', 'createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'createdBy', 'deletedBy']);
+    if (token.authData.type === USER_TYPE.CUSTOMER) {
+      req.authData = token.authData;
+      req.body = _.omit(req.body, ['id', 'createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'createdBy', 'deletedBy']);
 
-    switch (req.method) {
-      case 'POST':
-        req.body.createdBy = token.authData.id;
-        break;
-      case 'PUT':
-        req.body.updatedBy = token.authData.id;
-        break;
-      case 'DELETE':
-        req.body.deletedBy = token.authData.id;
-        break;
-      case 'PATCH':
-        req.body.updatedBy = token.authData.id;
-        break;
-      default:
-        break;
+      switch (req.method) {
+        case 'POST':
+          req.body.createdBy = token.authData.id;
+          break;
+        case 'PUT':
+          req.body.updatedBy = token.authData.id;
+          break;
+        case 'DELETE':
+          req.body.deletedBy = token.authData.id;
+          break;
+        case 'PATCH':
+          req.body.updatedBy = token.authData.id;
+          break;
+        default:
+          break;
+      }
+      return done(null, token.authData);
     }
-    return done(null, token.authData);
+    throw new Error('Invalid User Type');
   } catch (error) {
     return done(error);
   }
@@ -91,26 +95,29 @@ const portalJwtStrategyCallback = (req, token, done) => {
 
 const adminJwtStrategyCallback = (req, token, done) => {
   try {
-    req.authData = token.authData;
-    req.body = _.omit(req.body, ['id', 'createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'createdBy', 'deletedBy']);
+    if (token.authData.type === USER_TYPE.ADMIN) {
+      req.authData = token.authData;
+      req.body = _.omit(req.body, ['id', 'createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'createdBy', 'deletedBy']);
 
-    switch (req.method) {
-      case 'POST':
-        req.body.createdBy = token.authData.id;
-        break;
-      case 'PUT':
-        req.body.updatedBy = token.authData.id;
-        break;
-      case 'DELETE':
-        req.body.deletedBy = token.authData.id;
-        break;
-      case 'PATCH':
-        req.body.updatedBy = token.authData.id;
-        break;
-      default:
-        break;
+      switch (req.method) {
+        case 'POST':
+          req.body.createdBy = token.authData.id;
+          break;
+        case 'PUT':
+          req.body.updatedBy = token.authData.id;
+          break;
+        case 'DELETE':
+          req.body.deletedBy = token.authData.id;
+          break;
+        case 'PATCH':
+          req.body.updatedBy = token.authData.id;
+          break;
+        default:
+          break;
+      }
+      return done(null, token.authData);
     }
-    return done(null, token.authData);
+    return done(Error('Invalid user type'));
   } catch (error) {
     return done(error);
   }
@@ -129,51 +136,51 @@ passport.use(
 );
 
 passport.use(
-  Config.passport.strategy.portal,
+  Config.passport.strategy.mobile,
   new JWTStrategy(
     {
       secretOrKey: Config.jwt.secret,
-      jwtFromRequest: ExtractJWT.fromExtractors([getCookie()]),
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
       passReqToCallback: true
     },
-    portalJwtStrategyCallback
+    mobileJwtStrategyCallback
   )
 );
 
-// passport.use(
-//   new FacebookStrategy(
-//     {
-//       clientID: process.env.FACEBOOK_APP_ID,
-//       clientSecret: process.env.FACEBOOK_APP_SECRET,
-//       callbackURL: `${process.env.SERVER_URL}${process.env.FACEBOOK_CALLBACK_URL}`,
-//       profileFields: ['id', 'displayName', 'photos', 'email']
-//     },
-//     (accessToken, refreshToken, profile, done) => {
-//       try {
-//         return done(null, profile);
-//       } catch (error) {
-//         return done(error);
-//       }
-//     }
-//   )
-// );
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: `${process.env.SERVER_URL}${process.env.FACEBOOK_CALLBACK_URL}`,
+      profileFields: ['id', 'displayName', 'photos', 'email']
+    },
+    (accessToken, refreshToken, profile, done) => {
+      try {
+        return done(null, profile);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
 
-// passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: process.env.GOOGLE_CLIENT_ID,
-//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//       callbackURL: `${process.env.SERVER_URL}${process.env.GOOGLE_CALLBACK_URL}`
-//     },
-//     (token, tokenSecret, profile, done) => {
-//       try {
-//         return done(null, profile);
-//       } catch (error) {
-//         return done(error);
-//       }
-//     }
-//   )
-// );
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${process.env.SERVER_URL}${process.env.GOOGLE_CALLBACK_URL}`
+    },
+    (token, tokenSecret, profile, done) => {
+      try {
+        return done(null, profile);
+      } catch (error) {
+        return done(error);
+      }
+    }
+  )
+);
 
 // passport.use(
 //   new LinkedInStrategy(

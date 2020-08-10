@@ -82,7 +82,7 @@
     "querystring": "^0.2.0",
     "ramda": "^0.27.1",
     "rand-token": "^0.4.0",
-    "sequelize": "^5.21.2",
+    "sequelize": "^6.3.4",
     "sequelize-hierarchy": "^2.0.4",
     "sequelize-slugify": "^0.7.0",
     "shortid": "^2.2.15",
