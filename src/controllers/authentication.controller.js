@@ -7,9 +7,7 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 import { generateRefreshToken, generateJWT } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 
-const assignUserType = user => type => {
-  return R.assoc('type', type)(user);
-};
+const assignUserType = user => type => R.assoc('type', type)(user);
 
 const createFacebookUserAccount = provider =>
   new Promise(async (resolve, reject) => {
@@ -87,38 +85,97 @@ export const mobileSignIn = async (req, res, next) => {
             }
           };
 
-          const isUserActivated = R.ifElse(R.prop('active')(R.__), R.identity(R.__), () => {
+          const isUserActivated = R.ifElse(R.prop('active'), R.identity, () => {
             throw new Error('User is not activated');
           });
 
           const getRefreshToken = u => {
             const refreshToken = generateRefreshToken();
-            return { u, rt: refreshToken };
+            u.update({ refreshToken });
+            return u;
           };
 
-          const logUserActivity = ({ u, rt }) => {
+          const logUserActivity = u => {
             try {
               u.update({ lastLogin: new Date() });
-              u.update({ loginFrequency: u.loginFrequency + 1 });
-              u.update({ refreshToken: rt });
+              u.increment('loginFrequency');
               u.reload();
-              return { u, rt };
+              return u;
             } catch (e) {
               throw new Error(e);
             }
           };
 
-          const getJWT = async ({ u, rt }) => {
+          const getJWT = async u => {
             try {
               const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
-              const omitRefreshToken = R.omit(['refreshToken']);
-              return { user: assignUserType(omitRefreshToken(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: rt };
+              const omit = R.omit(['refreshToken', 'tac']);
+              return { user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: u.refreshToken };
             } catch (e) {
               throw new Error(e);
             }
           };
 
           const payload = await R.compose(await getJWT, logUserActivity, getRefreshToken, isUserActivated)(await userData());
+          return res.status(200).json({
+            message: 'success',
+            payload
+          });
+        } catch (e) {
+          return next(e);
+        }
+      },
+      { session: false }
+    )(req, res, next);
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const phoneNoSignIn = async (req, res, next) => {
+  req.check('phoneNumber').exists();
+  req
+    .check('password')
+    .exists()
+    .isLength({ min: 4 });
+  try {
+    await req.asyncValidationErrors();
+    return passport.authenticate(
+      'phone-number-login',
+      async (err, user, info) => {
+        try {
+          if (err) return next(err);
+          if (!user) return next(new Error(info.message));
+
+          const getRefreshToken = u => {
+            const refreshToken = generateRefreshToken();
+            u.update({ refreshToken });
+            return u;
+          };
+
+          const logUserActivity = u => {
+            try {
+              u.update({ lastLogin: new Date() });
+              u.increment('loginFrequency');
+              u.reload();
+              return u;
+            } catch (e) {
+              throw new Error(e);
+            }
+          };
+
+          const getJWT = async u => {
+            try {
+              const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
+              const omit = R.omit(['refreshToken', 'password', 'tac']);
+              return { user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: u.refreshToken };
+            } catch (e) {
+              throw new Error(e);
+            }
+          };
+
+          const payload = await R.pipe(getRefreshToken, logUserActivity, await getJWT)(user);
+
           return res.status(200).json({
             message: 'success',
             payload
@@ -319,6 +376,40 @@ export const googleCallback = async (req, res) => {
   }
 };
 
+export const verifyTAC = async (req, res, next) => {
+  req.check('tac').exists();
+  try {
+    await req.asyncValidationErrors();
+    const { id } = req.user;
+    const { tac } = req.body;
+
+    const getUser = async userId => {
+      try {
+        const user = await Users.findOne({
+          where: { id: userId }
+        });
+        return user;
+      } catch (e) {
+        throw e;
+      }
+    };
+
+    const verifyTac = tacFromRequest => user => {
+      if (tacFromRequest !== user.tac) throw new Error('Invalid TAC Entered');
+      user.update({ isVerified: true });
+      return user;
+    };
+
+    await R.pipe(verifyTac(tac))(await getUser(id));
+
+    return res.status(200).json({
+      message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 /**
  * Admin Authentication
  */
@@ -370,7 +461,6 @@ export const adminSignIn = async (req, res, next) => {
 export const adminRevoke = async (req, res, next) => {
   try {
     return passport.authenticate(Configs.passport.strategy.dashboard, { session: false }, async (err, user, info) => {
-      console.log('user', user);
       if (!user) return next(Error('Session Expired'));
       if (user) {
         const payload = await Admins.findOne({

@@ -47,6 +47,14 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'profile_picture'
     },
+    tac: {
+      type: Sequelize.STRING(20)
+    },
+    isVerified: {
+      type: Sequelize.BOOLEAN,
+      defaultValue: false,
+      field: 'is_verified'
+    },
     active,
     refreshToken: {
       type: Sequelize.STRING,

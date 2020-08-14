@@ -8,7 +8,9 @@ const router = new Router();
 const mobileAuth = passport.authenticate(Configs.passport.strategy.mobile, { session: false });
 
 router.post('/login', Controllers.mobileSignIn);
+router.post('/phone-login', Controllers.phoneNoSignIn);
 router.post('/revoke', Controllers.mobileRevoke);
+router.post('/verify-tac', mobileAuth, Controllers.verifyTAC);
 router.get('/facebook', (req, res, next) => {
   passport.authenticate('facebook', {
     scope: ['email'],
