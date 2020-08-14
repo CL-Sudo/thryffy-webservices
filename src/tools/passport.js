@@ -5,6 +5,7 @@ import passportJWT from 'passport-jwt';
 // import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 // import { Strategy as LinkedInStrategy } from 'passport-linkedin-oauth2';
 import _ from 'lodash';
+import R from 'ramda';
 import { getCookie } from '@utils/cookie.util';
 import * as Config from '@configs';
 import { Users, Admins } from '@models';
@@ -34,6 +35,26 @@ passport.use(
       return done(null, user, { message: 'Logged in Successfully' });
     } catch (error) {
       return done(error);
+    }
+  })
+);
+
+passport.use(
+  'phone-number-login',
+  new LocalStrategy({ usernameField: 'phoneNumber', passwordField: 'password' }, async (phoneNumber, password, done) => {
+    try {
+      const user = await Users.unscoped().findOne({
+        where: {
+          phoneNumber
+        }
+      });
+      if (R.isNil(user)) return done(null, false, { message: 'User not found' });
+      if (!user.active) return done(null, false, { message: 'Inactive user account' });
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) return done(null, false, { message: 'Invalid password' });
+      return done(null, user, { message: 'Login Successfully' });
+    } catch (e) {
+      return done(e);
     }
   })
 );
