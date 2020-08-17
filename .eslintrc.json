@@ -27,6 +27,7 @@
           ["@controllers", "./src/controllers"],
           ["@hooks", "./src/hooks"],
           ["@filters", "./src/filters"],
+          ["@listeners", "./src/listeners"],
           ["@middlewares", "./src/middlewares"],
           ["@routes", "./src/routes"],
           ["@models", "./src/models"],

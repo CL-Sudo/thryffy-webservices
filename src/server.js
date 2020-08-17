@@ -17,6 +17,7 @@ import expressValidator from 'express-validator';
 import routes from './routes';
 import PrettyError from 'pretty-error';
 import cookieParser from 'cookie-parser';
+import { cyanStyle } from './styles/error.style';
 // import https from 'https';
 // import http from 'http';
 // import fs from 'fs';
@@ -26,6 +27,7 @@ import cookieParser from 'cookie-parser';
 const pe = new PrettyError();
 pe.skipNodeFiles();
 pe.skipPackage('express');
+pe.appendStyle(cyanStyle);
 
 // var renderedError = pe.render(new Error('Some error message'));
 
@@ -35,9 +37,11 @@ pe.skipPackage('express');
 
 const app = express();
 
+// const eventEmitter = new events.EventEmitter();
+
 app.set('view engine', 'html');
 
-app.use(bodyParser.json({ limit: '20mb' }));
+app.use(bodyParser.json({ limit: '20mb', type: 'application/json' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(morgan('dev'));
 app.use(helmet());
@@ -97,7 +101,6 @@ app.use((err, req, res, next) => {
   }
   return next();
 });
-
 const nodeEnv = _.toUpper(process.env.NODE_ENV) || 'PRODUCTION';
 
 app.listen(process.env[`${[nodeEnv]}_PORT`] || 3000, () => {

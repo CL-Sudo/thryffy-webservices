@@ -1,11 +1,10 @@
 import R from 'ramda';
-import { Users } from '@models';
+import testEmitter from '../listeners/test.listener';
 
 export const test = async (req, res, next) => {
   try {
-    await Users.create({
-      email: 'lcl24680gmail.com'
-    });
+    testEmitter.emit('eventA');
+    testEmitter.emit('eventB', { data: 'data' });
 
     return res.status(200).json({
       message: 'success'
