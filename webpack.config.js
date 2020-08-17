@@ -36,6 +36,7 @@ const config = {
       '@filters': path.resolve(__dirname, './src/filters'),
       '@middlewares': path.resolve(__dirname, './src/middlewares'),
       '@routes': path.resolve(__dirname, './src/routes'),
+      '@listeners': path.resolve(__dirname, './src/listeners'),
       '@models': path.resolve(__dirname, './src/models'),
       '@services': path.resolve(__dirname, './src/services'),
       '@utils': path.resolve(__dirname, './src/utils'),

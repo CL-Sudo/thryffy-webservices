@@ -6,6 +6,7 @@ import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import { generateRefreshToken, generateJWT } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
+import { authListener } from '@listeners';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -23,6 +24,7 @@ const createFacebookUserAccount = provider =>
         },
         { transaction }
       );
+      authListener.emit('userSignUp');
       await transaction.commit();
       return resolve();
     } catch (e) {
