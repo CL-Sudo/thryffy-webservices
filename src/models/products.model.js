@@ -2,13 +2,14 @@ import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.conf
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
+import { Users, Categories, Galleries, ProductColors, FavouriteProducts } from '@models';
+import R from 'ramda';
 
 const Products = SequelizeConnector.define(
   'Products',
   {
     id: primaryKey,
     userId: foreignKey('user_id', 'users', false),
-    categoryId: foreignKey('category_id', 'categories', false),
     title: {
       type: Sequelize.STRING(100)
     },
@@ -30,6 +31,18 @@ const Products = SequelizeConnector.define(
     brand: {
       type: Sequelize.STRING(100)
     },
+    favouriteNumber: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('favouriteNumber');
+      }
+    },
+    isAddedToFavourite: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('isAddedToFavourite');
+      }
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -37,7 +50,20 @@ const Products = SequelizeConnector.define(
     tableName: 'products',
     underscored: false,
     scopes: {
-      search: params => search(Products, params, [])
+      search: params => search(Products, params, []),
+      productPage: {
+        include: [
+          {
+            model: Categories,
+            as: 'categories',
+            through: { attributes: [] }
+            // include: [{ model: Categories, as: 'parentCategory' }]
+          },
+          { model: ProductColors, as: 'colors' },
+          { model: Galleries, as: 'photos' },
+          { model: Users, as: 'seller', attributes: ['id', 'firstName', 'lastName', 'profilePicture'] }
+        ]
+      }
     },
     hooks: {
       beforeFind: query => {
@@ -48,6 +74,32 @@ const Products = SequelizeConnector.define(
 );
 
 addScopesByAllFields(Products, []);
+
+Products.prototype.getFavouriteNumber = async function() {
+  try {
+    const favouriteCount = await FavouriteProducts.count({
+      where: { productId: this.id }
+    });
+    this.setDataValue('favouriteNumber', favouriteCount);
+  } catch (e) {
+    throw e;
+  }
+};
+
+Products.prototype.checkIsAddedToFavourite = async function(userId) {
+  try {
+    const favouriteProduct = await FavouriteProducts.findOne({
+      raw: true,
+      where: {
+        userId,
+        productId: this.id
+      }
+    });
+    this.setDataValue('isAddedToFavourite', R.not(R.isNil(favouriteProduct)));
+  } catch (e) {
+    throw e;
+  }
+};
 
 export { Products };
 export default Products;

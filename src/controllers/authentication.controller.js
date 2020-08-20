@@ -4,9 +4,10 @@ import passport from 'passport';
 import { Users, Admins } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
-import { generateRefreshToken, generateJWT } from '@utils/auth.util';
+import { generateRefreshToken, generateJWT, generateOTP } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
+import { reqeustValidator } from '@validators';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -81,9 +82,9 @@ export const mobileSignIn = async (req, res, next) => {
               const data = await Users.findOne({
                 where: { id: user.id }
               });
-              return data;
+              return Promise.resolve(data);
             } catch (e) {
-              throw new Error(e);
+              return Promise.reject(e);
             }
           };
 
@@ -100,11 +101,11 @@ export const mobileSignIn = async (req, res, next) => {
           const logUserActivity = u => {
             try {
               u.update({ lastLogin: new Date() });
-              u.increment('loginFrequency');
+              u.update({ loginFrequency: u.loginFrequency + 1 });
               u.reload();
               return u;
             } catch (e) {
-              throw new Error(e);
+              return next(e);
             }
           };
 
@@ -112,9 +113,9 @@ export const mobileSignIn = async (req, res, next) => {
             try {
               const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
               const omit = R.omit(['refreshToken', 'tac']);
-              return { user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: u.refreshToken };
+              return Promise.resolve({ user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: u.refreshToken });
             } catch (e) {
-              throw new Error(e);
+              return Promise.reject(e);
             }
           };
 
@@ -378,12 +379,12 @@ export const googleCallback = async (req, res) => {
   }
 };
 
-export const verifyTAC = async (req, res, next) => {
+export const verifyOTP = async (req, res, next) => {
   req.check('tac').exists();
   try {
     await req.asyncValidationErrors();
     const { id } = req.user;
-    const { tac } = req.body;
+    const { otp } = req.body;
 
     const getUser = async userId => {
       try {
@@ -402,7 +403,7 @@ export const verifyTAC = async (req, res, next) => {
       return user;
     };
 
-    await R.pipe(verifyTac(tac))(await getUser(id));
+    await R.pipe(verifyTac(otp))(await getUser(id));
 
     return res.status(200).json({
       message: 'success'
@@ -481,6 +482,79 @@ export const adminRevoke = async (req, res, next) => {
       }
       return res.status(400).json(info);
     })(req, res, next);
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const userRegistration = async (req, res, next) => {
+  try {
+    reqeustValidator(req);
+
+    const checkUserByEmail = async requestBody => {
+      try {
+        const user = await Users.findOne({
+          raw: true,
+          where: { email: requestBody.email }
+        });
+        if (R.not(R.isNil(user))) {
+          throw new Error('email is not available');
+        }
+        return Promise.resolve(requestBody);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const checkUserByPhoneNumber = async requestBody => {
+      try {
+        const user = await Users.findOne({
+          raw: true,
+          where: { phoneNumber: requestBody.phoneNumber }
+        });
+        if (R.not(R.isNil(user))) {
+          throw new Error('Phone number is not available');
+        }
+        return Promise.resolve(requestBody);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const createNewUser = async requestBody => {
+      try {
+        const refreshToken = generateRefreshToken();
+        const otp = generateOTP();
+        const user = await Users.create({ ...requestBody, refreshToken, otp });
+        return Promise.resolve(user);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const generateJwt = async user => {
+      try {
+        const omit = R.omit(['password', 'refreshToken', 'tac']);
+        const jwt = await generateJWT(user);
+
+        const processedPayload = R.pipe(omit, assignUserType(R.__)(USER_TYPE.CUSTOMER))(user.dataValues);
+
+        return Promise.resolve({ jwt, user: processedPayload, refreshToken: user.refreshToken });
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const payload = await R.pipeP(checkUserByEmail, checkUserByPhoneNumber, createNewUser, generateJwt)(req.body);
+
+    authListener.emit('userSignUp', payload);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: payload.user,
+      refreshToken: payload.refreshToken,
+      token: payload.jwt
+    });
   } catch (e) {
     return next(e);
   }

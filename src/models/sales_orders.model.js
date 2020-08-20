@@ -8,6 +8,11 @@ const SalesOrders = SequelizeConnector.define(
   {
     id: primaryKey,
     userId: foreignKey('user_id', 'users', false),
+    addressId: foreignKey('address_id', 'addresses', false),
+    paymentMethod: {
+      type: Sequelize.STRING(50),
+      field: 'payment_method'
+    },
     paymentStatus: {
       type: Sequelize.STRING(50),
       field: 'payment_status'

@@ -2,6 +2,7 @@ import Router from 'express';
 import * as Controllers from '@controllers/authentication.controller';
 import passport from 'passport';
 import * as Configs from '@configs';
+import * as validators from '@validators';
 
 const router = new Router();
 
@@ -10,7 +11,8 @@ const mobileAuth = passport.authenticate(Configs.passport.strategy.mobile, { ses
 router.post('/login', Controllers.mobileSignIn);
 router.post('/phone-login', Controllers.phoneNoSignIn);
 router.post('/revoke', Controllers.mobileRevoke);
-router.post('/verify-tac', mobileAuth, Controllers.verifyTAC);
+router.post('/register', validators.registrationValidator, Controllers.userRegistration);
+router.post('/verify-otp', mobileAuth, Controllers.verifyOTP);
 router.get('/facebook', (req, res, next) => {
   passport.authenticate('facebook', {
     scope: ['email'],

@@ -21,3 +21,5 @@ export const generateJWT = data =>
       return reject(e);
     }
   });
+
+export const generateOTP = () => randtoken.generate(4, '123456789');

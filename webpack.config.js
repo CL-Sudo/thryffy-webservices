@@ -40,7 +40,8 @@ const config = {
       '@models': path.resolve(__dirname, './src/models'),
       '@services': path.resolve(__dirname, './src/services'),
       '@utils': path.resolve(__dirname, './src/utils'),
-      '@templates': path.resolve(__dirname, './src/templates')
+      '@templates': path.resolve(__dirname, './src/templates'),
+      '@validators': path.resolve(__dirname, './src/validators')
     }
   },
   module: {

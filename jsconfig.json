@@ -17,6 +17,7 @@
       "@services/*": ["src/services/*"],
       "@utils/*": ["src/utils/*"],
       "@templates/*": ["src/templates/*"],
+      "@validators/*": ["src/validators/*"],
 
       "@configs": ["src/configs/index"],
       "@constants": ["src/constants/index"],
@@ -30,7 +31,8 @@
       "@models": ["src/models/index"],
       "@services": ["src/services/index"],
       "@utils": ["src/utils/index"],
-      "@templates": ["src/templates/index"]
+      "@templates": ["src/templates/index"],
+      "@validators": ["src/validators/index"]
     }
   },
   "exclude": ["node_modules", "dist"]

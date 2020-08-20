@@ -2,6 +2,8 @@ import Sequelize from 'sequelize';
 import Dotenv from 'dotenv';
 import _ from 'lodash';
 
+require('sequelize-hierarchy')(Sequelize);
+
 Dotenv.config();
 
 const nodeEnv = _.toUpper(process.env.NODE_ENV) || 'DEV';
