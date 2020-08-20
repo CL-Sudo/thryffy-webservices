@@ -1,6 +1,6 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, foreignKey, primaryKey } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, foreignKey, primaryKey, defaultExcludeFields } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
 const ProductColors = SequelizeConnector.define(
@@ -17,6 +17,11 @@ const ProductColors = SequelizeConnector.define(
   {
     tableName: 'product_colors',
     underscored: false,
+    defaultScope: {
+      attributes: {
+        exclude: defaultExcludeFields
+      }
+    },
     scopes: {
       search: params => search(ProductColors, params, [])
     },

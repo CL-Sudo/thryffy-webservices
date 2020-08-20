@@ -14,6 +14,7 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import expressValidator from 'express-validator';
+// import { validationResult } from 'express-validator/check';
 import routes from './routes';
 import PrettyError from 'pretty-error';
 import cookieParser from 'cookie-parser';
@@ -45,11 +46,13 @@ app.use(bodyParser.json({ limit: '20mb', type: 'application/json' }));
 app.use(bodyParser.urlencoded({ limit: '20mb', extended: false }));
 app.use(morgan('dev'));
 app.use(helmet());
+
 app.use(
   expressValidator({
     errorFormatter: (param, msg, value, location) => `${param}: ${msg}` // eslint-disable-line
   })
 );
+
 app.use(cookieParser());
 
 // app.use((req, res, next) => {
@@ -78,6 +81,9 @@ routes(app);
 
 // Error Message Handler
 app.use((err, req, res, next) => {
+  if (_.includes(err.message, 'Validation failed')) {
+    return res.status(400).send(_.join(err.array(), '\n'));
+  }
   if (err.name === 'ValidationError') {
     // eslint-disable-next-line no-param-reassign
     err.status = 400;

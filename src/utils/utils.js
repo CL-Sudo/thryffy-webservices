@@ -1,10 +1,13 @@
 /* eslint-disable consistent-return, no-param-reassign */
 
 import _ from 'lodash';
+import R from 'ramda';
 import moment from 'moment';
 import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
+
+export const paginate = (limit = 10) => (offset = 0) => list => R.compose(R.take(limit), R.drop(offset))(list);
 
 export const variable = {
   isClass: func => typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func)),
@@ -71,7 +74,7 @@ export const getErrorMessage = err => {
   return errorMessage;
 };
 
-export const paginate = ({ data, limit = 10, offset = 0 }) => _.drop(data, offset || 0).slice(0, limit || 10);
+// export const paginate = ({ data, limit = 10, offset = 0 }) => _.drop(data, offset || 0).slice(0, limit || 10);
 
 export const decimalToPercentage = value => parseFloat((value * 100).toFixed(2));
 

@@ -8,25 +8,38 @@ const Addresses = SequelizeConnector.define(
   {
     id: primaryKey,
     userId: foreignKey('user_id', 'users', false),
+    name: {
+      type: Sequelize.STRING(100),
+      allowNull: false
+    },
+    phoneNumber: {
+      type: Sequelize.STRING(25),
+      field: 'phone_number',
+      allowNull: false
+    },
     title: {
       type: Sequelize.STRING(100)
     },
     addressLine1: {
       type: Sequelize.STRING(150),
-      field: 'address_line_1'
+      field: 'address_line_1',
+      allowNull: false
     },
     addressLine2: {
       type: Sequelize.STRING(150),
       field: 'address_line_2'
     },
     city: {
-      type: Sequelize.STRING(100)
+      type: Sequelize.STRING(100),
+      allowNull: false
     },
     state: {
-      type: Sequelize.STRING(100)
+      type: Sequelize.STRING(100),
+      allowNull: false
     },
     postcode: {
-      type: Sequelize.STRING(100)
+      type: Sequelize.STRING(100),
+      allowNull: false
     },
     isDefault: {
       type: Sequelize.BOOLEAN,

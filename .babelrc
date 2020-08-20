@@ -31,7 +31,8 @@
           "@models": "./src/models",
           "@services": "./src/services",
           "@utils": "./src/utils",
-          "@templates": "./src/templates"
+          "@templates": "./src/templates",
+          "@validators": "./src/validators"
         }
       }
     ]

@@ -5,5 +5,5 @@ module.exports = {
       after: 'tac'
     }),
 
-  down: () => Promise.resovle()
+  down: () => Promise.resolve()
 };

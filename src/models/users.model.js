@@ -1,8 +1,9 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey, active } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, primaryKey, active, defaultExcludeFields } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
+import { Products } from '@models';
 
 const Users = SequelizeConnector.define(
   'Users',
@@ -47,7 +48,7 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'profile_picture'
     },
-    tac: {
+    otp: {
       type: Sequelize.STRING(20)
     },
     isVerified: {
@@ -68,6 +69,13 @@ const Users = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'last_login'
     },
+    fullName: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        const { firstName, lastName } = this;
+        return `${firstName} ${lastName}`;
+      }
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -76,7 +84,21 @@ const Users = SequelizeConnector.define(
     underscored: false,
     defaultScope: { attributes: { exclude: ['password'] } },
     scopes: {
-      search: params => search(Users, params, [])
+      search: params => search(Users, params, []),
+      cart(productIds) {
+        return {
+          attributes: ['fullName', 'firstName', 'lastName', 'profilePicture'],
+          include: [
+            {
+              model: Products,
+              as: 'products',
+              where: {
+                id: productIds
+              }
+            }
+          ]
+        };
+      }
     },
     hooks: {
       beforeCreate: async user => {
