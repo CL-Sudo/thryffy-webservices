@@ -13,6 +13,9 @@ router.post('/phone-login', Controllers.phoneNoSignIn);
 router.post('/revoke', Controllers.mobileRevoke);
 router.post('/register', validators.registrationValidator, Controllers.userRegistration);
 router.post('/verify-otp', mobileAuth, Controllers.verifyOTP);
+router.post('/forgot-password', validators.forgotPasswordValidator, Controllers.forgotPassword);
+router.patch('/reset-password', validators.resetPasswordValidator, Controllers.resetPassword);
+
 router.get('/facebook', (req, res, next) => {
   passport.authenticate('facebook', {
     scope: ['email'],

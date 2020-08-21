@@ -1,6 +1,7 @@
 import { validationResult } from 'express-validator/check';
 
 export * from './authentication.validator';
+export * from './checkout.validator';
 
 export const reqeustValidator = req => {
   try {

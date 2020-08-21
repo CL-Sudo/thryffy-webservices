@@ -9,7 +9,8 @@ Models.Users.belongsToMany(Models.Products, { foreignKey: 'userId', through: Mod
 Models.Addresses.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 
 Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'userId', as: 'buyer' });
-Models.SalesOrders.hasMany(Models.OrderItems, { foreignKey: 'saleOrderId', as: 'orderItems' });
+Models.SalesOrders.hasMany(Models.OrderItems, { foreignKey: 'salesOrderId', as: 'orderItems' });
+Models.SalesOrders.belongsTo(Models.Addresses, { foreignKey: 'addressId', as: 'address' });
 
 Models.OrderItems.belongsTo(Models.SalesOrders, { foreignKey: 'salesOrderId', as: 'order' });
 Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });

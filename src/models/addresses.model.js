@@ -53,7 +53,12 @@ const Addresses = SequelizeConnector.define(
     tableName: 'addresses',
     underscored: false,
     scopes: {
-      search: params => search(Addresses, params, [])
+      search: params => search(Addresses, params, []),
+      defaultId(userId) {
+        return {
+          where: { userId, isDefault: true }
+        };
+      }
     },
     hooks: {
       beforeFind: query => {

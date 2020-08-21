@@ -61,6 +61,10 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'refresh_token'
     },
+    resetToken: {
+      type: Sequelize.STRING,
+      field: 'reset_token'
+    },
     loginFrequency: {
       type: Sequelize.INTEGER,
       field: 'login_frequency'

@@ -1,6 +1,6 @@
 import R from 'ramda';
 import { reqeustValidator } from '@validators';
-import { Addresses } from '@models';
+import { Addresses, SalesOrders } from '@models';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -48,6 +48,25 @@ export const removeAddress = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getOrderDetails = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+
+    const payload = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
+
+    if (R.isNil(payload)) throw new Error('Invalid orderId given.');
+
+    await payload.getItemQuantity();
+
+    return res.status(200).json({
+      message: 'success',
+      payload
     });
   } catch (e) {
     return next(e);
