@@ -8,4 +8,6 @@ router.post('/shipping', validators.addAddressValidator, controllers.addAddress)
 router.get('/shipping', controllers.listAddress);
 router.delete('/shipping/:addressId', controllers.removeAddress);
 
+router.get('/order/:orderId', controllers.getOrderDetails);
+
 export default router;

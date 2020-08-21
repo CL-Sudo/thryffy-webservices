@@ -4,10 +4,12 @@ import passport from 'passport';
 import { Users, Admins } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
-import { generateRefreshToken, generateJWT, generateOTP } from '@utils/auth.util';
+import { generateRefreshToken, generateJWT, generateOTP, generateResetToken } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
 import { reqeustValidator } from '@validators';
+import { hashPassword } from '@tools/bcrypt';
+// import { sendMail } from '@tools/sendgrid';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -113,7 +115,11 @@ export const mobileSignIn = async (req, res, next) => {
             try {
               const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
               const omit = R.omit(['refreshToken', 'tac']);
-              return Promise.resolve({ user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: u.refreshToken });
+              return Promise.resolve({
+                user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER),
+                token: `Bearer ${jwt}`,
+                refreshToken: u.refreshToken
+              });
             } catch (e) {
               return Promise.reject(e);
             }
@@ -171,7 +177,7 @@ export const phoneNoSignIn = async (req, res, next) => {
             try {
               const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
               const omit = R.omit(['refreshToken', 'password', 'tac']);
-              return { user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: jwt, refreshToken: u.refreshToken };
+              return { user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: `Bearer ${jwt}`, refreshToken: u.refreshToken };
             } catch (e) {
               throw new Error(e);
             }
@@ -241,7 +247,7 @@ export const mobileRevoke = async (req, res, next) => {
         return res.status(200).json({
           message: 'success',
           payload: R.omit(['refreshToken'])(withType),
-          token,
+          token: `Bearer ${token}`,
           refreshToken: rt
         });
       }
@@ -300,7 +306,7 @@ export const facebookCallback = async (req, res) => {
             JSON.stringify({
               status: true,
               payload: user,
-              token,
+              token: `Bearer ${token}`,
               refreshToken
             })
           )}
@@ -361,7 +367,7 @@ export const googleCallback = async (req, res) => {
               JSON.stringify({
                 status: true,
                 payload: user,
-                token,
+                token: `Bearer ${token}`,
                 refreshToken
               })
             )}
@@ -553,7 +559,47 @@ export const userRegistration = async (req, res, next) => {
       message: 'success',
       payload: payload.user,
       refreshToken: payload.refreshToken,
-      token: payload.jwt
+      token: `Bearer ${payload.jwt}`
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email, userId } = req.body;
+
+    const resetToken = await generateResetToken(email);
+
+    const user = await Users.findOne({ where: { id: userId } });
+    user.update({ resetToken });
+
+    // const redirectUrl = `thryffy://reset-password/${resetToken}`;
+
+    // await sendMail(user.email, user.firstName, user.lastName, { redirectUrl });
+
+    return res.status(200).json({
+      message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    reqeustValidator(req);
+    const { password, userId } = req.body;
+    await Users.update(
+      {
+        password: hashPassword(password),
+        resetToken: null
+      },
+      { where: { id: userId } }
+    );
+    return res.status(200).json({
+      message: 'success'
     });
   } catch (e) {
     return next(e);

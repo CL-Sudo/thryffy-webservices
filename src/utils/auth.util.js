@@ -23,3 +23,21 @@ export const generateJWT = data =>
   });
 
 export const generateOTP = () => randtoken.generate(4, '123456789');
+
+export const generateResetToken = async email =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const jwtToken = jwt.sign(
+        {
+          email
+        },
+        Config.jwt.secret,
+        {
+          expiresIn: '1d'
+        }
+      );
+      return resolve(jwtToken);
+    } catch (e) {
+      return reject(e);
+    }
+  });
