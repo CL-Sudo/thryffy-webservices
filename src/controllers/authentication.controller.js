@@ -36,7 +36,7 @@ const createFacebookUserAccount = provider =>
     }
   });
 
-export const createGoogleUserAccount = async provider =>
+const createGoogleUserAccount = async provider =>
   new Promise(async (resolve, reject) => {
     const transaction = await sequelize.transaction();
     try {
@@ -128,7 +128,11 @@ export const mobileSignIn = async (req, res, next) => {
           const payload = await R.compose(await getJWT, logUserActivity, getRefreshToken, isUserActivated)(await userData());
           return res.status(200).json({
             message: 'success',
-            payload
+            payload: {
+              ...payload.user
+            },
+            token: payload.token,
+            refreshToken: payload.refreshToken
           });
         } catch (e) {
           return next(e);
@@ -177,7 +181,8 @@ export const phoneNoSignIn = async (req, res, next) => {
             try {
               const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
               const omit = R.omit(['refreshToken', 'password', 'tac']);
-              return { user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER), token: `Bearer ${jwt}`, refreshToken: u.refreshToken };
+              const processedPayload = R.pipe(omit, assignUserType(R.__)(USER_TYPE.CUSTOMER))(u.dataValues);
+              return { user: processedPayload, token: `Bearer ${jwt}`, refreshToken: u.refreshToken };
             } catch (e) {
               throw new Error(e);
             }
@@ -187,7 +192,11 @@ export const phoneNoSignIn = async (req, res, next) => {
 
           return res.status(200).json({
             message: 'success',
-            payload
+            payload: {
+              ...payload.user
+            },
+            token: payload.token,
+            refreshToken: payload.refreshToken
           });
         } catch (e) {
           return next(e);
@@ -576,7 +585,6 @@ export const forgotPassword = async (req, res, next) => {
     user.update({ resetToken });
 
     // const redirectUrl = `thryffy://reset-password/${resetToken}`;
-
     // await sendMail(user.email, user.firstName, user.lastName, { redirectUrl });
 
     return res.status(200).json({

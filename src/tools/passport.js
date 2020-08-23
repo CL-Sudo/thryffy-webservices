@@ -24,9 +24,9 @@ passport.use(
       const user = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
 
       if (!user) return done(null, false, { message: "User account doesn't exist" });
-      if (_.toLower(process.env.NODE_ENV) !== 'dev') {
-        if (!user.emailVerified) return done(null, false, { message: `Please verify your email account` });
-      }
+      // if (_.toLower(process.env.NODE_ENV) !== 'dev') {
+      //   if (!user.emailVerified) return done(null, false, { message: `Please verify your email account` });
+      // }
       if (!user.active) return done(null, false, { message: 'This account is not active' });
 
       const validPassword = await user.comparePassword(password);
@@ -51,7 +51,7 @@ passport.use(
       if (R.isNil(user)) return done(null, false, { message: 'User not found' });
       if (!user.active) return done(null, false, { message: 'Inactive user account' });
       const isPasswordValid = await user.comparePassword(password);
-      if (!isPasswordValid) return done(null, false, { message: 'Invalid password' });
+      if (!isPasswordValid) return done(null, false, { message: 'Password is incorrect, please try again...' });
       return done(null, user, { message: 'Login Successfully' });
     } catch (e) {
       return done(e);
