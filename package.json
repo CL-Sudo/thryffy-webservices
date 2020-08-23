@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint .",
     "prettier": "prettier --write '{,!(node_modules)/**/}*.js'",
-    "test": "cross-env NODE_ENV=TEST jest",
+    "test": "cross-env NODE_ENV=TEST jest --runInBand --detectOpenHandles --forceExit --testTimeout=60000",
     "start": "nodemon ./src/server.js --exec babel-node --presets @babel/preset-env",
     "start:production": "node build/server.bundle.js",
     "build": "webpack --mode production",
@@ -134,6 +134,7 @@
     "eslint-plugin-prettier": "^2.6.2",
     "husky": "^2.1.0",
     "jest": "^26.4.0",
+    "jest-serial-runner": "^1.1.0",
     "jshint": "^2.10.2",
     "lint-staged": "^8.1.5",
     "mocha": "^6.1.4",

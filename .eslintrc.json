@@ -15,7 +15,7 @@
   },
   "env": {
     "node": true,
-    "mocha": true,
+    "mocha": false,
     "jest/globals": true
   },
   "settings": {
