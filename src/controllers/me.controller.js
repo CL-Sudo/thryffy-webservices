@@ -21,9 +21,12 @@ export const addAddress = async (req, res, next) => {
 export const listAddress = async (req, res, next) => {
   try {
     const { id } = req.user;
+    const { limit, offset } = req.query;
     const addresses = await Addresses.findAndCountAll({
       raw: true,
-      where: { userId: id }
+      where: { userId: id },
+      limit: Number(limit) || null,
+      offset: Number(offset) || null
     });
     return res.status(200).json({
       message: 'success',

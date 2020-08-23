@@ -1,6 +1,6 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey, active, defaultExcludeFields } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, primaryKey, active } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 import { Products } from '@models';
@@ -9,6 +9,9 @@ const Users = SequelizeConnector.define(
   'Users',
   {
     id: primaryKey,
+    username: {
+      type: Sequelize.STRING(100)
+    },
     email: {
       type: Sequelize.STRING,
       unique: true,

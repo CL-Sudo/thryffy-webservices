@@ -536,6 +536,21 @@ export const userRegistration = async (req, res, next) => {
       }
     };
 
+    const checkUsername = async requestBody => {
+      try {
+        const user = await Users.findOne({
+          raw: true,
+          where: { username: requestBody.username }
+        });
+        if (R.not(R.isNil(user))) {
+          throw new Error('Username is not available');
+        }
+        return Promise.resolve(requestBody);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
     const createNewUser = async requestBody => {
       try {
         const refreshToken = generateRefreshToken();
@@ -549,7 +564,7 @@ export const userRegistration = async (req, res, next) => {
 
     const generateJwt = async user => {
       try {
-        const omit = R.omit(['password', 'refreshToken', 'tac']);
+        const omit = R.omit(['password', 'refreshToken', 'otp']);
         const jwt = await generateJWT(user);
 
         const processedPayload = R.pipe(omit, assignUserType(R.__)(USER_TYPE.CUSTOMER))(user.dataValues);
@@ -560,7 +575,7 @@ export const userRegistration = async (req, res, next) => {
       }
     };
 
-    const payload = await R.pipeP(checkUserByEmail, checkUserByPhoneNumber, createNewUser, generateJwt)(req.body);
+    const payload = await R.pipeP(checkUsername, checkUserByEmail, checkUserByPhoneNumber, createNewUser, generateJwt)(req.body);
 
     authListener.emit('userSignUp', payload);
 
