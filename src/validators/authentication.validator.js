@@ -5,6 +5,10 @@ import jwt from 'jsonwebtoken';
 import * as configs from '@configs';
 
 export const registrationValidator = [
+  check('username')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required'),
   check('password', 'Password is required').exists(),
   check('email')
     .exists()

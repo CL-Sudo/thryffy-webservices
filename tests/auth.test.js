@@ -27,7 +27,7 @@ describe('Authentication', () => {
       const resPhone = await request(app)
         .post('/api/mobile/auth/phone-login')
         .send({
-          phoneNumber: '167089326',
+          phoneNumber: '123456789',
           phoneCountryCode: '60',
           password: '1234'
         });
@@ -45,7 +45,7 @@ describe('Authentication', () => {
       const resPhone = await request(app)
         .post('/api/mobile/auth/phone-login')
         .send({
-          phoneNumber: '167089326',
+          phoneNumber: '123456789',
           phoneCountryCode: '60',
           password: 'wrongPassword'
         });
