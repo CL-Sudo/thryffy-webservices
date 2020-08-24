@@ -4,7 +4,7 @@ import passport from 'passport';
 import { Users, Admins } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
-import { generateRefreshToken, generateJWT, generateOTP, generateResetToken } from '@utils/auth.util';
+import { generateRefreshToken, generateJWT, generateOTP, generateResetToken, generateUsername, parseFirstNameLastName } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
 import { reqeustValidator } from '@validators';
@@ -17,13 +17,17 @@ const createFacebookUserAccount = provider =>
   new Promise(async (resolve, reject) => {
     const { id: facebookId, displayName } = provider;
     const email = _.get(provider, 'emails[0].value', null);
+    const username = await generateUsername(displayName, null);
     const transaction = await sequelize.transaction();
+    const { firstName, lastName } = parseFirstNameLastName(displayName);
     try {
       await Users.create(
         {
+          username,
           facebookId,
           email,
-          lastName: displayName
+          firstName,
+          lastName
         },
         { transaction }
       );
@@ -42,11 +46,15 @@ const createGoogleUserAccount = async provider =>
     try {
       const { id: googleId, displayName } = provider;
       const email = _.get(provider, 'emails[0].value');
+      const username = await generateUsername(displayName, null);
+      const { firstName, lastName } = parseFirstNameLastName(displayName);
       await Users.create(
         {
+          username,
           googleId,
           email,
-          lastName: displayName
+          firstName,
+          lastName
         },
         { transaction }
       );
@@ -299,10 +307,10 @@ export const facebookCallback = async (req, res) => {
     }
 
     const refreshToken = generateRefreshToken();
-    await Users.update({ refreshToken }, { where: { id: user.id } });
-    user = await Users.findOne({
-      where: { facebookId }
-    });
+
+    user.update({ refreshToken, lastLogin: new Date() });
+    user.increment('loginFrequency');
+    user.reload();
 
     const token = await generateJWT(user);
 
@@ -362,11 +370,9 @@ export const googleCallback = async (req, res) => {
     }
 
     const refreshToken = generateRefreshToken();
-    await Users.update({ refreshToken }, { where: { id: user.id } });
-
-    user = await Users.findOne({
-      where: { googleId }
-    });
+    user.update({ refreshToken, lastLogin: new Date() });
+    user.increment('loginFrequency');
+    user.reload();
 
     const token = await generateJWT(user);
     return res.status(200).send(`
