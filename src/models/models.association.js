@@ -33,6 +33,7 @@ Models.Galleries.belongsTo(Models.Products, { foreignKey: 'productId', as: 'prod
 // Models.Subcategories.belongsToMany(Models.Products, { foreignKey: 'subcategoryId', through: Models.ProductsSubcategories, as: 'products' });
 
 Models.Reviews.belongsTo(Models.OrderItems, { foreignKey: 'orderItemId', as: 'orderItem' });
+Models.Reviews.belongsTo(Models.Users, { foreignKey: 'createdBy', as: 'buyer' });
 
 Models.CartItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'cartItem' });
 Models.CartItems.belongsTo(Models.Users, { foreignKey: 'userId', as: 'cartOnwer' });

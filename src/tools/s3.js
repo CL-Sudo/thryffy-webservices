@@ -3,7 +3,8 @@ import _ from 'lodash';
 import AWS from 'aws-sdk';
 import dotenv from 'dotenv';
 import path from 'path';
-import uuid from 'uuid/v4';
+// import uuid from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime-types';
 
 dotenv.config();
@@ -22,6 +23,24 @@ const s3BucketPublic = new AWS.S3({
   params: { Bucket: process.env.AWS_S3_BUCKET_PUBLIC, timeout: 6000000 },
   region: 'ap-southeast-1'
 });
+
+export const uploadToS3 = (s3Directory, filestream, extension, { publicAccess = true, publicBucket = false, filename } = {}) =>
+  new Promise((resolve, reject) => {
+    const configs = {};
+    if (publicAccess) configs.ACL = 'public-read';
+    const bucket = publicBucket ? s3BucketPublic : s3Bucket;
+    return bucket.upload(
+      {
+        Key: `${s3Directory}${filename || `${uuidv4()}${extension}`}`,
+        Body: filestream,
+        ...configs
+      },
+      (err, res) => {
+        if (err) return reject(err);
+        return resolve({ path: res.key, filename });
+      }
+    );
+  });
 
 export const deleteObjectFromS3 = (filePath, publicBucket = false) =>
   new Promise((resolve, reject) => {
@@ -73,21 +92,3 @@ export const uploadFileStreamToS3 = ({ s3Directory, filename, fileStream, public
   const extension = path.extname(filename);
   return uploadToS3(s3Directory, fileStream, extension, { filename, publicAccess });
 };
-
-export const uploadToS3 = (s3Directory, filestream, extension, { publicAccess = true, publicBucket = false, filename } = {}) =>
-  new Promise((resolve, reject) => {
-    const configs = {};
-    if (publicAccess) configs.ACL = 'public-read';
-    const bucket = publicBucket ? s3BucketPublic : s3Bucket;
-    return bucket.upload(
-      {
-        Key: `${s3Directory}${filename || `${uuid()}${extension}`}`,
-        Body: filestream,
-        ...configs
-      },
-      (err, res) => {
-        if (err) return reject(err);
-        return resolve({ path: res.key, filename });
-      }
-    );
-  });

@@ -62,7 +62,7 @@
     "fast-csv": "^2.4.1",
     "file-type": "^14.1.4",
     "flatted": "^2.0.1",
-    "formidable": "^1.2.1",
+    "formidable": "^1.2.2",
     "helmet": "^3.13.0",
     "json2csv": "^4.3.3",
     "jsonwebtoken": "^8.4.0",

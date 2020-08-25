@@ -22,3 +22,27 @@ export const addAddressValidator = [
     .isLength({ min: 1 })
     .withMessage('postcode is required')
 ];
+
+export const changePasswordValidator = [
+  check('oldPassword')
+    .exists()
+    .isLength({ min: 4 })
+    .withMessage('Required')
+    .trim(),
+  check('password')
+    .exists()
+    .isLength({ min: 4 })
+    .withMessage('Required')
+    .trim(),
+  check('confirmPassword')
+    .exists()
+    .isLength({ min: 4 })
+    .withMessage('Required')
+    .trim()
+    .custom((confirmPassword, { req }) => {
+      if (confirmPassword !== req.body.password) {
+        throw new Error('Confirmation password does not match.');
+      }
+      return Promise.resolve();
+    })
+];

@@ -1,1 +1,2 @@
-export * from './checkout.services';
+export * from './checkout.service';
+export * from './me.service';

@@ -21,9 +21,14 @@ passport.use(
   'mobile-login',
   new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
     try {
-      const user = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
+      const userByEmail = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
+      const userByUsername = await Users.unscoped().findOne({ where: { username: R.slice(1, R.Infinity)(email) } });
 
-      if (!user) return done(null, false, { message: "User account doesn't exist" });
+      if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
+        return done(null, false, { message: "User account doesn't exist" });
+      }
+
+      const user = userByEmail || userByUsername;
       // if (_.toLower(process.env.NODE_ENV) !== 'dev') {
       //   if (!user.emailVerified) return done(null, false, { message: `Please verify your email account` });
       // }
