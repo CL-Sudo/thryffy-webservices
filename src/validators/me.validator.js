@@ -4,23 +4,28 @@ export const addAddressValidator = [
   check('name')
     .exists()
     .isLength({ min: 1 })
-    .withMessage('name is required'),
+    .withMessage('name is required')
+    .trim(),
   check('phoneNumber')
     .exists()
     .isLength({ min: 1 })
-    .withMessage('phoneNumber is required'),
+    .withMessage('phoneNumber is required')
+    .trim(),
   check('addressLine1')
     .exists()
     .isLength({ min: 1 })
-    .withMessage('addressLine1 is required'),
+    .withMessage('addressLine1 is required')
+    .trim(),
   check('city')
     .exists()
     .isLength({ min: 1 })
-    .withMessage('city is required'),
+    .withMessage('city is required')
+    .trim(),
   check('postcode')
     .exists()
     .isLength({ min: 1 })
     .withMessage('postcode is required')
+    .trim()
 ];
 
 export const changePasswordValidator = [
