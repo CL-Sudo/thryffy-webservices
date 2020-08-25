@@ -4,6 +4,7 @@ import { Addresses, SalesOrders, Users, Reviews } from '@models';
 import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
+import { response } from 'express';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -62,9 +63,34 @@ export const removeAddress = async (req, res, next) => {
 
 export const updateAddress = async (req, res, next) => {
   try {
+    requestValidator(req);
+
+    const { addressId } = req.params;
+
+    const address = await Addresses.findOne({ where: { id: addressId } });
+    if (R.isNil(address)) {
+      throw new Error('Invalid addressId given');
+    }
+
+    address.update(req.body);
+
     return res.status(200).json({
       message: 'success'
     });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const setDefaultAddress = async (req, res, next) => {
+  try {
+    const { addressId } = req.params;
+    const address = await Addresses.findOne({ where: { id: addressId } });
+    if (R.isNil(address)) {
+      throw new Error('Invalid addressId given');
+    }
+    address.update({ isDefault: R.not(address.isDefault) });
+    return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
   }

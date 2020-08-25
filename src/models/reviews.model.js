@@ -10,11 +10,13 @@ const Reviews = SequelizeConnector.define(
     id: primaryKey,
     sellerId: {
       type: Sequelize.INTEGER.UNSIGNED,
-      field: 'seller_id'
+      field: 'seller_id',
+      allowNull: false
     },
     orderItemId: foreignKey('order_item_id', 'order_items', false),
     rating: {
-      type: Sequelize.INTEGER
+      type: Sequelize.INTEGER,
+      allowNull: false
     },
     comment: {
       type: Sequelize.TEXT
