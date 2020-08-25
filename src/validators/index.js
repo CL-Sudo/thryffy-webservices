@@ -2,8 +2,9 @@ import { validationResult } from 'express-validator/check';
 
 export * from './authentication.validator';
 export * from './checkout.validator';
+export * from './review.validator';
 
-export const reqeustValidator = req => {
+export const requestValidator = req => {
   try {
     const errorFormatter = ({ location, msg, param, value, nestedErrors }) => `${param}: ${msg}`;
     validationResult(req)

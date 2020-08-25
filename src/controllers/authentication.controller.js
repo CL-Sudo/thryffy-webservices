@@ -7,7 +7,7 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 import { generateRefreshToken, generateJWT, generateOTP, generateResetToken, generateUsername, parseFirstNameLastName } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
-import { reqeustValidator } from '@validators';
+import { requestValidator } from '@validators';
 import { hashPassword } from '@tools/bcrypt';
 // import { sendMail } from '@tools/sendgrid';
 
@@ -69,9 +69,8 @@ const createGoogleUserAccount = async provider =>
 export const mobileSignIn = async (req, res, next) => {
   req
     .check('email')
-    .exists()
-    .withMessage('Must contain email.');
-
+    .trim()
+    .normalizeEmail();
   req
     .check('password')
     .exists()
@@ -115,7 +114,7 @@ export const mobileSignIn = async (req, res, next) => {
               u.reload();
               return u;
             } catch (e) {
-              return next(e);
+              return Promise.reject(e);
             }
           };
 
@@ -420,7 +419,7 @@ export const verifyOTP = async (req, res, next) => {
 
     const verifyTac = tacFromRequest => user => {
       if (tacFromRequest !== user.tac) throw new Error('Invalid TAC Entered');
-      user.update({ isVerified: true });
+      user.update({ isVerified: true, otp: null });
       return user;
     };
 
@@ -510,7 +509,7 @@ export const adminRevoke = async (req, res, next) => {
 
 export const userRegistration = async (req, res, next) => {
   try {
-    reqeustValidator(req);
+    requestValidator(req);
 
     const checkUserByEmail = async requestBody => {
       try {
@@ -618,7 +617,7 @@ export const forgotPassword = async (req, res, next) => {
 
 export const resetPassword = async (req, res, next) => {
   try {
-    reqeustValidator(req);
+    requestValidator(req);
     const { password, userId } = req.body;
     await Users.update(
       {

@@ -4,6 +4,8 @@ import { AT_RECORDER, BY_RECORDER, primaryKey, active } from '@constants/sequeli
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 import { Products } from '@models';
+import R from 'ramda';
+import { parseFirstNameLastName } from '@utils/auth.util';
 
 const Users = SequelizeConnector.define(
   'Users',
@@ -31,6 +33,47 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING(100),
       field: 'last_name'
     },
+    fullName: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        const { firstName, lastName } = this;
+        switch (true) {
+          case R.isNil(firstName) && R.not(R.isNil(lastName)):
+            return lastName;
+          case R.not(R.isNil(firstName)) && R.isNil(lastName):
+            return firstName;
+          case R.isNil(firstName) && R.isNil(lastName):
+            return null;
+          default:
+            return `${firstName} ${lastName}`;
+        }
+      },
+      set(fullName) {
+        const { firstName, lastName } = parseFirstNameLastName(fullName);
+        this.setDataValue('firstName', firstName);
+        this.setDataValue('lastName', lastName);
+      }
+    },
+    state: {
+      type: Sequelize.STRING(100)
+    },
+    country: {
+      type: Sequelize.STRING(100)
+    },
+    location: {
+      type: Sequelize.VIRTUAL,
+      set(location) {
+        const splitted = R.map(R.trim, R.split(',')(location));
+        const state = splitted[0];
+        const country = R.last(splitted);
+        this.setDataValue('state', state);
+        this.setDataValue('country', country);
+      },
+      get() {
+        const { state, country } = this;
+        return `${state}, ${country}`;
+      }
+    },
     phoneCountryCode: {
       type: Sequelize.STRING(5),
       field: 'phone_country_code'
@@ -38,6 +81,10 @@ const Users = SequelizeConnector.define(
     phoneNumber: {
       type: Sequelize.STRING(25),
       field: 'phone_number'
+    },
+    dateOfBirth: {
+      type: Sequelize.DATEONLY(),
+      field: 'date_of_birth'
     },
     facebookId: {
       type: Sequelize.STRING,
@@ -76,13 +123,6 @@ const Users = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'last_login'
     },
-    fullName: {
-      type: Sequelize.VIRTUAL,
-      get() {
-        const { firstName, lastName } = this;
-        return `${firstName} ${lastName}`;
-      }
-    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -103,6 +143,25 @@ const Users = SequelizeConnector.define(
                 id: productIds
               }
             }
+          ]
+        };
+      },
+      editProfile(userId) {
+        return {
+          where: { id: userId },
+          attributes: [
+            'id',
+            'username',
+            'firstName',
+            'lastName',
+            'fullName',
+            'email',
+            'phoneNumber',
+            'location',
+            'state',
+            'country',
+            'dateOfBirth',
+            'profilePicture'
           ]
         };
       }

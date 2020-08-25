@@ -30,3 +30,7 @@ export const DELIVERY_STATUS = {
   SHIPPED: 'SHIPPED',
   STATUS: 'STATUS'
 };
+
+export const S3 = {
+  PROFILE_PHOTO_DIR: 'thryffy/profile_pictures/'
+};

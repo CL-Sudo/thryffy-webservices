@@ -1,10 +1,13 @@
 import R from 'ramda';
-import { reqeustValidator } from '@validators';
-import { Addresses, SalesOrders } from '@models';
+import { requestValidator } from '@validators';
+import { Addresses, SalesOrders, Users, Reviews } from '@models';
+import { hashPassword } from '@tools/bcrypt';
+import formidable from 'formidable';
+import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
 
 export const addAddress = async (req, res, next) => {
   try {
-    reqeustValidator(req);
+    requestValidator(req);
     const { id } = req.user;
     await Addresses.create({
       ...req.body,
@@ -57,6 +60,16 @@ export const removeAddress = async (req, res, next) => {
   }
 };
 
+export const updateAddress = async (req, res, next) => {
+  try {
+    return res.status(200).json({
+      message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 export const getOrderDetails = async (req, res, next) => {
   try {
     const { orderId } = req.params;
@@ -70,6 +83,97 @@ export const getOrderDetails = async (req, res, next) => {
     return res.status(200).json({
       message: 'success',
       payload
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    requestValidator(req);
+    const { id } = req.user;
+    const { oldPassword, password } = req.body;
+
+    const user = await Users.unscoped().findOne({
+      where: { id }
+    });
+
+    const isValid = await user.comparePassword(oldPassword);
+
+    if (!isValid) throw new Error('Invalid Old Password Provided');
+
+    user.update({ password: hashPassword(password) });
+
+    return res.status(200).json({
+      message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const updateProfile = async (req, res, next) => {
+  const form = formidable({ multiples: true });
+  form.parse(req, async (err, fields, files) => {
+    if (err) return next(err);
+    try {
+      const { profilePicture } = files;
+      const { id } = req.user;
+
+      const user = await Users.scope({ method: ['editProfile', id] }).findOne();
+
+      user.update(fields);
+
+      if (profilePicture) {
+        await deleteExistingProfilePicture(id);
+        await uploadProfilePicture({
+          userId: id,
+          profilePicture
+        });
+      }
+
+      await user.reload();
+
+      return res.status(200).json({
+        message: 'success',
+        payload: user
+      });
+    } catch (e) {
+      return next(e);
+    }
+  });
+};
+
+export const getReview = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { limit, offset } = req.query;
+
+    const getAverageRating = reviews => {
+      const getRatings = R.map(R.prop('rating'));
+      const getAverage = R.ifElse(R.isEmpty, R.always(0), R.mean);
+
+      const average = R.pipe(getRatings, getAverage)(reviews);
+      return average;
+    };
+
+    const payload = await Reviews.scope('reviews').findAndCountAll({
+      where: {
+        sellerId: id
+      },
+      limit: Number(limit) || null,
+      offset: Number(offset) || null
+    });
+
+    const averageRating = getAverageRating(payload.rows);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        averageRating,
+        ...payload
+      }
     });
   } catch (e) {
     return next(e);

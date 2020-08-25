@@ -1,9 +1,9 @@
 import { CartItems, Products, Users, Addresses, SalesOrders, OrderItems } from '@models';
-import * as services from '@services/checkout.services';
+import * as services from '@services/checkout.service';
 import R from 'ramda';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
-import { reqeustValidator } from '@validators';
+import { requestValidator } from '@validators';
 
 export const list = async (req, res, next) => {
   try {
@@ -151,7 +151,7 @@ export const checkout = async (req, res, next) => {
 export const pay = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
   try {
-    reqeustValidator(req);
+    requestValidator(req);
 
     const { id: userId } = req.user;
     const { productIds, addressId, courier, paymentMethod } = req.body;
