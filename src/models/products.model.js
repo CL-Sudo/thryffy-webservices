@@ -3,6 +3,7 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { Users, Categories, Galleries, ProductColors, FavouriteProducts } from '@models';
+import { Op } from 'sequelize';
 import R from 'ramda';
 
 const Products = SequelizeConnector.define(
@@ -30,6 +31,11 @@ const Products = SequelizeConnector.define(
     },
     brand: {
       type: Sequelize.STRING(100)
+    },
+    viewCount: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+      field: 'view_count'
     },
     favouriteNumber: {
       type: Sequelize.VIRTUAL,
@@ -63,6 +69,25 @@ const Products = SequelizeConnector.define(
           { model: Galleries, as: 'photos' },
           { model: Users, as: 'seller', attributes: ['id', 'firstName', 'lastName', 'profilePicture'] }
         ]
+      },
+      listings: {
+        where: {
+          id: {
+            [Op.notIn]: [
+              Sequelize.literal(
+                `SELECT product_id FROM order_items
+                  WHERE sales_order_id IN (
+                    SELECT id FROM sales_orders
+                      WHERE
+                        payment_status = 'SUCCESS'
+                          AND
+                        delivery_status <> 'CANCELLED'
+                  )`
+              )
+            ]
+          }
+        },
+        order: [['createdAt', 'DESC']]
       }
     },
     hooks: {

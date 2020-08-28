@@ -2,8 +2,13 @@ import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.conf
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
-import { PAYMENT_STATUS } from '@constants';
+import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 import { OrderItems, Users, Products, Addresses } from '@models';
+import R from 'ramda';
+import { Op } from 'sequelize';
+
+const assignDeliveryStatus = status => whereObj =>
+  R.ifElse(R.equals('ALL'), R.always(whereObj), R.always(R.assoc('deliveryStatus', status, whereObj)))(status);
 
 const SalesOrders = SequelizeConnector.define(
   'SalesOrders',
@@ -43,8 +48,7 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.DECIMAL(10, 2)
     },
     total: {
-      type: Sequelize.DECIMAL(10, 2),
-      field: 'total'
+      type: Sequelize.DECIMAL(10, 2)
     },
     itemQuantity: {
       type: Sequelize.VIRTUAL,
@@ -89,6 +93,80 @@ const SalesOrders = SequelizeConnector.define(
               as: 'address'
             }
           ]
+        };
+      },
+      sold(userId, deliveryStatus) {
+        const processedDeliveryStatus = R.cond([
+          [R.equals('TOSHIP'), R.always(DELIVERY_STATUS.TO_SHIP)],
+          [R.T, R.identity]
+        ])(R.toUpper(deliveryStatus));
+
+        const initialWhereObj = {
+          paymentStatus: PAYMENT_STATUS.SUCCESS,
+          id: {
+            [Op.in]: [
+              Sequelize.literal(`
+                  SELECT sales_order_id FROM order_items
+                  WHERE product_id IN (
+                    SELECT id from  products
+                    WHERE user_id = ${userId}
+                  )
+                `)
+            ]
+          }
+        };
+
+        const where = assignDeliveryStatus(processedDeliveryStatus)(initialWhereObj);
+
+        return {
+          attributes: ['id', 'total', 'deliveryStatus', 'createdAt'],
+          where,
+          include: [
+            {
+              attributes: ['id', 'salesOrderId', 'productId'],
+              model: OrderItems,
+              as: 'orderItems',
+              include: [
+                {
+                  attributes: ['id', 'title', 'thumbnail'],
+                  model: Products,
+                  as: 'product'
+                }
+              ]
+            }
+          ],
+          order: [['createdAt', 'DESC']]
+        };
+      },
+      bought(userId, deliveryStatus) {
+        const processedDeliveryStatus = R.cond([
+          [R.equals('TOSHIP'), R.always(DELIVERY_STATUS.TO_SHIP)],
+          [R.T, R.identity]
+        ])(R.toUpper(deliveryStatus));
+
+        const initialWhereObj = {
+          userId
+        };
+
+        const where = assignDeliveryStatus(processedDeliveryStatus)(initialWhereObj);
+
+        return {
+          where,
+          include: [
+            {
+              attributes: ['id', 'salesOrderId', 'productId'],
+              model: OrderItems,
+              as: 'orderItems',
+              include: [
+                {
+                  attributes: ['id', 'title', 'thumbnail'],
+                  model: Products,
+                  as: 'product'
+                }
+              ]
+            }
+          ],
+          order: [['createdAt', 'DESC']]
         };
       }
     },

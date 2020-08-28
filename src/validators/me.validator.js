@@ -51,3 +51,10 @@ export const changePasswordValidator = [
       return Promise.resolve();
     })
 ];
+
+export const contactUsValidator = [
+  check('title')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+];

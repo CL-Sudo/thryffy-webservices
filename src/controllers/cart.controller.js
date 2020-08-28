@@ -4,6 +4,7 @@ import R from 'ramda';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
+import { cartListener } from '@listeners';
 
 export const list = async (req, res, next) => {
   try {
@@ -121,6 +122,7 @@ export const deleteOne = async (req, res, next) => {
 
 export const checkout = async (req, res, next) => {
   try {
+    requestValidator(req);
     const { id } = req.user;
     const { productIds, addressId, paymentMethod, courier } = req.body;
 
@@ -137,7 +139,7 @@ export const checkout = async (req, res, next) => {
     return res.status(200).json({
       message: 'success',
       payload: {
-        itemQuantity: payload.dataValues.products.length,
+        itemCount: payload.dataValues.products.length,
         ...payload.dataValues,
         shippingAddress: defaultAddress,
         priceSummary
@@ -216,6 +218,8 @@ export const pay = async (req, res, next) => {
     };
 
     await R.pipeP(storeSaleOrder, parseOrderItems(productIds), storeOrderItems)();
+
+    cartListener.emit('pay', productIds);
 
     await transaction.commit();
     return res.status(200).json({
