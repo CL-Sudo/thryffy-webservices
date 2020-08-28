@@ -1,10 +1,10 @@
 import R from 'ramda';
 import { requestValidator } from '@validators';
-import { Addresses, SalesOrders, Users, Reviews } from '@models';
+import { Addresses, SalesOrders, Users, Reviews, Products } from '@models';
 import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
-import { response } from 'express';
+import { paginate } from '@utils';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -200,6 +200,75 @@ export const getReview = async (req, res, next) => {
         averageRating,
         ...payload
       }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const listOrders = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { type, status, limit, offset } = req.query;
+
+    const me = await Users.scope('order').findOne({ where: { id } });
+    await me.getExtraFields();
+
+    const getListings = async () => {
+      try {
+        const result = await Products.scope('listings').findAll({ where: { userId: id } });
+        return Promise.resolve(result);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const getSoldItems = async () => {
+      try {
+        const result = await SalesOrders.scope({ method: ['sold', id, status] }).findAll();
+        return Promise.resolve(result);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const getBoughtItems = async () => {
+      try {
+        const result = await SalesOrders.scope({ method: ['bought', id, status] }).findAll();
+        return Promise.resolve(result);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const result = R.cond([
+      [R.equals('LISTINGS'), R.always(await getListings())],
+      [R.equals('SOLD'), R.always(await getSoldItems())],
+      [R.equals('BOUGHT'), R.always(await getBoughtItems())]
+    ])(R.toUpper(type));
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        me: me.dataValues,
+        count: R.length(result),
+        rows: paginate(limit)(offset)(result)
+      }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const contactUs = async (req, res, next) => {
+  try {
+    requestValidator(req);
+    const { title, description } = req.body;
+
+    // send Email
+
+    return res.status(200).json({
+      message: 'success'
     });
   } catch (e) {
     return next(e);

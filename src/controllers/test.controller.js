@@ -1,16 +1,20 @@
 import R from 'ramda';
-import { Products } from '@models';
+import { Products, SalesOrders } from '@models';
+import { db, SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
+import { Op } from 'sequelize';
 import * as utils from '@utils';
-// import testEmitter from '../listeners/test.listener';
 
 export const test = async (req, res, next) => {
   try {
-    const result = utils.parseFirstNameLastName(req.body.var);
+    const { limit, offset } = req.query;
+    // const result = await Products.scope('listings').findAll({ where: { userId: 1 } });
+
+    const result = await SalesOrders.scope({ method: ['listings', 1, req.body.test] }).findAll();
 
     return res.status(200).json({
       message: 'success',
-      result,
-      trimmed: R.trim(' lau ching ')
+      count: R.length(result),
+      result
     });
   } catch (e) {
     return next(e);

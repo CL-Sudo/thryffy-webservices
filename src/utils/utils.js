@@ -7,7 +7,7 @@ import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
-export const paginate = (limit = 10) => (offset = 0) => list => R.compose(R.take(limit), R.drop(offset))(list);
+export const paginate = (limit = 10) => (offset = 0) => list => R.compose(R.take(Number(limit)), R.drop(Number(offset)))(list);
 
 export const variable = {
   isClass: func => typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func)),

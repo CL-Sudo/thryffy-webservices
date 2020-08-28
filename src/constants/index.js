@@ -26,9 +26,15 @@ export const PAYMENT_STATUS = {
 };
 
 export const DELIVERY_STATUS = {
-  PAID: 'PAID',
+  TO_SHIP: 'TO SHIP',
   SHIPPED: 'SHIPPED',
-  STATUS: 'STATUS'
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
+};
+
+export const CONDITION = {
+  VERY_GOOD: 'VERY GOOD',
+  GOOD: 'GOOD'
 };
 
 export const S3 = {

@@ -11,6 +11,7 @@ export const getOne = async (req, res, next) => {
     });
     await product.getFavouriteNumber();
     await product.checkIsAddedToFavourite(id);
+    product.increment('viewCount');
 
     /**
      * TODO: You may also like

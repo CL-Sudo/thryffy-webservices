@@ -10,12 +10,15 @@ router.delete('/addresses/:addressId', controllers.removeAddress);
 router.put('/addresses/:addressId', validators.addAddressValidator, controllers.updateAddress);
 router.patch('/addresses/:addressId/set-default', controllers.setDefaultAddress);
 
-router.get('/order/:orderId', controllers.getOrderDetails);
+router.get('/orders/:orderId', controllers.getOrderDetails);
+router.get('/orders', controllers.listOrders);
 
 router.patch('/password', validators.changePasswordValidator, controllers.changePassword);
 
 router.put('/profile', controllers.updateProfile);
 
 router.get('/reviews', controllers.getReview);
+
+router.post('/contact-us', validators.contactUsValidator, controllers.contactUs);
 
 export default router;

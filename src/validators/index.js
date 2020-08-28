@@ -1,7 +1,7 @@
 import { validationResult } from 'express-validator/check';
 
 export * from './authentication.validator';
-export * from './checkout.validator';
+export * from './cart.validator';
 export * from './review.validator';
 
 export const requestValidator = req => {

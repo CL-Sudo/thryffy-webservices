@@ -70,6 +70,6 @@ export const cyanStyle = {
   },
 
   'pretty-error > trace > item > footer > addr': {
-    display: 'none'
+    color: 'grey'
   }
 };
