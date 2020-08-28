@@ -11,7 +11,11 @@ export const getOne = async (req, res, next) => {
     });
     await product.getFavouriteNumber();
     await product.checkIsAddedToFavourite(id);
-    product.increment('viewCount');
+
+    if (product.userId !== id) {
+      product.increment('viewCount');
+      await product.reload();
+    }
 
     /**
      * TODO: You may also like
