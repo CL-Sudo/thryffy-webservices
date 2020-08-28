@@ -2,7 +2,11 @@ import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.conf
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
-import { Users, Categories, Galleries, ProductColors, FavouriteProducts } from '@models';
+import { Users } from '@models/users.model';
+import { Categories } from '@models/categories.model';
+import { Galleries } from '@models/galleries.model';
+import { ProductColors } from '@models/product_colors.model';
+import { FavouriteProducts } from '@models/favourite_products.model';
 import { Op } from 'sequelize';
 import R from 'ramda';
 

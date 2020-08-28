@@ -1,10 +1,10 @@
 require('./models.association');
 require('../hooks');
 
+export * from './products.model';
 export * from './product_colors.model';
 export * from './category_product.model';
 export * from './users.model';
-export * from './products.model';
 export * from './favourite_products.model';
 export * from './addresses.model';
 export * from './sales_orders.model';
