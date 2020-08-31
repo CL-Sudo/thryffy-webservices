@@ -13,5 +13,5 @@ module.exports = {
     }
   },
 
-  down: () => Promise.resolve()
+  down: queryInterface => queryInterface.bulkDelete('admins')
 };
