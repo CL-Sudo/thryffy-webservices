@@ -15,6 +15,7 @@ const Products = SequelizeConnector.define(
   {
     id: primaryKey,
     userId: foreignKey('user_id', 'users', false),
+    categoryId: foreignKey('category_id', 'categories', false),
     title: {
       type: Sequelize.STRING(100)
     },
@@ -41,10 +42,10 @@ const Products = SequelizeConnector.define(
       defaultValue: 0,
       field: 'view_count'
     },
-    favouriteNumber: {
+    favouriteCount: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.getDataValue('favouriteNumber');
+        return this.getDataValue('favouriteCount');
       }
     },
     isAddedToFavourite: {
@@ -71,7 +72,11 @@ const Products = SequelizeConnector.define(
           },
           { model: ProductColors, as: 'colors' },
           { model: Galleries, as: 'photos' },
-          { model: Users, as: 'seller', attributes: ['id', 'firstName', 'lastName', 'profilePicture'] }
+          {
+            model: Users,
+            as: 'seller',
+            attributes: ['id', 'firstName', 'lastName', 'profilePicture']
+          }
         ]
       },
       listings: {
@@ -104,12 +109,12 @@ const Products = SequelizeConnector.define(
 
 addScopesByAllFields(Products, []);
 
-Products.prototype.getFavouriteNumber = async function() {
+Products.prototype.getFavouriteCount = async function() {
   try {
     const favouriteCount = await FavouriteProducts.count({
       where: { productId: this.id }
     });
-    this.setDataValue('favouriteNumber', favouriteCount);
+    this.setDataValue('favouriteCount', favouriteCount);
   } catch (e) {
     throw e;
   }

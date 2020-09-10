@@ -16,21 +16,18 @@ Models.OrderItems.belongsTo(Models.SalesOrders, { foreignKey: 'salesOrderId', as
 Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 Models.OrderItems.hasOne(Models.Reviews, { foreignKey: 'orderItemId', as: 'review' });
 
-Models.Products.belongsToMany(Models.Categories, { foreignKey: 'productId', through: Models.CategoryProduct, as: 'categories' });
+Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'categories' });
 Models.Products.belongsToMany(Models.Users, { foreignKey: 'productId', through: Models.FavouriteProducts, as: 'likers' });
 Models.Products.belongsToMany(Models.Users, { foreignKey: 'productId', through: Models.CartItems, as: 'cartOwners' });
 Models.Products.belongsTo(Models.Users, { foreignKey: 'userId', as: 'seller' });
 Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos' });
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });
-// Models.Products.belongsToMany(Models.Subcategories, { foreignKey: 'productId', through: Models.ProductsSubcategories, as: 'subcategories' });
 
-Models.Categories.belongsToMany(Models.Products, { foreignKey: 'categoryId', through: Models.CategoryProduct, as: 'products' });
+Models.Categories.hasMany(Models.Products, { foreignKey: 'categoryId', as: 'products' });
 Models.Categories.hasMany(Models.Categories, { foreignKey: 'parentId', as: 'subCategories' });
 Models.Categories.belongsTo(Models.Categories, { foreignKey: 'parentId', as: 'parentCategory' });
 
 Models.Galleries.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
-
-// Models.Subcategories.belongsToMany(Models.Products, { foreignKey: 'subcategoryId', through: Models.ProductsSubcategories, as: 'products' });
 
 Models.Reviews.belongsTo(Models.OrderItems, { foreignKey: 'orderItemId', as: 'orderItem' });
 Models.Reviews.belongsTo(Models.Users, { foreignKey: 'createdBy', as: 'buyer' });
