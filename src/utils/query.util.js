@@ -1,5 +1,6 @@
 import { Op } from 'sequelize';
 import _ from 'lodash';
+import R from 'ramda';
 
 export const dateRangeQuery = (dataIndex, { fromIndex = 'from', toIndex = 'to' } = {}) => value => {
   const from = _.get(value, fromIndex, null);
@@ -21,4 +22,20 @@ export const dateRangeQuery = (dataIndex, { fromIndex = 'from', toIndex = 'to' }
 
   if (_.isEmpty(andQuery)) return {};
   return { [Op.and]: andQuery };
+};
+
+export const parseKeywordForBooleanMode = keyword => {
+  const insertWhiteSpace = param => ` ${param}`;
+  const result = R.pipe(
+    R.trim,
+    insertWhiteSpace,
+    R.replace(/  +/g, ' '),
+    R.replace(/ /g, '+')
+  )(keyword);
+  return result;
+};
+
+export const parseKeywordForNLP = keyword => {
+  const result = R.pipe(R.trim, R.replace(/  +/g, ' '), R.replace(/ /g, ','))(keyword);
+  return result;
 };

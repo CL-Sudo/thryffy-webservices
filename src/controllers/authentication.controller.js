@@ -4,7 +4,14 @@ import passport from 'passport';
 import { Users, Admins } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
-import { generateRefreshToken, generateJWT, generateOTP, generateResetToken, generateUsername, parseFirstNameLastName } from '@utils/auth.util';
+import {
+  generateRefreshToken,
+  generateJWT,
+  generateOTP,
+  generateResetToken,
+  generateUsername,
+  parseFirstNameLastName
+} from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
 import { requestValidator } from '@validators';
@@ -120,7 +127,7 @@ export const mobileSignIn = async (req, res, next) => {
 
           const getJWT = async u => {
             try {
-              const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
+              const jwt = await generateJWT(assignUserType({ id: u.id })(USER_TYPE.CUSTOMER));
               const omit = R.omit(['refreshToken', 'tac']);
               return Promise.resolve({
                 user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER),
@@ -132,7 +139,12 @@ export const mobileSignIn = async (req, res, next) => {
             }
           };
 
-          const payload = await R.compose(await getJWT, logUserActivity, getRefreshToken, isUserActivated)(await userData());
+          const payload = await R.compose(
+            await getJWT,
+            logUserActivity,
+            getRefreshToken,
+            isUserActivated
+          )(await userData());
           return res.status(200).json({
             message: 'success',
             payload: {
@@ -188,8 +200,15 @@ export const phoneNoSignIn = async (req, res, next) => {
             try {
               const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
               const omit = R.omit(['refreshToken', 'password', 'tac']);
-              const processedPayload = R.pipe(omit, assignUserType(R.__)(USER_TYPE.CUSTOMER))(u.dataValues);
-              return { user: processedPayload, token: `Bearer ${jwt}`, refreshToken: u.refreshToken };
+              const processedPayload = R.pipe(
+                omit,
+                assignUserType(R.__)(USER_TYPE.CUSTOMER)
+              )(u.dataValues);
+              return {
+                user: processedPayload,
+                token: `Bearer ${jwt}`,
+                refreshToken: u.refreshToken
+              };
             } catch (e) {
               throw new Error(e);
             }
@@ -218,60 +237,65 @@ export const phoneNoSignIn = async (req, res, next) => {
 
 export const mobileRevoke = async (req, res, next) => {
   try {
-    return passport.authenticate(Configs.passport.strategy.mobile, { session: false }, async (err, user, info) => {
-      const { refreshToken } = req.body;
+    return passport.authenticate(
+      Configs.passport.strategy.mobile,
+      { session: false },
+      async (err, user, info) => {
+        const { refreshToken } = req.body;
 
-      if (refreshToken) {
-        const loggedInUser = await Users.findOne({
-          where: { refreshToken },
-          attributes: ['id']
-        });
-        if (R.isNil(loggedInUser)) {
-          return next(new Error('User Logged out'));
+        if (refreshToken) {
+          const loggedInUser = await Users.findOne({
+            where: { refreshToken },
+            attributes: ['id']
+          });
+          if (R.isNil(loggedInUser)) {
+            return next(new Error('User Logged out'));
+          }
+          const payload = await Users.findOne({
+            where: { id: loggedInUser.id }
+          });
+
+          if (!payload.active) {
+            return next(new Error('Inactive account'));
+          }
+          const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
+          const token = await generateJWT(withType);
+          const rf = payload.get('refreshToken');
+
+          return res.json({
+            message: 'Logged in successfully',
+            payload: R.omit(['refreshToken'])(withType),
+            token: `Bearer ${token}`,
+            refreshToken: rf
+          });
         }
-        const payload = await Users.findOne({
-          where: { id: loggedInUser.id }
-        });
 
-        if (!payload.active) {
-          return next(new Error('Inactive account'));
+        if (user) {
+          const payload = await Users.findOne({
+            where: { id: user.id }
+          });
+          if (!payload.active) {
+            throw new Error('This account is not active');
+          }
+          const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
+          const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
+          const token = await generateJWT(tokenPayload);
+
+          const rt = payload.get('refreshToken');
+
+          return res.status(200).json({
+            message: 'success',
+            payload: R.omit(['refreshToken'])(withType),
+            token: `Bearer ${token}`,
+            refreshToken: rt
+          });
         }
-        const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
-        const token = await generateJWT(withType);
-        const rf = payload.get('refreshToken');
-
-        return res.json({
-          message: 'Logged in successfully',
-          payload: R.omit(['refreshToken'])(withType),
-          token: `Bearer ${token}`,
-          refreshToken: rf
-        });
-      }
-
-      if (user) {
-        const payload = await Users.findOne({
-          where: { id: user.id }
-        });
-        if (!payload.active) {
-          throw new Error('This account is not active');
+        if (err) {
+          return next(err);
         }
-        const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
-        const token = await generateJWT(withType);
-
-        const rt = payload.get('refreshToken');
-
-        return res.status(200).json({
-          message: 'success',
-          payload: R.omit(['refreshToken'])(withType),
-          token: `Bearer ${token}`,
-          refreshToken: rt
-        });
+        return res.status(400).json(info);
       }
-      if (err) {
-        return next(err);
-      }
-      return res.status(400).json(info);
-    })(req, res, next);
+    )(req, res, next);
   } catch (e) {
     return next(e);
   }
@@ -311,7 +335,7 @@ export const facebookCallback = async (req, res) => {
     user.increment('loginFrequency');
     user.reload();
 
-    const token = await generateJWT(user);
+    const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
 
     res.cookie(Configs.authTokenName, token, { httpOnly: false });
 
@@ -373,7 +397,7 @@ export const googleCallback = async (req, res) => {
     user.increment('loginFrequency');
     user.reload();
 
-    const token = await generateJWT(user);
+    const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
     return res.status(200).send(`
         <script>
           window.ReactNativeWebView.postMessage(
@@ -469,7 +493,11 @@ export const adminSignIn = async (req, res, next) => {
             // domain: process.env.COOKIE_HOST
           });
 
-          return res.json({ message: 'Login in Successfully', payload: withType, token: `Bearer ${token}` });
+          return res.json({
+            message: 'Login in Successfully',
+            payload: withType,
+            token: `Bearer ${token}`
+          });
         } catch (error) {
           return next(error);
         }
@@ -483,25 +511,29 @@ export const adminSignIn = async (req, res, next) => {
 
 export const adminRevoke = async (req, res, next) => {
   try {
-    return passport.authenticate(Configs.passport.strategy.dashboard, { session: false }, async (err, user, info) => {
-      if (!user) return next(Error('Session Expired'));
-      if (user) {
-        const payload = await Admins.findOne({
-          where: { id: user.id }
-        });
+    return passport.authenticate(
+      Configs.passport.strategy.dashboard,
+      { session: false },
+      async (err, user, info) => {
+        if (!user) return next(Error('Session Expired'));
+        if (user) {
+          const payload = await Admins.findOne({
+            where: { id: user.id }
+          });
 
-        if (!payload.active) return next(new Error('This account is not active'));
+          if (!payload.active) return next(new Error('This account is not active'));
 
-        const withType = assignUserType(payload.dataValues)(USER_TYPE.ADMIN);
-        const token = await generateJWT(withType);
-        res.cookie(Configs.adminAuthTokenName, token, { httpOnly: false });
-        return res.status(200).json({ message: 'Success revoke', payload: withType, token });
+          const withType = assignUserType(payload.dataValues)(USER_TYPE.ADMIN);
+          const token = await generateJWT(withType);
+          res.cookie(Configs.adminAuthTokenName, token, { httpOnly: false });
+          return res.status(200).json({ message: 'Success revoke', payload: withType, token });
+        }
+        if (err) {
+          return next(err);
+        }
+        return res.status(400).json(info);
       }
-      if (err) {
-        return next(err);
-      }
-      return res.status(400).json(info);
-    })(req, res, next);
+    )(req, res, next);
   } catch (e) {
     return next(e);
   }
@@ -570,17 +602,25 @@ export const userRegistration = async (req, res, next) => {
     const generateJwt = async user => {
       try {
         const omit = R.omit(['password', 'refreshToken', 'otp']);
-        const jwt = await generateJWT(user);
-
-        const processedPayload = R.pipe(omit, assignUserType(R.__)(USER_TYPE.CUSTOMER))(user.dataValues);
-
+        const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
+        const jwt = await generateJWT(tokenPayload);
+        const processedPayload = R.pipe(
+          omit,
+          assignUserType(R.__)(USER_TYPE.CUSTOMER)
+        )(user.dataValues);
         return Promise.resolve({ jwt, user: processedPayload, refreshToken: user.refreshToken });
       } catch (e) {
         return Promise.reject(e);
       }
     };
 
-    const payload = await R.pipeP(checkUsername, checkUserByEmail, checkUserByPhoneNumber, createNewUser, generateJwt)(req.body);
+    const payload = await R.pipeP(
+      checkUsername,
+      checkUserByEmail,
+      checkUserByPhoneNumber,
+      createNewUser,
+      generateJwt
+    )(req.body);
 
     authListener.emit('userSignUp', payload);
 

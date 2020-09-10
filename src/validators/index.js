@@ -3,6 +3,9 @@ import { validationResult } from 'express-validator/check';
 export * from './authentication.validator';
 export * from './cart.validator';
 export * from './review.validator';
+export * from './discover.validator';
+
+export const removeRepeatedWhiteSpace = param => param.replace(/  +/g, ' ');
 
 export const requestValidator = req => {
   try {

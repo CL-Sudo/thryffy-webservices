@@ -1,9 +1,7 @@
 import { SequelizeConnector } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, foreignKey, defaultExcludeFields } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
-import { Products, Categories } from '@models';
-import Users from './users.model';
 
 const CartItems = SequelizeConnector.define(
   'CartItems',

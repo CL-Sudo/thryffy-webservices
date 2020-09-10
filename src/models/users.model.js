@@ -134,7 +134,7 @@ const Users = SequelizeConnector.define(
     averageRating: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.averageRating;
+        return this.getDataValue('averageRating');
       }
     },
     earning: {

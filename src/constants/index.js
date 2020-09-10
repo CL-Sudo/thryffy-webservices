@@ -33,8 +33,26 @@ export const DELIVERY_STATUS = {
 };
 
 export const CONDITION = {
-  VERY_GOOD: 'VERY GOOD',
-  GOOD: 'GOOD'
+  NEW_WITH_TAGS: 'New with tags',
+  NEW_WITHOUT_TAGS: 'New without tags',
+  VERY_GOOD: 'Very Good',
+  GOOD: 'Good',
+  ACCEPTABLE: 'Acceptable'
+};
+
+export const SIZE = {
+  XXXS_00: 'XXXS / 00',
+  XXS_0: 'XXS / 0',
+  XS_2: 'XS / 2',
+  S_4: 'S / 4',
+  S_6: 'S / 6',
+  M_8: 'M / 8',
+  M_10: 'M / 10',
+  L_12: 'L / 12',
+  L_14: 'L / 14',
+  XL_16: 'XL / 16',
+  XL_18: 'XL / 18',
+  XXL_20: 'XXL / 20'
 };
 
 export const S3 = {
