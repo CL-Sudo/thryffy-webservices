@@ -18,6 +18,8 @@ export default app => {
   app.use('/api/mobile/me', mobileAuth, require('./mobile/me.routes').default);
   app.use('/api/mobile/reviews', mobileAuth, require('./mobile/review.routes').default);
   app.use('/api/mobile/discover', mobileAuth, require('./mobile/discover.routes').default);
+  app.use('/api/mobile/home', mobileAuth, require('./mobile/home.routes').default);
+
   /*
    * PUBLIC API
    */

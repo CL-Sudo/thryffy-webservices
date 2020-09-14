@@ -1,10 +1,13 @@
 import { Products, FavouriteProducts } from '@models';
 import R from 'ramda';
+import { saveViewHistory } from '@services';
 
 export const getOne = async (req, res, next) => {
   try {
     const { id } = req.user;
     const { productId } = req.params;
+
+    await saveViewHistory(id, productId);
 
     const product = await Products.scope('productPage').findOne({
       where: { id: productId }

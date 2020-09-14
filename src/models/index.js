@@ -16,3 +16,4 @@ export * from './pages.model';
 export * from './subscriptions.model';
 export * from './admins.model';
 export * from './search_histories.model';
+export * from './view_histories.model';
