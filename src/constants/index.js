@@ -56,5 +56,6 @@ export const SIZE = {
 };
 
 export const S3 = {
-  PROFILE_PHOTO_DIR: 'thryffy/profile_pictures/'
+  PROFILE_PHOTO_DIR: 'thryffy/profile_pictures/',
+  GALLERY_URL: 'thryffy/gallery/'
 };

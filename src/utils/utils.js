@@ -7,10 +7,18 @@ import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
-export const paginate = (limit = 10) => (offset = 0) => list => R.compose(R.take(Number(limit)), R.drop(Number(offset)))(list);
+export const mapObjectsToArray = objects => {
+  const result = [];
+  R.map(obj => result.push(obj))(objects);
+  return result;
+};
+
+export const paginate = (limit = 10) => (offset = 0) => list =>
+  R.compose(R.take(Number(limit)), R.drop(Number(offset)))(list);
 
 export const variable = {
-  isClass: func => typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func)),
+  isClass: func =>
+    typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func)),
   isBoolean: v => typeof v === 'boolean'
 };
 
@@ -129,7 +137,8 @@ export const getPermissionsFromAccessLevel = accessLevel => {
   return _.map(permissions, p => p.action);
 };
 
-export const booleanToString = (bool, [yes, no]) => (bool === true || bool === 'true' || bool === 1 || bool === '1' ? yes : no);
+export const booleanToString = (bool, [yes, no]) =>
+  bool === true || bool === 'true' || bool === 1 || bool === '1' ? yes : no;
 
 export const getQuarterlyMonths = (month, year, { force = false } = {}) => {
   if (month instanceof Date) month = month.getMonth() + 1;
@@ -193,7 +202,10 @@ export const currencyToWords = function(totalRent) {
   str += n[3] != 0 ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
   str += n[4] != 0 ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
   str += n[5] != 0 ? (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'ringgit ' : '';
-  str += d[1] != 0 ? (str != '' ? 'and ' : '') + (a[Number(d[1])] || b[d[1][0]] + ' ' + a[d[1][1]]) + 'cent only' : 'only';
+  str +=
+    d[1] != 0
+      ? (str != '' ? 'and ' : '') + (a[Number(d[1])] || b[d[1][0]] + ' ' + a[d[1][1]]) + 'cent only'
+      : 'only';
   return str;
 };
 /* eslint-enable */
@@ -217,7 +229,8 @@ export const getExtensionFromString = val => {
 
 export const randomInArray = ary => ary[Math.floor(Math.random() * ary.length)];
 
-export const monthDiff = (dateFrom, dateTo) => dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
+export const monthDiff = (dateFrom, dateTo) =>
+  dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
 
 export const isJson = (val, getJsonValue = false) => {
   try {
@@ -258,7 +271,11 @@ export const isDate = s => {
 
 export const utcToTimezone = (
   date,
-  { fromFormat = 'YYYY-MM-DD HH:mm:ss', toFormat = 'YYYY-MM-DD HH:mm:ss', timezone = 'Asia/Kuala_Lumpur' } = {}
+  {
+    fromFormat = 'YYYY-MM-DD HH:mm:ss',
+    toFormat = 'YYYY-MM-DD HH:mm:ss',
+    timezone = 'Asia/Kuala_Lumpur'
+  } = {}
 ) => {
   if (!date) return date;
   const d = moment.utc(date, fromFormat);
@@ -277,7 +294,10 @@ export const isSuffixEmail = email => {
   return false;
 };
 
-export const toUtc = (date, { startOf, endOf, toFormat = 'YYYY-MM-DD HH:mm:ss', fromFormat = 'YYYY-MM-DD HH:mm:ss' } = {}) => {
+export const toUtc = (
+  date,
+  { startOf, endOf, toFormat = 'YYYY-MM-DD HH:mm:ss', fromFormat = 'YYYY-MM-DD HH:mm:ss' } = {}
+) => {
   let d;
   if (startOf) {
     d = moment.tz(date, fromFormat, 'Asia/Kuala_Lumpur').startOf(startOf);

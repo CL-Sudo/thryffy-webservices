@@ -12,7 +12,11 @@ const Galleries = SequelizeConnector.define(
       type: Sequelize.STRING
     },
     filePath: {
-      type: Sequelize.STRING
+      type: Sequelize.STRING,
+      field: 'file_path'
+    },
+    index: {
+      type: Sequelize.TINYINT
     },
     ...AT_RECORDER,
     ...BY_RECORDER
