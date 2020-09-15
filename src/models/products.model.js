@@ -62,22 +62,25 @@ const Products = SequelizeConnector.define(
     underscored: false,
     scopes: {
       search: params => search(Products, params, []),
-      productPage: {
-        include: [
-          {
-            model: Categories,
-            as: 'categories',
-            through: { attributes: [] }
-            // include: [{ model: Categories, as: 'parentCategory' }]
-          },
-          { model: ProductColors, as: 'colors' },
-          { model: Galleries, as: 'photos' },
-          {
-            model: Users,
-            as: 'seller',
-            attributes: ['id', 'firstName', 'lastName', 'profilePicture']
-          }
-        ]
+      productPage(productId) {
+        return {
+          where: { id: productId },
+          include: [
+            {
+              model: Categories,
+              as: 'categories'
+              // through: { attributes: [] }
+              // include: [{ model: Categories, as: 'parentCategory' }]
+            },
+            { model: ProductColors, as: 'colors' },
+            { model: Galleries, as: 'photos' },
+            {
+              model: Users,
+              as: 'seller',
+              attributes: ['id', 'firstName', 'lastName', 'profilePicture']
+            }
+          ]
+        };
       },
       listings: {
         where: {
