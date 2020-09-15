@@ -1,6 +1,6 @@
 import R from 'ramda';
 import formidable from 'formidable';
-import { getShippingFee, saveProductImages } from '@services';
+import { getShippingFee, saveProductImages, setThumbnail } from '@services';
 import { isJSON } from '@utils';
 import { Products, ProductColors } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -17,7 +17,16 @@ export const addProduct = async (req, res, next) => {
 
       const saveProduct = async (userId, formFields, images) => {
         try {
-          const { title, description, brand, categoryId, size, condition, price } = formFields;
+          const {
+            title,
+            description,
+            brand,
+            categoryId,
+            size,
+            condition,
+            price,
+            thumbnailIndex
+          } = formFields;
           const product = await Products.create(
             {
               userId,
@@ -32,6 +41,7 @@ export const addProduct = async (req, res, next) => {
             transaction
           );
           await saveProductImages(product.id, images);
+          await setThumbnail(product.id, thumbnailIndex);
           return Promise.resolve(product.id);
         } catch (e) {
           return Promise.reject(e);
@@ -56,8 +66,7 @@ export const addProduct = async (req, res, next) => {
 
       await transaction.commit();
       return res.status(200).json({
-        message: 'success',
-        payload: {}
+        message: 'success'
       });
     } catch (e) {
       await transaction.rollback();

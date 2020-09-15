@@ -3,8 +3,16 @@ import * as Models from '@models';
 Models.Users.hasMany(Models.Addresses, { foreignKey: 'userId', as: 'addresses' });
 Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'userId', as: 'orders' });
 Models.Users.hasMany(Models.Products, { foreignKey: 'userId', as: 'products' });
-Models.Users.belongsToMany(Models.Products, { foreignKey: 'userId', through: Models.CartItems, as: 'cartItems' });
-Models.Users.belongsToMany(Models.Products, { foreignKey: 'userId', through: Models.FavouriteProducts, as: 'favouriteProducts' });
+Models.Users.belongsToMany(Models.Products, {
+  foreignKey: 'userId',
+  through: Models.CartItems,
+  as: 'cartItems'
+});
+Models.Users.belongsToMany(Models.Products, {
+  foreignKey: 'userId',
+  through: Models.FavouriteProducts,
+  as: 'favouriteProducts'
+});
 
 Models.Addresses.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 
@@ -17,8 +25,16 @@ Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'pro
 Models.OrderItems.hasOne(Models.Reviews, { foreignKey: 'orderItemId', as: 'review' });
 
 Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'categories' });
-Models.Products.belongsToMany(Models.Users, { foreignKey: 'productId', through: Models.FavouriteProducts, as: 'likers' });
-Models.Products.belongsToMany(Models.Users, { foreignKey: 'productId', through: Models.CartItems, as: 'cartOwners' });
+Models.Products.belongsToMany(Models.Users, {
+  foreignKey: 'productId',
+  through: Models.FavouriteProducts,
+  as: 'likers'
+});
+Models.Products.belongsToMany(Models.Users, {
+  foreignKey: 'productId',
+  through: Models.CartItems,
+  as: 'cartOwners'
+});
 Models.Products.belongsTo(Models.Users, { foreignKey: 'userId', as: 'seller' });
 Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos' });
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });

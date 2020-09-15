@@ -33,9 +33,6 @@ export const saveProductImages = async (productId, images) =>
           const uploaded = await uploadFileToS3(obj.image, S3.GALLERY_URL);
           const filePath = `${AWS_S3_URL}/${uploaded.path}`;
 
-          if (obj.index === 0)
-            await Products.update({ thumbnail: filePath }, { where: { id: productId } });
-
           await Galleries.create({
             index: obj.index,
             productId,
@@ -48,6 +45,27 @@ export const saveProductImages = async (productId, images) =>
       };
 
       await Promise.all(R.map(await upload)(parseImageWithIndex(images)));
+      return resolve();
+    } catch (e) {
+      return reject(e);
+    }
+  });
+
+/**
+ *
+ * @param {Number} productId
+ * @param {Number} index
+ */
+export const setThumbnail = (productId, index) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const image = await Galleries.findOne({
+        where: {
+          index,
+          productId
+        }
+      });
+      await Products.update({ thumbnail: image.filePath }, { where: { id: productId } });
       return resolve();
     } catch (e) {
       return reject(e);

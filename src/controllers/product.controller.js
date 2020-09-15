@@ -5,11 +5,9 @@ export const getOne = async (req, res, next) => {
   try {
     const { id } = req.user;
     const { productId } = req.params;
+    const product = await Products.scope({ method: ['productPage', productId] }).findOne();
 
-    const product = await Products.scope('productPage').findOne({
-      where: { id: productId }
-    });
-    await product.getFavouriteNumber();
+    await product.getFavouriteCount();
     await product.checkIsAddedToFavourite(id);
 
     if (product.userId !== id) {
