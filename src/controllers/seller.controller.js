@@ -4,6 +4,7 @@ import { getShippingFee, saveProductImages, setThumbnail } from '@services';
 import { isJSON } from '@utils';
 import { Products, ProductColors } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
+import { addProductValidator } from '@validators/seller.validator';
 
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
@@ -11,6 +12,7 @@ export const addProduct = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
+      await addProductValidator(fields);
       const { id } = req.user;
 
       const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
