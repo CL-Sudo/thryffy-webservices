@@ -58,17 +58,27 @@ export const addProduct = async (req, res, next) => {
           }));
 
           await ProductColors.bulkCreate(createObject, { transaction });
-          return Promise.resolve();
+          await transaction.commit();
+          return Promise.resolve(productId);
         } catch (e) {
           return Promise.reject(e);
         }
       };
 
-      await R.pipeP(saveProduct, saveColors)(id, fields, files);
+      const getProduct = async productId => {
+        try {
+          const product = await Products.scope({ method: ['productPage', productId] }).findOne();
+          return Promise.resolve(product);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
 
-      await transaction.commit();
+      const payload = await R.pipeP(saveProduct, saveColors, getProduct)(id, fields, files);
+
       return res.status(200).json({
-        message: 'success'
+        message: 'success',
+        payload
       });
     } catch (e) {
       await transaction.rollback();
