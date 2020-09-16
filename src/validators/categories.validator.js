@@ -43,12 +43,6 @@ export const listValidator = [
       }
       return child;
     }),
-  check('limit')
-    .exists()
-    .withMessage('required')
-    .customSanitizer(limit => (limit ? Number(limit) : null)),
-  check('offset')
-    .exists()
-    .withMessage('required')
-    .customSanitizer(offset => (offset ? Number(offset) : null))
+  check('limit').customSanitizer(limit => (limit ? Number(limit) : null)),
+  check('offset').customSanitizer(offset => (offset ? Number(offset) : null))
 ];
