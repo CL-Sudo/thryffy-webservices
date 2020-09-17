@@ -183,29 +183,28 @@ export const searchBrand = async (req, res, next) => {
 
 export const autocomplete = async (req, res, next) => {
   try {
-    const { keyword } = req.query;
-    const suggestions = await SearchHistories.findAll({
-      raw: true,
-      attributes: ['keyword'],
+    const { keyword, limit = 10, offset = 0 } = req.query;
+    const { id } = req.user;
+
+    const products = await Products.findAndCountAll({
       where: {
-        keyword: {
-          [Op.like]: `${keyword}%`
+        title: {
+          [Op.like]: `%${keyword}%`
         }
       },
-      limit: 10,
-      order: [['searchCount', 'DESC']]
+      limit,
+      offset
     });
 
-    const relevantCategories = await getMostRelevantCategories(keyword);
-    const mergedSuggestions = mergeCategoryWithSuggestions(
-      relevantCategories,
-      suggestions,
-      keyword
+    await Promise.all(
+      R.map(async product => {
+        await product.getExtraFields(id);
+      })(products.rows)
     );
 
     return res.status(200).json({
       message: 'success',
-      payload: mergedSuggestions
+      payload: products
     });
   } catch (e) {
     return next(e);

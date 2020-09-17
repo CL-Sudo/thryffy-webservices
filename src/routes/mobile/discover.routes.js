@@ -7,6 +7,6 @@ const router = new Router();
 router.get('/home', validators.homeValidator, controllers.home);
 router.get('/', validators.listValidator, controllers.discoverList);
 router.get('/search-brand', validators.searchBrandValidator, controllers.searchBrand);
-router.get('/autocomplete', validators.autocompleteValidator, controllers.autocomplete);
+router.get('/suggestion', validators.autocompleteValidator, controllers.autocomplete);
 
 export default router;

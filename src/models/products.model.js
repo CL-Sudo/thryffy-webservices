@@ -138,5 +138,14 @@ Products.prototype.checkIsAddedToFavourite = async function(userId) {
   }
 };
 
+Products.prototype.getExtraFields = async function(userId) {
+  try {
+    await this.getFavouriteCount();
+    await this.checkIsAddedToFavourite(userId);
+  } catch (e) {
+    throw e;
+  }
+};
+
 export { Products };
 export default Products;
