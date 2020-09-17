@@ -35,10 +35,6 @@ export const homeValidator = [
 ];
 
 export const listValidator = [
-  check('parentId')
-    .exists()
-    .isLength({ min: 1 })
-    .withMessage('Required'),
   check('categoryId').customSanitizer(categoryId => identityOrDefault(categoryId, null)),
   check('limit').customSanitizer(limit => (limit ? Number(limit) : null)),
   check('offset').customSanitizer(offset => (offset ? Number(offset) : null)),

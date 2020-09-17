@@ -33,7 +33,6 @@ export const discoverList = async (req, res, next) => {
   try {
     requestValidator(req);
     const {
-      parentId,
       categoryId,
       keyword,
       brand,
@@ -67,11 +66,11 @@ export const discoverList = async (req, res, next) => {
       R.identity
     );
 
-    const assignCategoryId = R.ifElse(
-      R.always(R.isNil(categoryId) || categoryId === 'ALL'),
-      R.identity,
-      R.append({ category_id: categoryId })
-    );
+    // const assignCategoryId = R.ifElse(
+    //   R.always(R.isNil(categoryId) || categoryId === 'ALL'),
+    //   R.identity,
+    //   R.append({ category_id: categoryId })
+    // );
 
     const assignBrand = R.ifElse(
       R.always(R.isNil(brand)),
@@ -107,18 +106,18 @@ export const discoverList = async (req, res, next) => {
       assignCond,
       assignSize,
       assignTitle,
-      assignPrice,
-      assignCategoryId
+      assignPrice
+      // assignCategoryId
     )(initWhere);
 
-    const childIds = await getChildIds(parentId);
+    const childIds = await getChildIds(categoryId);
 
     const include = [
       {
         model: Categories,
         as: 'category',
         where: {
-          id: childIds
+          id: [categoryId, ...childIds]
         }
       }
     ];
