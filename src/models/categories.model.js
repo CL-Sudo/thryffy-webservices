@@ -59,7 +59,13 @@ const Categories = SequelizeConnector.define(
           include: [
             {
               model: Categories,
-              as: 'subCategories'
+              as: 'subCategories',
+              include: [
+                {
+                  model: Categories,
+                  as: 'subCategories'
+                }
+              ]
             }
           ]
         };
