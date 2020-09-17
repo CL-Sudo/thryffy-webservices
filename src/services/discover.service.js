@@ -38,7 +38,7 @@ export const getMostRelevantCategories = async keyword =>
         include: [
           {
             model: Categories,
-            as: 'categories'
+            as: 'category'
           }
         ],
         where: [
@@ -55,6 +55,33 @@ export const getMostRelevantCategories = async keyword =>
       const result = R.pipe(R.map(R.path(['categories', 'title'])), R.uniq)(products);
 
       return resolve(result);
+    } catch (e) {
+      return reject(e);
+    }
+  });
+
+/**
+ *
+ * @param {Number} parentId
+ * @param {Array} prevAcc
+ * @returns {Array} Array
+ */
+export const getChildIds = async (parentId, prevAcc = []) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const categories = await Categories.findAll({
+        attributes: ['id'],
+        raw: true,
+        where: { parentId }
+      });
+
+      const currentAcc = R.map(R.prop('id'), categories);
+
+      if (R.isEmpty(currentAcc)) return resolve(prevAcc);
+
+      const childIds = R.concat(prevAcc)(currentAcc);
+
+      return resolve(await getChildIds(currentAcc, childIds));
     } catch (e) {
       return reject(e);
     }

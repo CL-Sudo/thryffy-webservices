@@ -35,17 +35,13 @@ export const homeValidator = [
 ];
 
 export const listValidator = [
-  check('categoryId')
+  check('parentId')
     .exists()
-    .withMessage('Required')
-    .custom(categoryId => {
-      if (_.toString(categoryId).length < 1) {
-        throw new Error('Required');
-      }
-      return Promise.resolve();
-    }),
-  check('limit').customSanitizer(limit => Number(limit) || null),
-  check('offset').customSanitizer(offset => Number(offset) || null),
+    .isLength({ min: 1 })
+    .withMessage('Required'),
+  check('categoryId').customSanitizer(categoryId => identityOrDefault(categoryId, null)),
+  check('limit').customSanitizer(limit => (limit ? Number(limit) : null)),
+  check('offset').customSanitizer(offset => (offset ? Number(offset) : null)),
   check('minPrice')
     .trim()
     .customSanitizer(minPrice => identityOrDefault(minPrice, 1)),

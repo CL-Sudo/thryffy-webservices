@@ -24,7 +24,7 @@ Models.OrderItems.belongsTo(Models.SalesOrders, { foreignKey: 'salesOrderId', as
 Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 Models.OrderItems.hasOne(Models.Reviews, { foreignKey: 'orderItemId', as: 'review' });
 
-Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'categories' });
+Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });
 Models.Products.belongsToMany(Models.Users, {
   foreignKey: 'productId',
   through: Models.FavouriteProducts,
