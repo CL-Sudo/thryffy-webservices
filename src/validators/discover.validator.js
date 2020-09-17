@@ -81,5 +81,7 @@ export const autocompleteValidator = [
     .withMessage('Required')
     .whitelist('1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ ')
     .trim()
-    .customSanitizer(keyword => _.toLower(removeRepeatedWhiteSpace(keyword)))
+    .customSanitizer(keyword => _.toLower(removeRepeatedWhiteSpace(keyword))),
+  check('limit').customSanitizer(limit => (limit ? Number(limit) : null)),
+  check('offset').customSanitizer(offset => (offset ? Number(offset) : null))
 ];
