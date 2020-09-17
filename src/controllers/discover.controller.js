@@ -5,7 +5,7 @@ import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.co
 import { parseKeywordForNLP } from '@utils/query.util';
 import R from 'ramda';
 import { paginate, mergeCategoryWithSuggestions } from '@utils';
-import { saveKeyword, getMostRelevantCategories } from '@services';
+import { saveKeyword, getMostRelevantCategories, getChildIds } from '@services';
 
 export const home = async (req, res, next) => {
   try {
@@ -33,6 +33,7 @@ export const discoverList = async (req, res, next) => {
   try {
     requestValidator(req);
     const {
+      parentId,
       categoryId,
       keyword,
       brand,
@@ -40,16 +41,18 @@ export const discoverList = async (req, res, next) => {
       condition,
       minPrice,
       maxPrice,
-      order,
-      limit,
-      offset
+      order = 'RELEVANCE',
+      limit = 10,
+      offset = 0
     } = req.query;
 
     if (keyword) await saveKeyword(keyword);
 
-    const initWhere = [
-      { category_id: categoryId },
-      {
+    const initWhere = [{}];
+
+    const assignPrice = R.ifElse(
+      R.always(!R.isNil(maxPrice) && !R.isNil(minPrice)),
+      R.append({
         price: {
           [Op.and]: [
             {
@@ -60,8 +63,15 @@ export const discoverList = async (req, res, next) => {
             }
           ]
         }
-      }
-    ];
+      }),
+      R.identity
+    );
+
+    const assignCategoryId = R.ifElse(
+      R.always(R.isNil(categoryId) || categoryId === 'ALL'),
+      R.identity,
+      R.append({ category_id: categoryId })
+    );
 
     const assignBrand = R.ifElse(
       R.always(R.isNil(brand)),
@@ -79,7 +89,9 @@ export const discoverList = async (req, res, next) => {
       }
       return R.append(
         Sequelize.literal(
-          `MATCH (title) AGAINST ('${parseKeywordForNLP(keyword)}' IN NATURAL LANGUAGE MODE)`
+          `MATCH (products.title, products.description) AGAINST ('${parseKeywordForNLP(
+            keyword
+          )}' IN NATURAL LANGUAGE MODE)`
         )
       )(param);
     };
@@ -90,10 +102,30 @@ export const discoverList = async (req, res, next) => {
       R.assoc('order', [['price', order]])
     );
 
-    const where = R.pipe(assignBrand, assignCond, assignSize, assignTitle)(initWhere);
+    const where = R.pipe(
+      assignBrand,
+      assignCond,
+      assignSize,
+      assignTitle,
+      assignPrice,
+      assignCategoryId
+    )(initWhere);
+
+    const childIds = await getChildIds(parentId);
+
+    const include = [
+      {
+        model: Categories,
+        as: 'category',
+        where: {
+          id: childIds
+        }
+      }
+    ];
 
     const filter = R.pipe(assignOrder)({
       where,
+      include,
       limit,
       offset
     });
