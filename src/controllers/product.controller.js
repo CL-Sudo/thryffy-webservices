@@ -7,11 +7,10 @@ export const getOne = async (req, res, next) => {
     const { productId } = req.params;
     const product = await Products.scope({ method: ['productPage', productId] }).findOne();
 
-    await product.getFavouriteCount();
-    await product.checkIsAddedToFavourite(id);
+    await product.getExtraFields(id);
 
     if (product.userId !== id) {
-      product.increment('viewCount');
+      await product.increment('viewCount');
       await product.reload();
     }
 
