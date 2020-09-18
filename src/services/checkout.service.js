@@ -1,7 +1,7 @@
 import { Products } from '@models';
 import R from 'ramda';
 
-export const getPriceSummary = async ({ productIds, addressId = null, courier }) =>
+export const getPriceSummary = async ({ productIds, courier }) =>
   new Promise(async (resolve, reject) => {
     try {
       const summary = {
@@ -43,8 +43,6 @@ export const getPriceSummary = async ({ productIds, addressId = null, courier })
 
       const addShippingFee = async summaryObj => {
         try {
-          if (R.isNil(addressId)) return Promise.resolve(summaryObj);
-
           const shippingLens = R.lens(R.prop('shippingFee'), R.assoc('shippingFee'));
           const totalLens = R.lens(R.prop('total'), R.assoc('total'));
 

@@ -166,7 +166,7 @@ const Users = SequelizeConnector.define(
       search: params => search(Users, params, []),
       cart(productIds) {
         return {
-          attributes: ['fullName', 'firstName', 'lastName', 'profilePicture'],
+          attributes: ['fullName', 'firstName', 'lastName', 'username', 'profilePicture'],
           include: [
             {
               model: Products,

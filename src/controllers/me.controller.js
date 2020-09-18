@@ -9,13 +9,27 @@ import { paginate } from '@utils';
 export const addAddress = async (req, res, next) => {
   try {
     requestValidator(req);
+
+    const { isDefault } = req.body;
     const { id } = req.user;
+
+    if (isDefault === true) {
+      const addresses = await Addresses.count({ where: { userId: id } });
+      if (addresses > 0) {
+        await Addresses.update({ isDefault: false }, { where: { userId: id, isDefault: true } });
+      }
+    }
+
     await Addresses.create({
       ...req.body,
       userId: id
     });
+
+    const addresses = await Addresses.findAndCountAll({ where: { userId: id } });
+
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: addresses
     });
   } catch (e) {
     return next(e);
@@ -44,6 +58,7 @@ export const listAddress = async (req, res, next) => {
 export const removeAddress = async (req, res, next) => {
   try {
     const { addressId } = req.params;
+    const { id } = req.user;
 
     const address = await Addresses.findOne({ where: { id: addressId } });
 
@@ -51,10 +66,13 @@ export const removeAddress = async (req, res, next) => {
       throw new Error('Invalid addressId given, no address found');
     }
 
-    address.destroy({ force: true });
+    await address.destroy({ force: true });
+
+    const addresses = await Addresses.findAndCountAll({ raw: true, where: { userId: id } });
 
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: addresses
     });
   } catch (e) {
     return next(e);
@@ -66,16 +84,20 @@ export const updateAddress = async (req, res, next) => {
     requestValidator(req);
 
     const { addressId } = req.params;
+    const { id } = req.user;
 
     const address = await Addresses.findOne({ where: { id: addressId } });
     if (R.isNil(address)) {
       throw new Error('Invalid addressId given');
     }
 
-    address.update(req.body);
+    await address.update(req.body);
+
+    const addresses = await Addresses.findAndCountAll({ raw: true, where: { userId: id } });
 
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: addresses
     });
   } catch (e) {
     return next(e);
@@ -85,12 +107,20 @@ export const updateAddress = async (req, res, next) => {
 export const setDefaultAddress = async (req, res, next) => {
   try {
     const { addressId } = req.params;
+    const { id } = req.user;
+    await Addresses.update({ isDefault: false }, { where: { userId: id } });
     const address = await Addresses.findOne({ where: { id: addressId } });
     if (R.isNil(address)) {
       throw new Error('Invalid addressId given');
     }
-    address.update({ isDefault: R.not(address.isDefault) });
-    return res.status(200).json({ message: 'success' });
+    await address.update({ isDefault: R.not(address.isDefault) });
+
+    const addresses = await Addresses.findAndCountAll({ raw: true, where: { userId: id } });
+
+    return res.status(200).json({
+      message: 'success',
+      payload: addresses
+    });
   } catch (e) {
     return next(e);
   }
@@ -263,7 +293,7 @@ export const listOrders = async (req, res, next) => {
 export const contactUs = async (req, res, next) => {
   try {
     requestValidator(req);
-    const { title, description } = req.body;
+    // const { title, description } = req.body;
 
     // send Email
 

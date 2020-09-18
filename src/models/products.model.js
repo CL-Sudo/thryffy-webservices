@@ -7,6 +7,7 @@ import { Categories } from '@models/categories.model';
 import { Galleries } from '@models/galleries.model';
 import { ProductColors } from '@models/product_colors.model';
 import { FavouriteProducts } from '@models/favourite_products.model';
+import { CartItems } from '@models/cart_items.model';
 import { Op } from 'sequelize';
 import R from 'ramda';
 
@@ -52,6 +53,12 @@ const Products = SequelizeConnector.define(
       type: Sequelize.VIRTUAL,
       get() {
         return this.getDataValue('isAddedToFavourite');
+      }
+    },
+    isAddedToChart: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('isAddedToChart');
       }
     },
     ...AT_RECORDER,
@@ -138,10 +145,23 @@ Products.prototype.checkIsAddedToFavourite = async function(userId) {
   }
 };
 
+Products.prototype.checkIsAddedToChart = async function(userId) {
+  const cartItem = await CartItems.findOne({
+    raw: true,
+    where: {
+      userId,
+      productId: this.id
+    }
+  });
+
+  this.setDataValue('isAddedToChart', !R.isNil(cartItem));
+};
+
 Products.prototype.getExtraFields = async function(userId) {
   try {
     await this.getFavouriteCount();
     await this.checkIsAddedToFavourite(userId);
+    await this.checkIsAddedToChart(userId);
   } catch (e) {
     throw e;
   }

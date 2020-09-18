@@ -1,4 +1,3 @@
-import R from 'ramda';
 import { requestValidator } from '@validators';
 import { OrderItems, Products, Reviews } from '@models';
 

@@ -1,6 +1,6 @@
 import R from 'ramda';
 import { check } from 'express-validator/check';
-import { Products, Addresses, CartItems } from '@models';
+import { Products, Addresses, CartItems, FavouriteProducts } from '@models';
 
 export const payValidator = [
   check('productIds')
@@ -37,7 +37,7 @@ export const payValidator = [
       const cartItemIds = R.map(R.prop('productId'), cartItems.rows);
 
       R.map(id => {
-        if (R.find(id, cartItemIds) === undefined) {
+        if (!R.includes(id, cartItemIds)) {
           throw new Error(`productId ${id} not found in cart`);
         }
       })(productIds);
@@ -106,26 +106,52 @@ export const checkoutValidator = [
       const cartItemIds = R.map(R.prop('productId'), cartItems.rows);
 
       R.map(id => {
-        if (R.find(id, cartItemIds) === undefined) {
+        if (!R.includes(id, cartItemIds)) {
           throw new Error(`productId ${id} not found in cart`);
         }
         return true;
       })(productIds);
 
       return Promise.resolve();
-    }),
-  check('addressId')
-    .exists()
-    .withMessage('Required')
-    .custom(async addressId => {
-      if (R.length(R.toString(addressId)) < 1) {
-        throw new Error('Required');
-      }
+    })
+];
 
-      const address = await Addresses.findOne({ raw: true, where: { id: addressId } });
-      if (R.isNil(address)) {
-        throw new Error('Invalid addressId given.');
-      }
+export const saveForLaterValidator = [
+  check('productId')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+    .custom(async (productId, { req }) => {
+      const { id } = req.user;
+      const product = await Products.findOne({
+        raw: true,
+        where: { id: productId }
+      });
+
+      if (R.isNil(product)) throw new Error('Invalid productId given.');
+
+      if (product.userId === id)
+        throw new Error('You cannot add your own product to favourite list');
+
+      const cartItem = await CartItems.findOne({
+        where: {
+          userId: req.user.id,
+          productId
+        }
+      });
+
+      if (R.isNil(cartItem)) throw new Error('This item is not in the cart');
+
+      const favoutireProduct = await FavouriteProducts.findOne({
+        raw: true,
+        where: {
+          productId,
+          userId: req.user.id
+        }
+      });
+
+      if (!R.isNil(favoutireProduct))
+        throw new Error('This item is already in your favourite list.');
 
       return Promise.resolve();
     })

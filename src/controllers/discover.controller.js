@@ -1,11 +1,11 @@
-import { Categories, Products, SearchHistories } from '@models';
+import { Categories, Products } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { parseKeywordForNLP } from '@utils/query.util';
 import R from 'ramda';
-import { paginate, mergeCategoryWithSuggestions } from '@utils';
-import { saveKeyword, getMostRelevantCategories, getChildIds } from '@services';
+import { paginate } from '@utils';
+import { saveKeyword, getChildIds } from '@services';
 
 export const home = async (req, res, next) => {
   try {
@@ -32,6 +32,7 @@ export const home = async (req, res, next) => {
 export const discoverList = async (req, res, next) => {
   try {
     requestValidator(req);
+
     const {
       categoryId,
       keyword,
@@ -44,6 +45,8 @@ export const discoverList = async (req, res, next) => {
       limit = 10,
       offset = 0
     } = req.query;
+
+    const { id } = req.user;
 
     if (keyword) await saveKeyword(keyword);
 
@@ -133,7 +136,7 @@ export const discoverList = async (req, res, next) => {
 
     await Promise.all(
       R.map(async product => {
-        await product.getFavouriteCount();
+        await product.getExtraFields(id);
       })(products.rows)
     );
 

@@ -1,34 +1,52 @@
-import { CartItems, Products, Users, Addresses, SalesOrders, OrderItems } from '@models';
+import {
+  CartItems,
+  Products,
+  Users,
+  Addresses,
+  SalesOrders,
+  OrderItems,
+  FavouriteProducts
+} from '@models';
 import * as services from '@services/checkout.service';
 import R from 'ramda';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
 import { cartListener } from '@listeners';
+import { paginate } from '@utils';
+
+const getLatestCartList = async userId => {
+  try {
+    const cart = await CartItems.findAll({
+      attributes: ['productId'],
+      raw: true,
+      where: {
+        userId
+      }
+    });
+
+    const productIds = R.map(R.prop('productId'))(cart);
+
+    const payload = await Users.scope({ method: ['cart', productIds] }).findAll();
+    return Promise.resolve(payload);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
 export const list = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
     const { id } = req.user;
 
-    const cart = await CartItems.findAll({
-      attributes: ['productId'],
-      raw: true,
-      where: {
-        userId: id
-      }
-    });
-
-    const productIds = R.map(R.prop('productId'))(cart);
-
-    const payload = await Users.scope({ method: ['cart', productIds] }).findAndCountAll({
-      limit: Number(limit) || null,
-      offset: Number(offset) || null
-    });
+    const payload = await getLatestCartList(id);
 
     return res.status(200).json({
       message: 'success',
-      payload
+      payload: {
+        count: payload.length,
+        rows: paginate(limit)(offset)(payload)
+      }
     });
   } catch (e) {
     return next(e);
@@ -60,7 +78,8 @@ export const add = async (req, res, next) => {
         const cartItem = await CartItems.findOne({
           raw: true,
           where: {
-            productId
+            productId,
+            userId: id
           }
         });
         if (R.not(R.isNil(cartItem))) {
@@ -86,8 +105,14 @@ export const add = async (req, res, next) => {
 
     await R.pipeP(checkProductIdValidity, checkIsItemExisted, addToCart)();
 
+    const payload = await getLatestCartList(id);
+
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows: payload
+      }
     });
   } catch (e) {
     return next(e);
@@ -112,8 +137,14 @@ export const deleteOne = async (req, res, next) => {
 
     item.destroy({ force: true });
 
+    const payload = await getLatestCartList(id);
+
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows: payload
+      }
     });
   } catch (e) {
     return next(e);
@@ -124,7 +155,7 @@ export const checkout = async (req, res, next) => {
   try {
     requestValidator(req);
     const { id } = req.user;
-    const { productIds, addressId, paymentMethod, courier } = req.body;
+    const { productIds, paymentMethod, courier } = req.body;
 
     const payload = await Users.scope({ method: ['cart', productIds] }).findOne();
 
@@ -132,8 +163,7 @@ export const checkout = async (req, res, next) => {
 
     const priceSummary = await services.getPriceSummary({
       courier,
-      productIds,
-      addressId: addressId || R.propOr(null, 'id')(defaultAddress)
+      productIds
     });
 
     return res.status(200).json({
@@ -227,6 +257,34 @@ export const pay = async (req, res, next) => {
     });
   } catch (e) {
     await transaction.rollback();
+    return next(e);
+  }
+};
+
+export const saveForLater = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { productId } = req.body;
+    const { id } = req.user;
+
+    await CartItems.destroy({ force: true, where: { productId, userId: id } });
+
+    await FavouriteProducts.create({
+      productId,
+      userId: id
+    });
+
+    const payload = await getLatestCartList(id);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows: payload
+      }
+    });
+  } catch (e) {
     return next(e);
   }
 };

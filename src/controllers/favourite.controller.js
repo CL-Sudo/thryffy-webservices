@@ -1,27 +1,38 @@
 import R from 'ramda';
-import { FavouriteProducts, Users, Products } from '@models';
+import { FavouriteProducts, Users, Products, CartItems } from '@models';
+import { requestValidator } from '@validators/index';
+import { paginate } from '@utils';
+
+const getLatestFavouriteList = async userId => {
+  try {
+    const favourites = await FavouriteProducts.findAll({
+      raw: true,
+      attributes: ['productId'],
+      where: { userId }
+    });
+
+    const productIds = R.map(R.prop('productId'), favourites);
+
+    const payload = await Users.scope({ method: ['cart', productIds] }).findAll();
+    return Promise.resolve(payload);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 
 export const list = async (req, res, next) => {
   try {
     const { id } = req.user;
     const { limit, offset } = req.query;
 
-    const favourites = await FavouriteProducts.findAll({
-      raw: true,
-      attributes: ['productId'],
-      where: { userId: id }
-    });
-
-    const productIds = R.map(R.prop('productId'), favourites);
-
-    const payload = await Users.scope({ method: ['cart', productIds] }).findAndCountAll({
-      limit: Number(limit) || null,
-      offset: Number(offset) || null
-    });
+    const payload = await getLatestFavouriteList(id);
 
     return res.status(200).json({
       message: 'success',
-      payload
+      payload: {
+        count: payload.length,
+        rows: paginate(limit)(offset)(payload)
+      }
     });
   } catch (e) {
     return next(e);
@@ -43,8 +54,14 @@ export const remove = async (req, res, next) => {
 
     favourite.destroy({ force: true });
 
+    const payload = await getLatestFavouriteList(id);
+
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows: payload
+      }
     });
   } catch (e) {
     return next(e);
@@ -80,7 +97,50 @@ export const add = async (req, res, next) => {
       productId,
       userId: id
     });
-    return res.status(200).json({ message: 'success' });
+
+    const payload = await getLatestFavouriteList(id);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows: payload
+      }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const moveToBag = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { id } = req.user;
+    const { productId } = req.body;
+
+    await FavouriteProducts.destroy({
+      force: true,
+      where: {
+        userId: id,
+        productId
+      }
+    });
+
+    await CartItems.create({
+      productId,
+      userId: id
+    });
+
+    const payload = await getLatestFavouriteList(id);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows: payload
+      }
+    });
   } catch (e) {
     return next(e);
   }
