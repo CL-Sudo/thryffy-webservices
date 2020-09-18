@@ -111,7 +111,7 @@ export const add = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: payload
+        rows: paginate(10)(0)(payload)
       }
     });
   } catch (e) {
@@ -143,7 +143,7 @@ export const deleteOne = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: payload
+        rows: paginate(10)(0)(payload)
       }
     });
   } catch (e) {
@@ -281,7 +281,7 @@ export const saveForLater = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: payload
+        rows: paginate(10)(0)(payload)
       }
     });
   } catch (e) {

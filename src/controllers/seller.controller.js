@@ -2,9 +2,11 @@ import R from 'ramda';
 import formidable from 'formidable';
 import { getShippingFee, saveProductImages, setThumbnail } from '@services';
 import { isJSON } from '@utils';
-import { Products, ProductColors } from '@models';
+import { Products, ProductColors, SalesOrders } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
+import { requestValidator } from '@validators/index';
+import { DELIVERY_STATUS } from '@constants';
 
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
@@ -96,6 +98,29 @@ export const getProductShippingFee = async (req, res, next) => {
       payload: {
         shippingFee
       }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const markAsShipped = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { deliveryTrackingNo } = req.body;
+
+    const order = await SalesOrders.findOne({
+      where: { deliveryTrackingNo }
+    });
+
+    await order.update({ deliveryStatus: DELIVERY_STATUS.SHIPPED });
+
+    const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+
+    return res.status(200).json({
+      message: 'success',
+      payload
     });
   } catch (e) {
     return next(e);

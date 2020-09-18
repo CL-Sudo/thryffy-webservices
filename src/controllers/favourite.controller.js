@@ -60,7 +60,7 @@ export const remove = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: payload
+        rows: paginate(10)(0)(payload)
       }
     });
   } catch (e) {
@@ -104,7 +104,7 @@ export const add = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: payload
+        rows: paginate(10)(0)(payload)
       }
     });
   } catch (e) {
@@ -138,7 +138,7 @@ export const moveToBag = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: payload
+        rows: paginate(10)(0)(payload)
       }
     });
   } catch (e) {

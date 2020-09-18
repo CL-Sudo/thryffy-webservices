@@ -9,8 +9,7 @@ import {
   generateJWT,
   generateOTP,
   generateResetToken,
-  generateUsername,
-  parseFirstNameLastName
+  generateUsername
 } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
@@ -26,15 +25,14 @@ const createFacebookUserAccount = provider =>
     const email = _.get(provider, 'emails[0].value', null);
     const username = await generateUsername(displayName, null);
     const transaction = await sequelize.transaction();
-    const { firstName, lastName } = parseFirstNameLastName(displayName);
+    // const { firstName, lastName } = parseFirstNameLastName(displayName);
     try {
       await Users.create(
         {
           username,
           facebookId,
           email,
-          firstName,
-          lastName
+          fullName: displayName
         },
         { transaction }
       );
@@ -54,14 +52,13 @@ const createGoogleUserAccount = async provider =>
       const { id: googleId, displayName } = provider;
       const email = _.get(provider, 'emails[0].value');
       const username = await generateUsername(displayName, null);
-      const { firstName, lastName } = parseFirstNameLastName(displayName);
+      // const { firstName, lastName } = parseFirstNameLastName(displayName);
       await Users.create(
         {
           username,
           googleId,
           email,
-          firstName,
-          lastName
+          fullName: displayName
         },
         { transaction }
       );

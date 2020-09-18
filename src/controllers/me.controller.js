@@ -179,7 +179,7 @@ export const updateProfile = async (req, res, next) => {
 
       const user = await Users.scope({ method: ['editProfile', id] }).findOne();
 
-      user.update(fields);
+      await user.update(fields);
 
       if (profilePicture) {
         await deleteExistingProfilePicture(id);

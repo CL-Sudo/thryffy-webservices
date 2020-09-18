@@ -8,12 +8,8 @@ export const uploadProfilePicture = async ({ profilePicture, userId }) =>
       const { AWS_S3_URL } = process.env;
       if (profilePicture) {
         const uploaded = await tools.uploadFileToS3(profilePicture, S3.PROFILE_PHOTO_DIR);
-        await Users.update(
-          {
-            profilePicture: `${AWS_S3_URL}/${uploaded.path}`
-          },
-          { where: { id: userId } }
-        );
+        const user = await Users.findOne({ where: { id: userId } });
+        await user.update({ profilePicture: `${AWS_S3_URL}/${uploaded.path}` });
       }
       return resolve();
     } catch (e) {

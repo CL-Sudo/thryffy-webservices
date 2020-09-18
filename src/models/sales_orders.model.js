@@ -8,7 +8,11 @@ import R from 'ramda';
 import { Op } from 'sequelize';
 
 const assignDeliveryStatus = status => whereObj =>
-  R.ifElse(R.equals('ALL'), R.always(whereObj), R.always(R.assoc('deliveryStatus', status, whereObj)))(status);
+  R.ifElse(
+    R.equals('ALL'),
+    R.always(whereObj),
+    R.always(R.assoc('deliveryStatus', status, whereObj))
+  )(status);
 
 const SalesOrders = SequelizeConnector.define(
   'SalesOrders',
@@ -82,7 +86,7 @@ const SalesOrders = SequelizeConnector.define(
                       paranoid: false,
                       model: Users,
                       as: 'seller',
-                      attributes: ['id', 'fullName', 'firstName', 'lastName', 'profilePicture']
+                      attributes: ['id', 'fullName', 'profilePicture']
                     }
                   ]
                 }

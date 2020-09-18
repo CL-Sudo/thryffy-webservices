@@ -1,8 +1,8 @@
-// import { check } from 'express-validator/check';
-import { Categories } from '@models';
+import { check } from 'express-validator/check';
+import { Categories, SalesOrders, OrderItems, Products } from '@models';
 import R from 'ramda';
 import { mapObjectsToArray } from '@utils/utils';
-import { CONDITION } from '@constants';
+import { CONDITION, DELIVERY_STATUS } from '@constants';
 
 const isEmpty = param => R.isNil(param) || R.length(R.toString(param)) === 0;
 
@@ -29,3 +29,39 @@ export const addProductValidator = async fields =>
       return reject(e);
     }
   });
+
+export const markAsShippedValidator = [
+  check('deliveryTrackingNo')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+    .custom(async (deliveryTrackingNo, { req }) => {
+      const { id } = req.user;
+
+      const order = await SalesOrders.findOne({
+        where: { deliveryTrackingNo },
+        include: [
+          {
+            model: OrderItems,
+            as: 'orderItems',
+            include: [
+              {
+                model: Products,
+                as: 'product'
+              }
+            ]
+          }
+        ]
+      });
+
+      const sellerId = R.pathOr(null, ['orderItems', 0, 'product', 'userId'])(order);
+
+      if (R.isNil(order) || sellerId !== id) throw new Error('Invalid Tracking No. Given.');
+
+      if (order.deliveryStatus !== DELIVERY_STATUS.TO_SHIP) {
+        throw new Error(`This order has been ${R.toLower(order.deliveryStatus)}`);
+      }
+
+      return Promise.resolve();
+    })
+];

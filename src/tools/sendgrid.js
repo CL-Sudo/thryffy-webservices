@@ -1,10 +1,15 @@
-import _ from 'lodash';
 import Axios from 'axios';
 // import { MailLogs } from '@models';
 // import { MAIL_LOG_STATUS } from '@constants';
-import { isDev } from '@configs';
 
-export const sendMail = (receiverEmail, receiverFirstName, receiverLastName, templateData, template, attachments = null) =>
+export const sendMail = (
+  receiverEmail,
+  receiverFirstName,
+  receiverLastName,
+  templateData,
+  template,
+  attachments = null
+) =>
   new Promise(async (resolve, reject) => {
     try {
       const res = await Axios({
