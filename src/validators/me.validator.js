@@ -1,4 +1,7 @@
 import { check } from 'express-validator/check';
+import { SalesOrders } from '@models';
+import R from 'ramda';
+import { DELIVERY_STATUS } from '@constants';
 
 export const addAddressValidator = [
   check('name')
@@ -57,4 +60,25 @@ export const contactUsValidator = [
     .exists()
     .isLength({ min: 1 })
     .withMessage('Required')
+];
+
+export const confirmOrderReceivedValidator = [
+  check('orderId')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+    .custom(async (orderId, { req }) => {
+      const { id } = req.user;
+      const order = await SalesOrders.findOne({
+        raw: true,
+        where: { id: orderId, userId: id }
+      });
+
+      if (R.isNil(order)) throw new Error('Invalid orderId given');
+
+      if (order.deliveryStatus !== DELIVERY_STATUS.SHIPPED) {
+        throw new Error('You can perform this action only when deliveryStatus = SHIPPED');
+      }
+      return Promise.resolve();
+    })
 ];

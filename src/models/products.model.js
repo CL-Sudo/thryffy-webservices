@@ -84,7 +84,7 @@ const Products = SequelizeConnector.define(
             {
               model: Users,
               as: 'seller',
-              attributes: ['id', 'fullName', 'profilePicture']
+              attributes: ['id', 'fullName', 'username', 'profilePicture']
             }
           ]
         };

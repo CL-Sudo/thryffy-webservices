@@ -7,12 +7,12 @@ export const getOne = async (req, res, next) => {
     const { productId } = req.params;
     const product = await Products.scope({ method: ['productPage', productId] }).findOne();
 
-    await product.getExtraFields(id);
-
     if (product.userId !== id) {
       await product.increment('viewCount');
       await product.reload();
     }
+
+    await product.getExtraFields(id);
 
     /**
      * TODO: You may also like

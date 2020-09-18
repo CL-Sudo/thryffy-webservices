@@ -19,6 +19,12 @@ router.put('/profile', controllers.updateProfile);
 
 router.get('/reviews', controllers.getReview);
 
+router.patch(
+  '/confirm-order',
+  validators.confirmOrderReceivedValidator,
+  controllers.confirmOrderReceived
+);
+
 router.post('/contact-us', validators.contactUsValidator, controllers.contactUs);
 
 export default router;
