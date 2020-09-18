@@ -55,10 +55,10 @@ const Products = SequelizeConnector.define(
         return this.getDataValue('isAddedToFavourite');
       }
     },
-    isAddedToChart: {
+    isAddedToCart: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.getDataValue('isAddedToChart');
+        return this.getDataValue('isAddedToCart');
       }
     },
     ...AT_RECORDER,
@@ -84,7 +84,7 @@ const Products = SequelizeConnector.define(
             {
               model: Users,
               as: 'seller',
-              attributes: ['id', 'firstName', 'lastName', 'profilePicture']
+              attributes: ['id', 'fullName', 'profilePicture']
             }
           ]
         };
@@ -145,7 +145,7 @@ Products.prototype.checkIsAddedToFavourite = async function(userId) {
   }
 };
 
-Products.prototype.checkIsAddedToChart = async function(userId) {
+Products.prototype.checkIsAddedToCart = async function(userId) {
   const cartItem = await CartItems.findOne({
     raw: true,
     where: {
@@ -154,14 +154,14 @@ Products.prototype.checkIsAddedToChart = async function(userId) {
     }
   });
 
-  this.setDataValue('isAddedToChart', !R.isNil(cartItem));
+  this.setDataValue('isAddedToCart', !R.isNil(cartItem));
 };
 
 Products.prototype.getExtraFields = async function(userId) {
   try {
     await this.getFavouriteCount();
     await this.checkIsAddedToFavourite(userId);
-    await this.checkIsAddedToChart(userId);
+    await this.checkIsAddedToCart(userId);
   } catch (e) {
     throw e;
   }

@@ -5,7 +5,6 @@ import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 import { Products, Reviews, FavouriteProducts } from '@models';
 import R from 'ramda';
-import { parseFirstNameLastName } from '@utils/auth.util';
 import { Op } from 'sequelize';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 
@@ -36,26 +35,30 @@ const Users = SequelizeConnector.define(
       field: 'last_name'
     },
     fullName: {
-      type: Sequelize.VIRTUAL,
-      get() {
-        const { firstName, lastName } = this;
-        switch (true) {
-          case R.isNil(firstName) && R.not(R.isNil(lastName)):
-            return lastName;
-          case R.not(R.isNil(firstName)) && R.isNil(lastName):
-            return firstName;
-          case R.isNil(firstName) && R.isNil(lastName):
-            return null;
-          default:
-            return `${firstName} ${lastName}`;
-        }
-      },
-      set(fullName) {
-        const { firstName, lastName } = parseFirstNameLastName(fullName);
-        this.setDataValue('firstName', firstName);
-        this.setDataValue('lastName', lastName);
-      }
+      type: Sequelize.STRING(150),
+      field: 'full_name'
     },
+    // fullName: {
+    //   type: Sequelize.VIRTUAL,
+    //   get() {
+    //     const { firstName, lastName } = this;
+    //     switch (true) {
+    //       case R.isNil(firstName) && R.not(R.isNil(lastName)):
+    //         return lastName;
+    //       case R.not(R.isNil(firstName)) && R.isNil(lastName):
+    //         return firstName;
+    //       case R.isNil(firstName) && R.isNil(lastName):
+    //         return null;
+    //       default:
+    //         return `${firstName} ${lastName}`;
+    //     }
+    //   },
+    //   set(fullName) {
+    //     const { firstName, lastName } = parseFirstNameLastName(fullName);
+    //     this.setDataValue('firstName', firstName);
+    //     this.setDataValue('lastName', lastName);
+    //   }
+    // },
     state: {
       type: Sequelize.STRING(100)
     },
@@ -166,7 +169,7 @@ const Users = SequelizeConnector.define(
       search: params => search(Users, params, []),
       cart(productIds) {
         return {
-          attributes: ['fullName', 'firstName', 'lastName', 'username', 'profilePicture'],
+          attributes: ['fullName', 'username', 'profilePicture'],
           include: [
             {
               model: Products,
@@ -184,8 +187,6 @@ const Users = SequelizeConnector.define(
           attributes: [
             'id',
             'username',
-            'firstName',
-            'lastName',
             'fullName',
             'email',
             'phoneNumber',
