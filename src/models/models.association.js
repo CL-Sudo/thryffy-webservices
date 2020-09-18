@@ -19,10 +19,10 @@ Models.Addresses.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'userId', as: 'buyer' });
 Models.SalesOrders.hasMany(Models.OrderItems, { foreignKey: 'salesOrderId', as: 'orderItems' });
 Models.SalesOrders.belongsTo(Models.Addresses, { foreignKey: 'addressId', as: 'address' });
+Models.SalesOrders.hasOne(Models.Reviews, { foreignKey: 'orderId', as: 'review' });
 
 Models.OrderItems.belongsTo(Models.SalesOrders, { foreignKey: 'salesOrderId', as: 'order' });
 Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
-Models.OrderItems.hasOne(Models.Reviews, { foreignKey: 'orderItemId', as: 'review' });
 
 Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });
 Models.Products.belongsToMany(Models.Users, {
@@ -45,7 +45,7 @@ Models.Categories.belongsTo(Models.Categories, { foreignKey: 'parentId', as: 'pa
 
 Models.Galleries.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 
-Models.Reviews.belongsTo(Models.OrderItems, { foreignKey: 'orderItemId', as: 'orderItem' });
+Models.Reviews.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'order' });
 Models.Reviews.belongsTo(Models.Users, { foreignKey: 'createdBy', as: 'buyer' });
 
 Models.CartItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'cartItem' });

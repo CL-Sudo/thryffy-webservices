@@ -5,6 +5,7 @@ import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
 import { paginate } from '@utils';
+import { DELIVERY_STATUS } from '@constants';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -284,6 +285,26 @@ export const listOrders = async (req, res, next) => {
         count: R.length(result),
         rows: paginate(limit)(offset)(result)
       }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const confirmOrderReceived = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { orderId } = req.body;
+
+    const order = await SalesOrders.findOne({ where: { id: orderId } });
+    await order.update({ deliveryStatus: DELIVERY_STATUS.COMPLETED });
+
+    const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+
+    return res.status(200).json({
+      message: 'success',
+      payload
     });
   } catch (e) {
     return next(e);

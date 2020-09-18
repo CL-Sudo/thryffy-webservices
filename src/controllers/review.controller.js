@@ -4,7 +4,7 @@ import { OrderItems, Products, Reviews } from '@models';
 export const create = async (req, res, next) => {
   try {
     requestValidator(req);
-    const { orderItemId, rating, comment, createdBy } = req.body;
+    const { orderId, rating, comment, createdBy } = req.body;
 
     const orderItem = await OrderItems.findOne({
       include: [
@@ -13,21 +13,22 @@ export const create = async (req, res, next) => {
           as: 'product'
         }
       ],
-      where: { id: orderItemId }
+      where: { salesOrderId: orderId }
     });
 
     const sellerId = orderItem.product.userId;
 
-    await Reviews.create({
+    const review = await Reviews.create({
       sellerId,
-      orderItemId,
+      orderId,
       rating,
       comment,
       createdBy
     });
 
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: review
     });
   } catch (e) {
     return next(e);
