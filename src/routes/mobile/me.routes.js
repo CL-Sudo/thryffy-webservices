@@ -4,8 +4,11 @@ import * as validators from '@validators/me.validator';
 
 const router = new Router();
 
+router.get('/', controllers.getMyProfile);
+
 router.post('/addresses', validators.addAddressValidator, controllers.addAddress);
 router.get('/addresses', controllers.listAddress);
+router.get('/addresses/:addressId', validators.getOneAddressValidator, controllers.getOneAddress);
 router.delete('/addresses/:addressId', controllers.removeAddress);
 router.put('/addresses/:addressId', validators.addAddressValidator, controllers.updateAddress);
 router.patch('/addresses/:addressId/set-default', controllers.setDefaultAddress);

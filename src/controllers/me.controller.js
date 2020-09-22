@@ -127,6 +127,25 @@ export const setDefaultAddress = async (req, res, next) => {
   }
 };
 
+export const getOneAddress = async (req, res, next) => {
+  try {
+    requestValidator(req);
+    const { addressId } = req.params;
+    const address = await Addresses.findOne({
+      where: { id: addressId },
+      attributes: {
+        exclude: ['createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'deletedBy']
+      }
+    });
+    return res.status(200).json({
+      message: 'success',
+      payload: address
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 export const getOrderDetails = async (req, res, next) => {
   try {
     const { orderId } = req.params;
@@ -215,21 +234,20 @@ export const getReview = async (req, res, next) => {
       return average;
     };
 
-    const payload = await Reviews.scope('reviews').findAndCountAll({
+    const payload = await Reviews.scope('reviews').findAll({
       where: {
         sellerId: id
-      },
-      limit: Number(limit) || null,
-      offset: Number(offset) || null
+      }
     });
 
-    const averageRating = getAverageRating(payload.rows);
+    const averageRating = getAverageRating(payload);
 
     return res.status(200).json({
       message: 'success',
       payload: {
         averageRating,
-        ...payload
+        count: payload.length,
+        rows: paginate(limit)(offset)(payload)
       }
     });
   } catch (e) {
@@ -243,11 +261,18 @@ export const listOrders = async (req, res, next) => {
     const { type, status, limit, offset } = req.query;
 
     const me = await Users.scope('order').findOne({ where: { id } });
-    await me.getExtraFields();
+    await me.getEarnings();
+    await me.getTotalView();
+    await me.getTotalLike();
 
     const getListings = async () => {
       try {
         const result = await Products.scope('listings').findAll({ where: { userId: id } });
+        await Promise.all(
+          R.map(async product => {
+            await product.checkIsAddedToFavourite(id);
+          })(result)
+        );
         return Promise.resolve(result);
       } catch (e) {
         return Promise.reject(e);
@@ -278,13 +303,17 @@ export const listOrders = async (req, res, next) => {
       [R.equals('BOUGHT'), R.always(await getBoughtItems())]
     ])(R.toUpper(type));
 
+    const payload = R.cond([
+      [R.always(R.equals('LISTINGS', R.toUpper(type))), R.assoc('me', me.dataValues)],
+      [R.T, R.identity]
+    ])({
+      count: R.length(result),
+      rows: paginate(limit)(offset)(result)
+    });
+
     return res.status(200).json({
       message: 'success',
-      payload: {
-        me: me.dataValues,
-        count: R.length(result),
-        rows: paginate(limit)(offset)(result)
-      }
+      payload
     });
   } catch (e) {
     return next(e);
@@ -305,6 +334,23 @@ export const confirmOrderReceived = async (req, res, next) => {
     return res.status(200).json({
       message: 'success',
       payload
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getMyProfile = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+
+    const profile = await Users.scope('order').findOne({ where: { id } });
+    await profile.getReviewCount();
+    await profile.getAverageRating();
+
+    return res.status(200).json({
+      message: 'success',
+      payload: profile
     });
   } catch (e) {
     return next(e);

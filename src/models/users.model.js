@@ -131,7 +131,7 @@ const Users = SequelizeConnector.define(
     reviewCount: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.reviewQuantity;
+        return this.getDataValue('reviewQuantity');
       }
     },
     averageRating: {
@@ -143,19 +143,19 @@ const Users = SequelizeConnector.define(
     earning: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.earning;
+        return this.getDataValue('earning');
       }
     },
     totalView: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.totalView;
+        return this.getDataValue('totalView');
       }
     },
     totalLike: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.totalLike;
+        return this.getDataValue('totalLike');
       }
     },
     ...AT_RECORDER,
