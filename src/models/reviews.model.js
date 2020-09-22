@@ -8,7 +8,7 @@ import {
   defaultExcludeFields
 } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
-import { OrderItems, Products, Users } from '@models';
+import { OrderItems, Products, Users, SalesOrders } from '@models';
 
 const Reviews = SequelizeConnector.define(
   'Reviews',
@@ -36,23 +36,31 @@ const Reviews = SequelizeConnector.define(
     scopes: {
       search: params => search(Reviews, params, []),
       reviews: {
+        attributes: { exclude: ['updatedAt', 'deletedAt', 'updatedBy', 'deletedBy'] },
         include: [
           {
-            model: OrderItems,
-            as: 'orderItem',
+            model: SalesOrders,
+            as: 'order',
             attributes: { exclude: defaultExcludeFields },
             include: [
               {
-                model: Products,
-                as: 'product',
-                attributes: ['id', 'title']
+                model: OrderItems,
+                as: 'orderItems',
+                attributes: ['id'],
+                include: [
+                  {
+                    model: Products,
+                    as: 'product',
+                    attributes: ['id', 'title']
+                  }
+                ]
               }
             ]
           },
           {
             model: Users,
             as: 'buyer',
-            attributes: ['id', 'fullName', 'profilePicture']
+            attributes: ['id', 'fullName', 'username', 'profilePicture']
           }
         ]
       }

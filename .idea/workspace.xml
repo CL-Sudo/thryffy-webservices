@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="f107785c-e5df-4549-b751-099c89ab4504" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/controllers/me.controller.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/controllers/me.controller.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/models/reviews.model.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/reviews.model.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +30,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.stylelint" value="C:\Users\laucl\Projects\Techies\Thryffy\thryffy-webservice\node_modules\stylelint" />
     <property name="nodejs_package_manager_path" value="yarn" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
@@ -40,6 +43,7 @@
       <updated>1600398514172</updated>
       <workItem from="1600398515882" duration="325000" />
       <workItem from="1600412804635" duration="388000" />
+      <workItem from="1600672681776" duration="98000" />
     </task>
     <servers />
   </component>
@@ -47,6 +51,10 @@
     <option name="version" value="3" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="277" y="97" key="SettingsEditor" timestamp="1600672710845">
+      <screen x="0" y="40" width="1536" height="824" />
+    </state>
+    <state x="277" y="97" key="SettingsEditor/0.40.1536.824@0.40.1536.824" timestamp="1600672710845" />
     <state x="431" y="185" width="672" height="678" key="search.everywhere.popup" timestamp="1600398728643">
       <screen x="0" y="40" width="1536" height="824" />
     </state>

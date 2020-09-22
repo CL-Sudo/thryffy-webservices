@@ -1,5 +1,5 @@
 import { check } from 'express-validator/check';
-import { SalesOrders } from '@models';
+import { SalesOrders, Addresses } from '@models';
 import R from 'ramda';
 import { DELIVERY_STATUS } from '@constants';
 
@@ -79,6 +79,21 @@ export const confirmOrderReceivedValidator = [
       if (order.deliveryStatus !== DELIVERY_STATUS.SHIPPED) {
         throw new Error('You can perform this action only when deliveryStatus = SHIPPED');
       }
+      return Promise.resolve();
+    })
+];
+
+export const getOneAddressValidator = [
+  check('addressId')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+    .custom(async addressId => {
+      const address = await Addresses.findOne({
+        raw: true,
+        where: { id: addressId }
+      });
+      if (!address) throw new Error('Invalid addressId given');
       return Promise.resolve();
     })
 ];
