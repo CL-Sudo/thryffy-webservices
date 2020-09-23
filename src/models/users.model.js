@@ -87,6 +87,12 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING(25),
       field: 'phone_number'
     },
+    completePhoneNumber: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return `${this.phoneCountryCode}${this.phoneNumber}`;
+      }
+    },
     dateOfBirth: {
       type: Sequelize.DATEONLY(),
       field: 'date_of_birth'
@@ -105,6 +111,10 @@ const Users = SequelizeConnector.define(
     },
     otp: {
       type: Sequelize.STRING(20)
+    },
+    otpValidity: {
+      type: Sequelize.DATE,
+      field: 'otp_validity'
     },
     isVerified: {
       type: Sequelize.BOOLEAN,

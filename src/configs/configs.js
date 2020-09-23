@@ -34,6 +34,17 @@ export const nodeMailer = {
     host: process.env.SMTP_HOST,
     port: _.toNumber(process.env.SMTP_PORT) || 465,
     secure: process.env.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === true,
-    tls: process.env.SMTP_REJECT_AUTH === 'false' || process.env.SMTP_REJECT_AUTH === false ? { rejectUnauthorized: false } : undefined
+    tls:
+      process.env.SMTP_REJECT_AUTH === 'false' || process.env.SMTP_REJECT_AUTH === false
+        ? { rejectUnauthorized: false }
+        : undefined
   }
+};
+
+export const oneWaySMS = {
+  senderId: process.env.ONEWAYSMS_SENDER_ID,
+  username: process.env.ONEWAYSMS_USERNAME,
+  password: process.env.ONEWAYSMS_PASSWORD,
+  phoneNumber: process.env.ONEWAYSMS_PHONENO,
+  url: process.env.ONEWAYSMS_URL
 };
