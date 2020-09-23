@@ -15,6 +15,9 @@ import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
 import { requestValidator } from '@validators';
 import { hashPassword } from '@tools/bcrypt';
+import moment from 'moment';
+import { sendSMS } from '@services/sms.service';
+import { SMSVerifcation } from '@templates/sms.template';
 // import { sendMail } from '@tools/sendgrid';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
@@ -421,7 +424,7 @@ export const googleCallback = async (req, res) => {
 };
 
 export const verifyOTP = async (req, res, next) => {
-  req.check('tac').exists();
+  req.check('otp').exists();
   try {
     await req.asyncValidationErrors();
     const { id } = req.user;
@@ -439,8 +442,12 @@ export const verifyOTP = async (req, res, next) => {
     };
 
     const verifyTac = tacFromRequest => user => {
-      if (tacFromRequest !== user.tac) throw new Error('Invalid TAC Entered');
-      user.update({ isVerified: true, otp: null });
+      if (tacFromRequest !== user.otp || user.otpValidity < new Date())
+        throw new Error(
+          `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
+        );
+
+      user.update({ isVerified: true, otp: null, otpValidity: null });
       return user;
     };
 
@@ -589,7 +596,9 @@ export const userRegistration = async (req, res, next) => {
       try {
         const refreshToken = generateRefreshToken();
         const otp = generateOTP();
-        const user = await Users.create({ ...requestBody, refreshToken, otp });
+        const otpValidity = moment().add(10, 'minutes');
+        const user = await Users.create({ ...requestBody, refreshToken, otp, otpValidity });
+        authListener.emit('userSignUp', user);
         return Promise.resolve(user);
       } catch (e) {
         return Promise.reject(e);
@@ -598,7 +607,7 @@ export const userRegistration = async (req, res, next) => {
 
     const generateJwt = async user => {
       try {
-        const omit = R.omit(['password', 'refreshToken', 'otp']);
+        const omit = R.omit(['password', 'refreshToken', 'otp', 'otpValidity']);
         const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
         const jwt = await generateJWT(tokenPayload);
         const processedPayload = R.pipe(
@@ -618,8 +627,6 @@ export const userRegistration = async (req, res, next) => {
       createNewUser,
       generateJwt
     )(req.body);
-
-    authListener.emit('userSignUp', payload);
 
     return res.status(200).json({
       message: 'success',
@@ -663,6 +670,31 @@ export const resetPassword = async (req, res, next) => {
       },
       { where: { id: userId } }
     );
+    return res.status(200).json({
+      message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const resendOTP = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const user = await Users.findOne({
+      attributes: ['id', 'phoneNumber', 'phoneCountryCode', 'isVerified'],
+      where: { id }
+    });
+
+    if (user.isVerified) throw new Error('You account has been verified');
+
+    const otp = generateOTP();
+    const otpValidity = moment().add(10, 'minutes');
+    const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
+
+    user.update({ otp, otpValidity });
+    await sendSMS(phoneNumber, SMSVerifcation(otp));
+
     return res.status(200).json({
       message: 'success'
     });

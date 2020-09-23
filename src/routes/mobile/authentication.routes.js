@@ -13,6 +13,7 @@ router.post('/phone-login', Controllers.phoneNoSignIn);
 router.post('/revoke', Controllers.mobileRevoke);
 router.post('/register', validators.registrationValidator, Controllers.userRegistration);
 router.post('/verify-otp', mobileAuth, Controllers.verifyOTP);
+router.get('/resend-otp', mobileAuth, Controllers.resendOTP);
 router.post('/forgot-password', validators.forgotPasswordValidator, Controllers.forgotPassword);
 router.patch('/reset-password', validators.resetPasswordValidator, Controllers.resetPassword);
 

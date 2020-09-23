@@ -1,11 +1,16 @@
 import { EventEmitter } from 'events';
+import { sendSMS } from '@services/sms.service';
+import { SMSVerifcation } from '@templates/sms.template';
 
 export const authListener = new EventEmitter();
 
-authListener.on('userSignUp', async user => {
+const sendOTPViaSMS = async user => {
   try {
-    console.log('User sign up');
+    const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
+    await sendSMS(phoneNumber, SMSVerifcation(user.otp));
   } catch (e) {
     throw e;
   }
-});
+};
+
+authListener.on('userSignUp', sendOTPViaSMS);
