@@ -9,10 +9,9 @@ const router = new Router();
 const mobileAuth = passport.authenticate(Configs.passport.strategy.mobile, { session: false });
 
 router.post('/login', Controllers.mobileSignIn);
-router.post('/phone-login', Controllers.phoneNoSignIn);
 router.post('/revoke', Controllers.mobileRevoke);
 router.post('/register', validators.registrationValidator, Controllers.userRegistration);
-router.post('/verify-otp', mobileAuth, Controllers.verifyOTP);
+router.post('/verify-otp', Controllers.verifyOTP);
 router.get('/resend-otp', mobileAuth, Controllers.resendOTP);
 router.post('/forgot-password', validators.forgotPasswordValidator, Controllers.forgotPassword);
 router.patch('/reset-password', validators.resetPasswordValidator, Controllers.resetPassword);
