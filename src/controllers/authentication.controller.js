@@ -536,7 +536,7 @@ export const userRegistration = async (req, res, next) => {
         const otp = generateOTP();
         const otpValidity = moment().add(10, 'minutes');
         const user = await Users.create({ ...requestBody, refreshToken, otp, otpValidity });
-        authListener.emit('userSignUp', user);
+        await authListener.emit('userSignUp', user);
         return Promise.resolve(user);
       } catch (e) {
         return Promise.reject(e);

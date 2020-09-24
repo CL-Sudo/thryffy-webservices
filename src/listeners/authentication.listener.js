@@ -8,9 +8,19 @@ const sendOTPViaSMS = async user => {
   try {
     const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
     await sendSMS(phoneNumber, SMSVerifcation(user.otp));
+    return Promise.resolve();
   } catch (e) {
-    throw e;
+    return Promise.reject(e);
   }
 };
 
-authListener.on('userSignUp', sendOTPViaSMS);
+authListener.on('userSignUp', async user => {
+  try {
+    const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
+    await sendSMS(phoneNumber, SMSVerifcation(user.otp));
+    return Promise.resolve();
+  } catch (e) {
+    console.log('e', e);
+    throw e;
+  }
+});
