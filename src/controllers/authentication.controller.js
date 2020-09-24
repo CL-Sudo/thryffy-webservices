@@ -94,6 +94,12 @@ export const mobileSignIn = async (req, res, next) => {
           if (!user) return next(new Error(info.message));
 
           if (!user.isVerified) {
+            const otp = generateOTP();
+            await Users.update(
+              { otp, otpValidity: moment().add(10, 'minutes') },
+              { where: { id: user.id } }
+            );
+            await sendSMS(user.completePhoneNumber, SMSVerifcation(otp));
             return res.status(202).json({
               message: 'user not verified'
             });
@@ -362,14 +368,23 @@ export const verifyOTP = async (req, res, next) => {
   req.check('otp').exists();
   try {
     await req.asyncValidationErrors();
-    const { otp, username } = req.body;
+    const { otp, email } = req.body;
 
     const getUser = async () => {
       try {
-        const user = await Users.findOne({
-          where: { username }
+        const userByEmail = await Users.findOne({
+          where: { email }
         });
-        return user;
+
+        const userByUsername = await Users.findOne({
+          where: { username: email }
+        });
+
+        if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
+          throw new Error('User not found');
+        }
+
+        return R.isNil(userByEmail) ? userByUsername : userByEmail;
       } catch (e) {
         throw e;
       }
@@ -536,7 +551,7 @@ export const userRegistration = async (req, res, next) => {
         const otp = generateOTP();
         const otpValidity = moment().add(10, 'minutes');
         const user = await Users.create({ ...requestBody, refreshToken, otp, otpValidity });
-        await authListener.emit('userSignUp', user);
+        authListener.emit('userSignUp', user);
         return Promise.resolve(user);
       } catch (e) {
         return Promise.reject(e);
