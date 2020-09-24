@@ -395,9 +395,6 @@ export const verifyOTP = async (req, res, next) => {
         throw new Error(
           `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
         );
-        // return res.status(202).json({
-        //   message: `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
-        // });
       }
 
       user.update({ isVerified: true, otp: null, otpValidity: null });
