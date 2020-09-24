@@ -93,6 +93,12 @@ export const mobileSignIn = async (req, res, next) => {
           if (err) return next(err);
           if (!user) return next(new Error(info.message));
 
+          if (!user.isVerified) {
+            return res.status(202).json({
+              message: 'user not verified'
+            });
+          }
+
           const userData = async () => {
             try {
               const data = await Users.findOne({
@@ -145,77 +151,6 @@ export const mobileSignIn = async (req, res, next) => {
             getRefreshToken,
             isUserActivated
           )(await userData());
-          return res.status(200).json({
-            message: 'success',
-            payload: {
-              ...payload.user
-            },
-            token: payload.token,
-            refreshToken: payload.refreshToken
-          });
-        } catch (e) {
-          return next(e);
-        }
-      },
-      { session: false }
-    )(req, res, next);
-  } catch (e) {
-    return next(e);
-  }
-};
-
-export const phoneNoSignIn = async (req, res, next) => {
-  req.check('phoneNumber').exists();
-  req
-    .check('password')
-    .exists()
-    .isLength({ min: 4 });
-  try {
-    await req.asyncValidationErrors();
-    return passport.authenticate(
-      'phone-number-login',
-      async (err, user, info) => {
-        try {
-          if (err) return next(err);
-          if (!user) return next(new Error(info.message));
-
-          const getRefreshToken = u => {
-            const refreshToken = generateRefreshToken();
-            u.update({ refreshToken });
-            return u;
-          };
-
-          const logUserActivity = u => {
-            try {
-              u.update({ lastLogin: new Date() });
-              u.increment('loginFrequency');
-              u.reload();
-              return u;
-            } catch (e) {
-              throw new Error(e);
-            }
-          };
-
-          const getJWT = async u => {
-            try {
-              const jwt = await generateJWT(assignUserType(u.dataValues)(USER_TYPE.CUSTOMER));
-              const omit = R.omit(['refreshToken', 'password', 'tac']);
-              const processedPayload = R.pipe(
-                omit,
-                assignUserType(R.__)(USER_TYPE.CUSTOMER)
-              )(u.dataValues);
-              return {
-                user: processedPayload,
-                token: `Bearer ${jwt}`,
-                refreshToken: u.refreshToken
-              };
-            } catch (e) {
-              throw new Error(e);
-            }
-          };
-
-          const payload = await R.pipe(getRefreshToken, logUserActivity, await getJWT)(user);
-
           return res.status(200).json({
             message: 'success',
             payload: {
@@ -427,13 +362,12 @@ export const verifyOTP = async (req, res, next) => {
   req.check('otp').exists();
   try {
     await req.asyncValidationErrors();
-    const { id } = req.user;
-    const { otp } = req.body;
+    const { otp, username } = req.body;
 
-    const getUser = async userId => {
+    const getUser = async () => {
       try {
         const user = await Users.findOne({
-          where: { id: userId }
+          where: { username }
         });
         return user;
       } catch (e) {
@@ -442,16 +376,20 @@ export const verifyOTP = async (req, res, next) => {
     };
 
     const verifyTac = tacFromRequest => user => {
-      if (tacFromRequest !== user.otp || user.otpValidity < new Date())
+      if (tacFromRequest !== user.otp || user.otpValidity < new Date()) {
         throw new Error(
           `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
         );
+        // return res.status(202).json({
+        //   message: `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
+        // });
+      }
 
       user.update({ isVerified: true, otp: null, otpValidity: null });
       return user;
     };
 
-    await R.pipe(verifyTac(otp))(await getUser(id));
+    await R.pipe(verifyTac(otp))(await getUser());
 
     return res.status(200).json({
       message: 'success'

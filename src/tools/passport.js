@@ -19,81 +19,104 @@ const LocalStrategy = passportLocal.Strategy;
 
 passport.use(
   'mobile-login',
-  new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
-    try {
-      const userByEmail = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
-      const userByUsername = await Users.unscoped().findOne({ where: { username: R.slice(1, R.Infinity)(email) } });
+  new LocalStrategy(
+    { usernameField: 'email', passwordField: 'password' },
+    async (email, password, done) => {
+      try {
+        const userByEmail = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
+        const userByUsername = await Users.unscoped().findOne({
+          where: { username: R.slice(1, R.Infinity)(email) }
+        });
 
-      if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
-        return done(null, false, { message: "User account doesn't exist" });
+        if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
+          return done(null, false, { message: "User account doesn't exist" });
+        }
+
+        const user = userByEmail || userByUsername;
+        // if (_.toLower(process.env.NODE_ENV) !== 'dev') {
+        //   if (!user.isVerified)
+        //     return done(null, false, { message: `Please verify your email account` });
+        // }
+        if (!user.active) return done(null, false, { message: 'This account is not active' });
+
+        const validPassword = await user.comparePassword(password);
+        if (!validPassword)
+          return done(null, false, { message: 'Password is incorrect, please try again...' });
+
+        return done(null, user, { message: 'Logged in Successfully' });
+      } catch (error) {
+        return done(error);
       }
-
-      const user = userByEmail || userByUsername;
-      // if (_.toLower(process.env.NODE_ENV) !== 'dev') {
-      //   if (!user.emailVerified) return done(null, false, { message: `Please verify your email account` });
-      // }
-      if (!user.active) return done(null, false, { message: 'This account is not active' });
-
-      const validPassword = await user.comparePassword(password);
-      if (!validPassword) return done(null, false, { message: 'Password is incorrect, please try again...' });
-
-      return done(null, user, { message: 'Logged in Successfully' });
-    } catch (error) {
-      return done(error);
     }
-  })
+  )
 );
 
 passport.use(
   'phone-number-login',
-  new LocalStrategy({ usernameField: 'phoneNumber', passwordField: 'password' }, async (phoneNumber, password, done) => {
-    try {
-      const user = await Users.unscoped().findOne({
-        where: {
-          phoneNumber
-        }
-      });
-      if (R.isNil(user)) return done(null, false, { message: 'User not found' });
-      if (!user.active) return done(null, false, { message: 'Inactive user account' });
-      const isPasswordValid = await user.comparePassword(password);
-      if (!isPasswordValid) return done(null, false, { message: 'Password is incorrect, please try again...' });
-      return done(null, user, { message: 'Login Successfully' });
-    } catch (e) {
-      return done(e);
+  new LocalStrategy(
+    { usernameField: 'phoneNumber', passwordField: 'password' },
+    async (phoneNumber, password, done) => {
+      try {
+        const user = await Users.unscoped().findOne({
+          where: {
+            phoneNumber
+          }
+        });
+        if (R.isNil(user)) return done(null, false, { message: 'User not found' });
+        if (!user.active) return done(null, false, { message: 'Inactive user account' });
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid)
+          return done(null, false, { message: 'Password is incorrect, please try again...' });
+        return done(null, user, { message: 'Login Successfully' });
+      } catch (e) {
+        return done(e);
+      }
     }
-  })
+  )
 );
 
 passport.use(
   'admin-login',
-  new LocalStrategy({ usernameField: 'email', passwordField: 'password' }, async (email, password, done) => {
-    try {
-      const admin = await Admins.unscoped().findOne({
-        where: { email: _.toLower(email) }
-      });
+  new LocalStrategy(
+    { usernameField: 'email', passwordField: 'password' },
+    async (email, password, done) => {
+      try {
+        const admin = await Admins.unscoped().findOne({
+          where: { email: _.toLower(email) }
+        });
 
-      if (!admin) return done(null, false, { message: "Admin account doesn't exist" });
-      if (!admin.active) {
-        return done(null, false, { message: 'This account is not active' });
+        if (!admin) return done(null, false, { message: "Admin account doesn't exist" });
+        if (!admin.active) {
+          return done(null, false, { message: 'This account is not active' });
+        }
+
+        const validPassword = await admin.comparePassword(password);
+        if (!validPassword) {
+          return done(null, false, { message: 'Password is incorrect, please try again...' });
+        }
+
+        return done(null, admin, { message: 'Logged in Successfully' });
+      } catch (error) {
+        return done(error);
       }
-
-      const validPassword = await admin.comparePassword(password);
-      if (!validPassword) {
-        return done(null, false, { message: 'Password is incorrect, please try again...' });
-      }
-
-      return done(null, admin, { message: 'Logged in Successfully' });
-    } catch (error) {
-      return done(error);
     }
-  })
+  )
 );
 
 const mobileJwtStrategyCallback = (req, token, done) => {
   try {
     if (token.authData.type === USER_TYPE.CUSTOMER) {
       req.authData = token.authData;
-      req.body = _.omit(req.body, ['id', 'createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'createdBy', 'deletedBy']);
+      req.body = _.omit(req.body, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+        'createdBy',
+        'updatedBy',
+        'createdBy',
+        'deletedBy'
+      ]);
 
       switch (req.method) {
         case 'POST':
@@ -123,7 +146,16 @@ const adminJwtStrategyCallback = (req, token, done) => {
   try {
     if (token.authData.type === USER_TYPE.ADMIN) {
       req.authData = token.authData;
-      req.body = _.omit(req.body, ['id', 'createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'createdBy', 'deletedBy']);
+      req.body = _.omit(req.body, [
+        'id',
+        'createdAt',
+        'updatedAt',
+        'deletedAt',
+        'createdBy',
+        'updatedBy',
+        'createdBy',
+        'deletedBy'
+      ]);
 
       switch (req.method) {
         case 'POST':
