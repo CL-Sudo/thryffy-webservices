@@ -86,10 +86,15 @@ export const updateAddress = async (req, res, next) => {
 
     const { addressId } = req.params;
     const { id } = req.user;
+    const { isDefault } = req.body;
 
     const address = await Addresses.findOne({ where: { id: addressId } });
     if (R.isNil(address)) {
       throw new Error('Invalid addressId given');
+    }
+
+    if (isDefault) {
+      await Addresses.update({ isDefault: false }, { where: { userId: id, isDefault: true } });
     }
 
     await address.update(req.body);
