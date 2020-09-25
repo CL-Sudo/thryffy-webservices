@@ -278,7 +278,7 @@ export const facebookCallback = async (req, res) => {
 
     const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
 
-    res.cookie(Configs.authTokenName, token, { httpOnly: false });
+    // res.cookie(Configs.authTokenName, token, { httpOnly: false });
 
     return res.status(200).send(`
       <script>
@@ -334,9 +334,9 @@ export const googleCallback = async (req, res) => {
     }
 
     const refreshToken = generateRefreshToken();
-    user.update({ refreshToken, lastLogin: new Date() });
-    user.increment('loginFrequency');
-    user.reload();
+    await user.update({ refreshToken, lastLogin: new Date() });
+    await user.increment('loginFrequency');
+    await user.reload();
 
     const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
     return res.status(200).send(`
