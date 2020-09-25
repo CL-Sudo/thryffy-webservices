@@ -90,7 +90,16 @@ const Products = SequelizeConnector.define(
         };
       },
       listings: {
-        attributes: ['id', 'title', 'description', 'price', 'brand', 'size', 'isAddedToFavourite'],
+        attributes: [
+          'id',
+          'title',
+          'thumbnail',
+          'description',
+          'price',
+          'brand',
+          'size',
+          'isAddedToFavourite'
+        ],
         where: {
           id: {
             [Op.notIn]: [
