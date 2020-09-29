@@ -1,8 +1,8 @@
 import R from 'ramda';
 import formidable from 'formidable';
-import { getShippingFee, saveProductImages, setThumbnail } from '@services';
+import { getShippingFee, saveProductImages, setThumbnail, getProductBrandId } from '@services';
 import { isJSON } from '@utils';
-import { Products, ProductColors, SalesOrders } from '@models';
+import { Products, ProductColors, SalesOrders, Brands } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
 import { requestValidator } from '@validators/index';
@@ -31,6 +31,9 @@ export const addProduct = async (req, res, next) => {
             price,
             thumbnailIndex
           } = formFields;
+
+          const brandId = await getProductBrandId(brand);
+
           const product = await Products.create(
             {
               userId,
@@ -40,10 +43,11 @@ export const addProduct = async (req, res, next) => {
               price,
               condition,
               size,
-              brand
+              brandId
             },
             transaction
           );
+
           await saveProductImages(product.id, images);
           await setThumbnail(product.id, thumbnailIndex);
           return Promise.resolve(product.id);

@@ -1,8 +1,10 @@
 import R from 'ramda';
 import { S3 } from '@constants';
 import { uploadFileToS3 } from '@tools/s3';
-import { Galleries, Products } from '@models';
+import { Galleries, Products, Brands } from '@models';
 import { parseImageWithIndex } from '@utils';
+import { normaliseBrand } from '@utils/product.utils';
+import { Op } from 'sequelize';
 /**
  *
  * @param {Number} categoryId
@@ -67,6 +69,33 @@ export const setThumbnail = (productId, index) =>
       });
       await Products.update({ thumbnail: image.filePath }, { where: { id: productId } });
       return resolve();
+    } catch (e) {
+      return reject(e);
+    }
+  });
+
+/**
+ *
+ * @param {String} brand
+ */
+export const getProductBrandId = async brand =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const normalisedBrand = normaliseBrand(brand);
+      const existingBrand = await Brands.findOne({
+        where: {
+          title: {
+            [Op.like]: `%${normalisedBrand}%`
+          }
+        }
+      });
+
+      if (!existingBrand) {
+        const newBrand = await Brands.create({ title: normalisedBrand });
+        return resolve(newBrand.id);
+      }
+
+      return resolve(existingBrand.id);
     } catch (e) {
       return reject(e);
     }

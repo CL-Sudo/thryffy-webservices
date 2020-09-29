@@ -8,6 +8,7 @@ import { Galleries } from '@models/galleries.model';
 import { ProductColors } from '@models/product_colors.model';
 import { FavouriteProducts } from '@models/favourite_products.model';
 import { CartItems } from '@models/cart_items.model';
+import { Brands } from '@models/brands.model';
 import { Op } from 'sequelize';
 import R from 'ramda';
 
@@ -17,6 +18,7 @@ const Products = SequelizeConnector.define(
     id: primaryKey,
     userId: foreignKey('user_id', 'users', false),
     categoryId: foreignKey('category_id', 'categories', false),
+    brandId: foreignKey('brand_id', 'brands', false),
     title: {
       type: Sequelize.STRING(100)
     },
@@ -34,9 +36,6 @@ const Products = SequelizeConnector.define(
     },
     size: {
       type: Sequelize.STRING(50)
-    },
-    brand: {
-      type: Sequelize.STRING(100)
     },
     viewCount: {
       type: Sequelize.INTEGER,
@@ -73,9 +72,11 @@ const Products = SequelizeConnector.define(
         return {
           where: { id: productId },
           include: [
+            { model: Brands, as: 'brand', attributes: ['id', 'title'] },
             {
               model: Categories,
-              as: 'category'
+              as: 'category',
+              attributes: ['id', 'title']
               // through: { attributes: [] }
               // include: [{ model: Categories, as: 'parentCategory' }]
             },
@@ -96,9 +97,16 @@ const Products = SequelizeConnector.define(
           'thumbnail',
           'description',
           'price',
-          'brand',
+          'brandId',
           'size',
           'isAddedToFavourite'
+        ],
+        include: [
+          {
+            model: Brands,
+            as: 'brand',
+            attributes: ['id', 'title']
+          }
         ],
         where: {
           id: {

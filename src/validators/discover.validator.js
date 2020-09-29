@@ -64,7 +64,9 @@ export const searchBrandValidator = [
     .exists()
     .withMessage('Required')
     .trim()
-    .customSanitizer(keyword => identityOrDefault(keyword, null))
+    .customSanitizer(keyword => identityOrDefault(keyword, null)),
+  check('limit').customSanitizer(limit => (limit ? Number(limit) : null)),
+  check('offset').customSanitizer(offset => (offset ? Number(offset) : null))
 ];
 
 export const searchItemValidator = [
