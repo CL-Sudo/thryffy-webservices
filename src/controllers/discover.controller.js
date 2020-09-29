@@ -1,4 +1,4 @@
-import { Categories, Products } from '@models';
+import { Categories, Products, Brands } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -6,6 +6,7 @@ import { parseKeywordForNLP } from '@utils/query.util';
 import R from 'ramda';
 import { paginate } from '@utils';
 import { saveKeyword, getChildIds } from '@services';
+import { normaliseBrand } from '@utils/product.utils';
 
 export const home = async (req, res, next) => {
   try {
@@ -155,29 +156,31 @@ export const searchBrand = async (req, res, next) => {
 
     const { keyword, limit, offset } = req.query;
 
-    const assignBrand = R.ifElse(
-      R.always(R.isNil(keyword)),
-      R.identity,
-      R.assoc('brand', { [Op.like]: `%${keyword}%` })
-    );
+    if (!keyword) {
+      return res.status(200).json({
+        message: 'success',
+        payload: {
+          count: 0,
+          rows: []
+        }
+      });
+    }
 
-    const where = R.pipe(assignBrand)({});
-
-    const products = await Products.findAll({
-      attributes: ['id', 'brand'],
-      where
+    const brands = await Brands.findAndCountAll({
+      attributes: ['id', 'title'],
+      where: {
+        title: {
+          [Op.like]: `%${normaliseBrand(keyword)}%`
+        }
+      },
+      order: [['title', 'ASC']],
+      limit,
+      offset
     });
-
-    const getBrand = R.map(R.prop('brand'));
-
-    const brands = R.pipe(getBrand, R.uniq, R.sortBy(R.toUpper))(products);
 
     return res.status(200).json({
       message: 'success',
-      payload: {
-        count: R.length(brands),
-        rows: paginate(limit)(offset)(brands)
-      }
+      payload: brands
     });
   } catch (e) {
     return next(e);

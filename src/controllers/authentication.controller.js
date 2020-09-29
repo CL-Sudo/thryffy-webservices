@@ -383,25 +383,28 @@ export const verifyOTP = async (req, res, next) => {
         if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
           throw new Error('User not found');
         }
-
-        return R.isNil(userByEmail) ? userByUsername : userByEmail;
+        return Promise.resolve(R.isNil(userByEmail) ? userByUsername : userByEmail);
       } catch (e) {
-        throw e;
+        return Promise.reject(e);
       }
     };
 
-    const verifyTac = tacFromRequest => user => {
-      if (tacFromRequest !== user.otp || user.otpValidity < new Date()) {
-        throw new Error(
-          `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
-        );
-      }
+    const verifyTac = tacFromRequest => async user => {
+      try {
+        if (tacFromRequest !== user.otp || user.otpValidity < new Date()) {
+          throw new Error(
+            `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
+          );
+        }
 
-      user.update({ isVerified: true, otp: null, otpValidity: null });
-      return user;
+        await user.update({ isVerified: true, otp: null, otpValidity: null });
+        return Promise.resolve(user);
+      } catch (e) {
+        return Promise.reject(e);
+      }
     };
 
-    await R.pipe(verifyTac(otp))(await getUser());
+    await R.pipeP(getUser, verifyTac(otp))();
 
     return res.status(200).json({
       message: 'success'

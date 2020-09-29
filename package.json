@@ -28,12 +28,6 @@
       "git add"
     ]
   },
-  "jest": {
-    "testEnvironment": "node",
-    "coveragePathIgnorePatterns": [
-      "/node_modules/"
-    ]
-  },
   "author": "",
   "license": "ISC",
   "dependencies": {
