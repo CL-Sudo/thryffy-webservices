@@ -8,6 +8,9 @@ const Admins = SequelizeConnector.define(
   'Admins',
   {
     id: primaryKey,
+    username: {
+      type: Sequelize.STRING
+    },
     email: {
       type: Sequelize.STRING,
       unique: true,

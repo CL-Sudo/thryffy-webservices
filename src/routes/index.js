@@ -9,6 +9,11 @@ const adminAuth = passport.authenticate(Config.passport.strategy.dashboard, { se
 const mobileAuth = passport.authenticate(Config.passport.strategy.mobile, { session: false });
 
 export default app => {
+  /**
+   * Admin API
+   */
+  app.use('/api/admins', adminAuth, require('./admin.routes').default);
+
   /*
    * Private API
    */
@@ -20,11 +25,12 @@ export default app => {
   app.use('/api/mobile/discover', mobileAuth, require('./mobile/discover.routes').default);
   app.use('/api/mobile/seller', mobileAuth, require('./mobile/seller.routes').default);
   app.use('/api/mobile/categories', mobileAuth, require('./mobile/categories.routes').default);
+
   /*
    * PUBLIC API
    */
   app.use('/api/mobile/auth/', require('./mobile/authentication.routes').default);
-  app.use('/api/admin/auth', require('./authentication.routes').default);
+  app.use('/api/auth', require('./authentication.routes').default);
 
   app.use('/api/test', test);
   /*

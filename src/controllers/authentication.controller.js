@@ -432,9 +432,9 @@ export const adminSignIn = async (req, res, next) => {
 
           if (!payload.active) return next(new Error('This account is not active'));
 
-          payload.update({ lastLogin: new Date() });
-          payload.increment('loginFrequency');
-          payload.reload();
+          await payload.update({ lastLogin: new Date() });
+          await payload.increment('loginFrequency');
+          await payload.reload();
 
           const withType = assignUserType(payload.dataValues)(USER_TYPE.ADMIN);
           const token = await generateJWT(withType);
