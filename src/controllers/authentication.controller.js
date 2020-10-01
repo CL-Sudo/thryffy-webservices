@@ -35,11 +35,11 @@ const createFacebookUserAccount = provider =>
           username,
           facebookId,
           email,
-          fullName: displayName
+          fullName: displayName,
+          isVerified: true
         },
         { transaction }
       );
-      authListener.emit('userSignUp');
       await transaction.commit();
       return resolve();
     } catch (e) {
@@ -61,7 +61,8 @@ const createGoogleUserAccount = async provider =>
           username,
           googleId,
           email,
-          fullName: displayName
+          fullName: displayName,
+          isVerified: true
         },
         { transaction }
       );
@@ -250,8 +251,6 @@ export const facebookCallback = async (req, res) => {
     let user = {};
 
     user = await Users.findOne({
-      raw: true,
-      attributes: ['id'],
       where: { facebookId }
     });
 
@@ -264,17 +263,15 @@ export const facebookCallback = async (req, res) => {
       }
 
       user = await Users.findOne({
-        raw: true,
-        attributes: ['id'],
         where: { facebookId }
       });
     }
 
     const refreshToken = generateRefreshToken();
 
-    user.update({ refreshToken, lastLogin: new Date() });
-    user.increment('loginFrequency');
-    user.reload();
+    await user.update({ refreshToken, lastLogin: new Date() });
+    await user.increment('loginFrequency');
+    await user.reload();
 
     const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
 
@@ -310,9 +307,8 @@ export const googleCallback = async (req, res) => {
     const { id: googleId } = req.user;
     const email = _.get(req, 'user.emails[0].value');
     let user = {};
+
     user = await Users.findOne({
-      raw: true,
-      attributes: ['id'],
       where: { googleId }
     });
 
@@ -325,10 +321,8 @@ export const googleCallback = async (req, res) => {
       } else {
         await createGoogleUserAccount(req.user);
       }
-
       user = await Users.findOne({
-        where: { googleId },
-        attributes: ['id', 'email']
+        where: { googleId }
       });
       // await sendMail(user.email, '', '', { verificationUrl: 'deeplink goes here' }, EMAIL_VERIFICATION);
     }

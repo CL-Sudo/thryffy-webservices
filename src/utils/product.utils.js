@@ -19,10 +19,16 @@ export const parseImageWithIndex = images => {
   return result;
 };
 
+/**
+ *
+ * @param {String} brand
+ * @returns {String}
+ */
+
 export const normaliseBrand = brand =>
   R.pipe(
-    removeRepeatedWhiteSpace,
     R.trim,
+    removeRepeatedWhiteSpace,
     R.toLower,
     R.split(' '),
     R.map(_.upperFirst),
