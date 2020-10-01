@@ -22,18 +22,6 @@ export const variable = {
   isBoolean: v => typeof v === 'boolean'
 };
 
-export const asyncForEach = (array, callback) =>
-  new Promise(async (resolve, reject) => {
-    for (let index = 0; index < array.length; index++) {
-      try {
-        await callback(array[index], index, array); //eslint-disable-line
-      } catch (e) {
-        reject(e);
-      }
-    }
-    resolve();
-  });
-
 export const splitStringToArray = (str, symbol) => {
   if (!str) return [];
   const result = str.split(symbol);
@@ -41,13 +29,6 @@ export const splitStringToArray = (str, symbol) => {
     result[index] = val.replace(/\s/g, ''); // Remove white space
   });
   return _.isEmpty(result) ? [] : result;
-};
-
-export const formatParkingSiteCode = code => {
-  let result = code.replace(/\s/g, '');
-  result = result.substring(0, 3);
-  result = _.toUpper(result);
-  return result;
 };
 
 export const getErrorMessage = err => {

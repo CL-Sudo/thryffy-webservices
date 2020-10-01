@@ -5,6 +5,7 @@ const router = new Router();
 
 router.post('/login', adminSignIn);
 router.post('/revoke', adminRevoke);
+
 router.post('/logout', (req, res) => {
   req.logout();
   res

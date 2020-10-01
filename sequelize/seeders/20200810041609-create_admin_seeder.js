@@ -4,6 +4,7 @@ module.exports = {
   up: async () => {
     try {
       await Admins.create({
+        username: 'admin01',
         email: 'admin@test.com',
         password: '1234'
       });
