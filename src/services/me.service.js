@@ -1,5 +1,5 @@
 import * as tools from '@tools/s3';
-import { S3 } from '@constants';
+import S3 from '@configs/s3.config';
 import { Users } from '@models';
 
 export const uploadProfilePicture = async ({ profilePicture, userId }) =>

@@ -1,5 +1,5 @@
 import R from 'ramda';
-import { S3 } from '@constants';
+import S3 from '@configs/s3.config';
 import { uploadFileToS3 } from '@tools/s3';
 import { Galleries, Products, Brands } from '@models';
 import { parseImageWithIndex } from '@utils';

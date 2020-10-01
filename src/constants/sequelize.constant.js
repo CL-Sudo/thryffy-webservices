@@ -6,7 +6,11 @@ export const primaryKey = {
   primaryKey: true
 };
 
-export const foreignKey = (field, model, { referenceKey = 'id', onDelete = null, onUpdate = 'CASCADE', allowNull = true } = {}) => ({
+export const foreignKey = (
+  field,
+  model,
+  { referenceKey = 'id', onDelete = null, onUpdate = 'CASCADE', allowNull = true } = {}
+) => ({
   type: Sequelize.INTEGER.UNSIGNED,
   allowNull,
   field,
@@ -59,7 +63,14 @@ export const STATUS = {
   FREEZE: 'Freeze'
 };
 
-export const defaultExcludeFields = ['createdAt', 'deletedAt', 'updatedAt', 'createdBy', 'updatedBy', 'deletedBy'];
+export const defaultExcludeFields = [
+  'createdAt',
+  'deletedAt',
+  'updatedAt',
+  'createdBy',
+  'updatedBy',
+  'deletedBy'
+];
 
 export const active = {
   type: Sequelize.BOOLEAN,
