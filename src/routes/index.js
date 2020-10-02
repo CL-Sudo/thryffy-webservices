@@ -13,7 +13,8 @@ export default app => {
    * Admin API
    */
   app.use('/api/admins', adminAuth, require('./admin.routes').default);
-
+  app.use('/api/customers', adminAuth, require('./customer.routes').default);
+  app.use('/api/categories', adminAuth, require('./category.routes').default);
   /*
    * Private API
    */
