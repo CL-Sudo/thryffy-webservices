@@ -1,7 +1,7 @@
 import Router from 'express';
 import passport from 'passport';
 import * as Config from '@configs';
-import { create, adminChangePassword } from '@controllers/admin.controller';
+import { create, adminChangePassword } from '@controllers/Admin/admins.controller';
 import { crud } from '@utils/controller-crud.util';
 import { Admins } from '@models';
 import { changePasswordValidator, createValidator } from '@validators/Admin/admins.validator';

@@ -76,6 +76,7 @@ const Users = SequelizeConnector.define(
       },
       get() {
         const { state, country } = this;
+        if (!state && !country) return null;
         return `${state}, ${country}`;
       }
     },
