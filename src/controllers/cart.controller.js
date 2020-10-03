@@ -171,7 +171,7 @@ export const checkout = async (req, res, next) => {
       payload: {
         itemCount: payload.dataValues.products.length,
         ...payload.dataValues,
-        shippingAddress: defaultAddress,
+        defaultAddress,
         priceSummary
       }
     });

@@ -123,6 +123,11 @@ export const discoverList = async (req, res, next) => {
         where: {
           id: [categoryId, ...childIds]
         }
+      },
+      {
+        model: Brands,
+        as: 'brand',
+        attributes: ['id', 'title']
       }
     ];
 
@@ -193,6 +198,13 @@ export const autocomplete = async (req, res, next) => {
     const { id } = req.user;
 
     const products = await Products.findAndCountAll({
+      include: [
+        {
+          model: Brands,
+          as: 'brand',
+          attributes: ['id', 'title']
+        }
+      ],
       where: {
         title: {
           [Op.like]: `%${keyword}%`

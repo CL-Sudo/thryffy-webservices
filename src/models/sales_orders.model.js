@@ -3,7 +3,7 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
-import { OrderItems, Users, Products, Addresses } from '@models';
+import { OrderItems, Users, Products, Addresses, Brands } from '@models';
 import R from 'ramda';
 import { Op } from 'sequelize';
 
@@ -87,6 +87,11 @@ const SalesOrders = SequelizeConnector.define(
                       model: Users,
                       as: 'seller',
                       attributes: ['id', 'fullName', 'profilePicture']
+                    },
+                    {
+                      model: Brands,
+                      as: 'brand',
+                      attributes: ['id', 'title']
                     }
                   ]
                 }
@@ -132,9 +137,16 @@ const SalesOrders = SequelizeConnector.define(
               as: 'orderItems',
               include: [
                 {
-                  attributes: ['id', 'title', 'thumbnail'],
+                  attributes: ['id', 'title', 'thumbnail', 'brandId'],
                   model: Products,
-                  as: 'product'
+                  as: 'product',
+                  include: [
+                    {
+                      model: Brands,
+                      as: 'brand',
+                      attributes: ['id', 'title']
+                    }
+                  ]
                 }
               ]
             }
@@ -166,7 +178,14 @@ const SalesOrders = SequelizeConnector.define(
                 {
                   attributes: ['id', 'title', 'thumbnail'],
                   model: Products,
-                  as: 'product'
+                  as: 'product',
+                  include: [
+                    {
+                      model: Brands,
+                      as: 'brand',
+                      attributes: ['id', 'title']
+                    }
+                  ]
                 }
               ]
             }

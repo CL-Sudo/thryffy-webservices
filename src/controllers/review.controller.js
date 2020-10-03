@@ -1,5 +1,5 @@
 import { requestValidator } from '@validators';
-import { OrderItems, Products, Reviews } from '@models';
+import { Brands, OrderItems, Products, Reviews } from '@models';
 
 export const create = async (req, res, next) => {
   try {
@@ -10,7 +10,14 @@ export const create = async (req, res, next) => {
       include: [
         {
           model: Products,
-          as: 'product'
+          as: 'product',
+          include: [
+            {
+              model: Brands,
+              as: 'brand',
+              attributes: ['id', 'title']
+            }
+          ]
         }
       ],
       where: { salesOrderId: orderId }

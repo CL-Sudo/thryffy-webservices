@@ -22,7 +22,7 @@ export const moveToBagValidator = [
         where: { productId, userId: id }
       });
 
-      if (R.isNil(favourite)) throw new Error('This item is not the favourite list');
+      if (R.isNil(favourite)) throw new Error('This item is not in the favourite list');
 
       const cartItem = await CartItems.findOne({
         raw: true,
