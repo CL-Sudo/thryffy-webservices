@@ -13,8 +13,9 @@ module.exports = {
         ...AT_RECORDER,
         ...BY_RECORDER
       });
-      await queryInterface.addConstraint('category_product', ['category_id', 'product_id'], {
-        type: 'unique'
+      await queryInterface.addConstraint('category_product', {
+        type: 'unique',
+        fields: ['category_id', 'product_id']
       });
       return Promise.resolve();
     } catch (e) {

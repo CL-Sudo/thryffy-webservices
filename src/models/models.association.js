@@ -1,5 +1,8 @@
 import * as Models from '@models';
 
+/**
+ * Users
+ */
 Models.Users.hasMany(Models.Addresses, { foreignKey: 'userId', as: 'addresses' });
 Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'userId', as: 'orders' });
 Models.Users.hasMany(Models.Products, { foreignKey: 'userId', as: 'products' });
@@ -14,16 +17,28 @@ Models.Users.belongsToMany(Models.Products, {
   as: 'favouriteProducts'
 });
 
+/**
+ * Addresses
+ */
 Models.Addresses.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 
+/**
+ * SalesOrders
+ */
 Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'userId', as: 'buyer' });
 Models.SalesOrders.hasMany(Models.OrderItems, { foreignKey: 'salesOrderId', as: 'orderItems' });
 Models.SalesOrders.belongsTo(Models.Addresses, { foreignKey: 'addressId', as: 'address' });
 Models.SalesOrders.hasOne(Models.Reviews, { foreignKey: 'orderId', as: 'review' });
 
+/**
+ * OrderItems
+ */
 Models.OrderItems.belongsTo(Models.SalesOrders, { foreignKey: 'salesOrderId', as: 'order' });
 Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 
+/**
+ * Products
+ */
 Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });
 Models.Products.belongsToMany(Models.Users, {
   foreignKey: 'productId',
@@ -40,16 +55,54 @@ Models.Products.belongsTo(Models.Brands, { foreignKey: 'brandId', as: 'brand' })
 Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos' });
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });
 
+/**
+ * Categories
+ */
 Models.Categories.hasMany(Models.Products, { foreignKey: 'categoryId', as: 'products' });
 Models.Categories.hasMany(Models.Categories, { foreignKey: 'parentId', as: 'subCategories' });
 Models.Categories.belongsTo(Models.Categories, { foreignKey: 'parentId', as: 'parentCategory' });
+Models.Categories.belongsTo(Models.ShippingFees, {
+  foreignKey: 'shippingFeeId',
+  as: 'shippingFee'
+});
+Models.Categories.belongsToMany(Models.Sizes, {
+  foreignKey: 'categoryId',
+  through: Models.CategorySize,
+  as: 'sizes'
+});
 
+/**
+ * Galleries
+ */
 Models.Galleries.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 
+/**
+ * Reviews
+ */
 Models.Reviews.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'order' });
 Models.Reviews.belongsTo(Models.Users, { foreignKey: 'createdBy', as: 'buyer' });
 
+/**
+ * CartItems
+ */
 Models.CartItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'cartItem' });
 Models.CartItems.belongsTo(Models.Users, { foreignKey: 'userId', as: 'cartOnwer' });
 
+/**
+ * Brands
+ */
 Models.Brands.hasMany(Models.Products, { foreignKey: 'brand_id', as: 'product' });
+
+/**
+ * Sizes
+ */
+Models.Sizes.belongsToMany(Models.Categories, {
+  foreignKey: 'sizeId',
+  through: Models.CategorySize,
+  as: 'categories'
+});
+
+/**
+ * ShippingFees
+ */
+Models.ShippingFees.hasMany(Models.Categories, { foreignKey: 'shippingFeeId', as: 'category' });

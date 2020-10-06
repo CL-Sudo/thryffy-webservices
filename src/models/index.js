@@ -17,3 +17,6 @@ export * from './subscriptions.model';
 export * from './admins.model';
 export * from './search_histories.model';
 export * from './brands.model';
+export * from './shipping_fees.model';
+export * from './sizes.model';
+export * from './category_size.model';

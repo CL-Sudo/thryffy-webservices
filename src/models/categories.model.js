@@ -10,6 +10,7 @@ import {
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import R from 'ramda';
 import { Products } from '@models';
+import { Sizes } from '@models/sizes.model';
 
 const Categories = SequelizeConnector.define(
   'Categories',
@@ -19,6 +20,7 @@ const Categories = SequelizeConnector.define(
       ...foreignKey('parent_id', 'categories', { onDelete: 'CASCADE' }),
       defaultValue: null
     },
+    shippingFeeId: foreignKey('shipping_fee_id', 'shipping_fees', false),
     title: {
       type: Sequelize.STRING(100)
     },
@@ -69,6 +71,17 @@ const Categories = SequelizeConnector.define(
             }
           ]
         };
+      },
+      sizes: {
+        attributes: { exclude: defaultExcludeFields },
+        include: [
+          {
+            model: Sizes,
+            as: 'sizes',
+            attributes: { exclude: defaultExcludeFields },
+            through: { attributes: [] }
+          }
+        ]
       }
     },
     hooks: {
@@ -109,6 +122,22 @@ Categories.prototype.getListingCount = async function() {
     const productsCount = await Products.count({ where: { categoryId: childIds } });
 
     this.setDataValue('listingCount', productsCount);
+  } catch (e) {
+    throw e;
+  }
+};
+
+Categories.prototype.getRoot = async function(categoryId = this.id) {
+  try {
+    const category = await Categories.findOne({
+      attributes: ['id', 'shipping_fee_id', 'parentId', 'title', 'description', 'thumbnail'],
+      raw: true,
+      where: { id: categoryId }
+    });
+
+    if (!category.parentId) return category;
+
+    return await this.getRoot(category.parentId);
   } catch (e) {
     throw e;
   }

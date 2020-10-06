@@ -1,0 +1,11 @@
+export default {
+  SMALL: 'SMALL',
+
+  MEDIUM: 'MEDIUM',
+
+  LARGE: 'LARGE',
+
+  MEDIUM_PARCEL: 'MEDIUM PARCEL',
+
+  LARGE_PARCEL: 'LARGE PARCEL'
+};

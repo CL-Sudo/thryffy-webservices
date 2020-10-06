@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "price": 2.5,
+    "markupPrice": 3,
+    "type": "SMALL"
+  },
+  {
+    "id": 2,
+    "price": 3,
+    "markupPrice": 4,
+    "type": "MEDIUM"
+  },
+  {
+    "id": 3,
+    "price": 5,
+    "markupPrice": 4,
+    "type": "LARGE"
+  },
+  {
+    "id": 4,
+    "price": 8,
+    "markupPrice": 4,
+    "type": "MEDIUM PARCEL"
+  },
+  {
+    "id": 5,
+    "price": 10,
+    "markupPrice": 4,
+    "type": "LARGE PARCEL"
+  }
+]
