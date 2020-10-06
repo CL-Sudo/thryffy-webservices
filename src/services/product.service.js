@@ -1,20 +1,56 @@
 import R from 'ramda';
 import S3 from '@configs/s3.config';
 import { uploadFileToS3 } from '@tools/s3';
-import { Galleries, Products, Brands } from '@models';
+import { Galleries, Products, Brands, Categories, ShippingFees } from '@models';
 import { parseImageWithIndex } from '@utils';
 import { normaliseBrand } from '@utils/product.utils';
 import { Op } from 'sequelize';
+import Parcel from '@constants/parcel_types.constant';
+
 /**
  *
- * @param {Number} categoryId
- * @param {String} size
+ * @param {Array} productIds
+ * @return {Number} Shipping Fee
  */
-export const getShippingFee = async (categoryId, size) =>
+export const getShippingFee = async productIds =>
   new Promise(async (resolve, reject) => {
     try {
-      //
-      return resolve(3.0);
+      if (productIds.length === 2) {
+        return resolve(7.0);
+      }
+
+      if (productIds.length > 2) {
+        return resolve(4.0);
+      }
+
+      const product = await Products.findOne({
+        where: { id: productIds[0] },
+        include: [
+          {
+            model: Categories,
+            as: 'category',
+            include: [
+              {
+                model: ShippingFees,
+                as: 'shippingFee'
+              }
+            ]
+          }
+        ]
+      });
+
+      const root = await product.category.getRoot();
+
+      if (product.category.title === 'Shoes' && root.title !== 'Kids') {
+        if (Number(product.size) > 9) {
+          const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.LARGE_PARCEL } });
+          return resolve(shippingFee.price);
+        }
+        const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
+        return resolve(shippingFee.price);
+      }
+
+      return resolve(product.category.shippingFee.price);
     } catch (e) {
       return reject(e);
     }

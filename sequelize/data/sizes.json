@@ -1,0 +1,924 @@
+[
+  {
+    "international": "XXXS",
+    "us": "00",
+    "uk": "2",
+    "eu": "30",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "XXS",
+    "us": "0",
+    "uk": "4",
+    "eu": "32",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "XS",
+    "us": "2",
+    "uk": "6",
+    "eu": "34",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "S",
+    "us": "4",
+    "uk": "8",
+    "eu": "36",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "M",
+    "us": "6",
+    "uk": "10",
+    "eu": "38",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "L",
+    "us": "8",
+    "uk": "12",
+    "eu": "40",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "XL",
+    "us": "10",
+    "uk": "14",
+    "eu": "42",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "XXL",
+    "us": "12",
+    "uk": "16",
+    "eu": "44",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "XXXL",
+    "us": "14",
+    "uk": "18",
+    "eu": "46",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "4XL",
+    "us": "16",
+    "uk": "20",
+    "eu": "48",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "5XL",
+    "us": "18",
+    "uk": "22",
+    "eu": "50",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "6XL",
+    "us": "20",
+    "uk": "24",
+    "eu": "52",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "7XL",
+    "us": "22",
+    "uk": "26",
+    "eu": "54",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "8XL",
+    "us": "24",
+    "uk": "28",
+    "eu": "56",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "9XL",
+    "us": "26",
+    "uk": "30",
+    "eu": "58",
+    "type": "WOMEN'S CLOTHING"
+  },
+  {
+    "international": "XXXS",
+    "uk": "32",
+    "us": "32",
+    "eu": "42",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "XXS",
+    "uk": "34",
+    "us": "34",
+    "eu": "44",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "XS",
+    "uk": "36",
+    "us": "36",
+    "eu": "46",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "S",
+    "uk": "48",
+    "us": "48",
+    "eu": "48",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "M",
+    "uk": "40",
+    "us": "40",
+    "eu": "50",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "L",
+    "uk": "42",
+    "us": "42",
+    "eu": "52",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "XL",
+    "uk": "44",
+    "us": "44",
+    "eu": "54",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "XXL",
+    "uk": "46",
+    "us": "46",
+    "eu": "56",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "XXXL",
+    "uk": "48",
+    "us": "48",
+    "eu": "58",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "4XL",
+    "uk": "50",
+    "us": "50",
+    "eu": "60",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "5XL",
+    "uk": "52",
+    "us": "52",
+    "eu": "62",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "6XL",
+    "uk": "54",
+    "us": "54",
+    "eu": "64",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "7XL",
+    "uk": "56",
+    "us": "56",
+    "eu": "66",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "international": "8XL",
+    "uk": "58",
+    "us": "58",
+    "eu": "68",
+    "type": "MEN'S CLOTHING"
+  },
+  {
+    "us": "4",
+    "uk": "2",
+    "eu": "35",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "4.5",
+    "uk": "2.5",
+    "eu": "35.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "5",
+    "uk": "3",
+    "eu": "36",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "5.5",
+    "uk": "3.5",
+    "eu": "36.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "6",
+    "uk": "4",
+    "eu": "37",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "6.5",
+    "uk": "4.5",
+    "eu": "37.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "7",
+    "uk": "5",
+    "eu": "38",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "7.5",
+    "uk": "5.5",
+    "eu": "38.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "8",
+    "uk": "6",
+    "eu": "39",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "8.5",
+    "uk": "6.5",
+    "eu": "39.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "9",
+    "uk": "7",
+    "eu": "40",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "9.5",
+    "uk": "7.5",
+    "eu": "40.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "10",
+    "uk": "8",
+    "eu": "41",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "10.5",
+    "uk": "8.5",
+    "eu": "41.5",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "11",
+    "uk": "9",
+    "eu": "42",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "11.5",
+    "uk": "10",
+    "eu": "43",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "12",
+    "uk": "10",
+    "eu": "43",
+    "type": "WOMEN'S SHOES"
+  },
+  {
+    "us": "6",
+    "uk": "5",
+    "eu": "38",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "7",
+    "uk": "6",
+    "eu": "39",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "7.5",
+    "uk": "6.5",
+    "eu": "40",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "8",
+    "uk": "7",
+    "eu": "41",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "8.5",
+    "uk": "7.5",
+    "eu": "42",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "9",
+    "uk": "8",
+    "eu": "42.5",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "9.5",
+    "uk": "8.5",
+    "eu": "43",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "10",
+    "uk": "9",
+    "eu": "43.5",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "10.5",
+    "uk": "9.5",
+    "eu": "44",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "11",
+    "uk": "10",
+    "eu": "44.5",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "11.5",
+    "uk": "10.5",
+    "eu": "45",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "12",
+    "uk": "11",
+    "eu": "45.5",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "13",
+    "uk": "12",
+    "eu": "46",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "14",
+    "uk": "13",
+    "eu": "47",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "15",
+    "uk": "14",
+    "eu": "48",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "us": "16",
+    "uk": "15",
+    "eu": "49",
+    "type": "MEN'S SHOES"
+  },
+  {
+    "age": "Preemie",
+    "height": "up to 17",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "Newborn",
+    "height": "17-20",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "Up to 1 month",
+    "height": "20-22",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "0-3 months",
+    "height": "22-24",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "3-6 months",
+    "height": "24-27",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "6-9 months",
+    "height": "27-29",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "9-12 months",
+    "height": "29-31",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "12-18 months",
+    "height": "31-34",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "18-24 months",
+    "height": "34-36",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "24-36 months",
+    "height": "36-39",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "3-4 years",
+    "height": "39-41",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "4-5 years",
+    "height": "41-43",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "5-6 years",
+    "height": "43-46",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "6-7 years",
+    "height": "46-48",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "7-8 years",
+    "height": "48-50",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "8-9 years",
+    "height": "50-53",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "9-10 years",
+    "height": "53-55",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "11-12 years",
+    "height": "55-57",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "12-13 years",
+    "height": "57-60",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "13-14 years",
+    "height": "60-62",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "15-16 years",
+    "height": "62-65",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "16-17 years",
+    "height": "65-68",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "age": "17-18 years",
+    "height": "68-70",
+    "type": "KID'S CLOTHING"
+  },
+  {
+    "us": "0.5 Baby",
+    "uk": "0 Baby",
+    "eu": "16",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "2 Baby",
+    "uk": "1 Baby",
+    "eu": "17",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "3 Baby",
+    "uk": "2 Baby",
+    "eu": "18",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "4 Toddler",
+    "uk": "3 Baby",
+    "eu": "19",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "5 Toddler",
+    "uk": "3.5 Baby",
+    "eu": "20",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "5.5 Toddler",
+    "uk": "4 Baby",
+    "eu": "21",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "6 Toddler",
+    "uk": "5 Baby",
+    "eu": "22",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "7 Toddler",
+    "uk": "6 Baby",
+    "eu": "23",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "8 Child",
+    "uk": "7 Child",
+    "eu": "24",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "8.5 Child",
+    "uk": "8 Child",
+    "eu": "25",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "9 Child",
+    "uk": "8.5 Child",
+    "eu": "26",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "10 Child",
+    "uk": "9 Child",
+    "eu": "27",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "11 Child",
+    "uk": "10 Child",
+    "eu": "28",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "12 Child",
+    "uk": "11 Child",
+    "eu": "29",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "12.5 Child",
+    "uk": "11.5 Child",
+    "eu": "30",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "13 Child",
+    "uk": "12 Child",
+    "eu": "31",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "1 Junior",
+    "uk": "13 Child",
+    "eu": "32",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "2 Junior",
+    "uk": "1 Junior",
+    "eu": "33",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "3 Junior",
+    "uk": "2 Junior",
+    "eu": "34",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "4 Junior",
+    "uk": "2.5 Junior",
+    "eu": "35",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "5 Junior",
+    "uk": "3 Junior",
+    "eu": "36",
+    "type": "KID'S SHOES"
+  },
+  {
+    "us": "6 Junior",
+    "uk": "4 Junior",
+    "eu": "37",
+    "type": "KID'S SHOES"
+  },
+  {
+    "waist_size": "W24",
+    "international": "XXXS",
+    "uk": "2",
+    "us": "00",
+    "eu": "30",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W25",
+    "international": "XXS",
+    "uk": "4",
+    "us": "0",
+    "eu": "32",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W26",
+    "international": "XS",
+    "uk": "6",
+    "us": "2",
+    "eu": "34",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W27",
+    "international": "S",
+    "uk": "8",
+    "us": "4",
+    "eu": "36",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W28",
+    "international": "M",
+    "uk": "10",
+    "us": "6",
+    "eu": "38",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W29",
+    "international": "L",
+    "uk": "12",
+    "us": "8",
+    "eu": "40",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W30",
+    "international": "XL",
+    "uk": "14",
+    "us": "10",
+    "eu": "42",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W31",
+    "international": "XXL",
+    "uk": "16",
+    "us": "12",
+    "eu": "44",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W32",
+    "international": "XXXL",
+    "uk": "18",
+    "us": "14",
+    "eu": "46",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W33",
+    "international": "4XL",
+    "uk": "20",
+    "us": "16",
+    "eu": "48",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W34",
+    "international": "5XL",
+    "uk": "22",
+    "us": "18",
+    "eu": "50",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W35",
+    "international": "6XL",
+    "uk": "24",
+    "us": "20",
+    "eu": "52",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W36",
+    "international": "7XL",
+    "uk": "26",
+    "us": "22",
+    "eu": "54",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W37",
+    "international": "8XL",
+    "uk": "28",
+    "us": "24",
+    "eu": "56",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "waist_size": "W38",
+    "international": "9XL",
+    "uk": "30",
+    "us": "26",
+    "eu": "58",
+    "type": "WOMEN'S PANT"
+  },
+  {
+    "international": "XS",
+    "type": "SOCKS"
+  },
+  {
+    "international": "S",
+    "type": "SOCKS"
+  },
+  {
+    "international": "M",
+    "type": "SOCKS"
+  },
+  {
+    "international": "L",
+    "type": "SOCKS"
+  },
+  {
+    "international": "XL",
+    "type": "SOCKS"
+  },
+  {
+    "international": "XXL",
+    "type": "SOCKS"
+  },
+  {
+    "international": "XXXL",
+    "type": "SOCKS"
+  },
+  {
+    "international": "Xs",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "S",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "M",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "L",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "XL",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "XXL",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "XXXL",
+    "type": "UNDERWEAR"
+  },
+  {
+    "international": "XXXS",
+    "uk": "W24",
+    "us": "W24",
+    "eu": "34",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "XXS",
+    "uk": "W26",
+    "us": "W26",
+    "eu": "36",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "XS",
+    "uk": "W28",
+    "us": "W28",
+    "eu": "38",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "S",
+    "uk": "W30",
+    "us": "W30",
+    "eu": "40",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "M",
+    "uk": "W32",
+    "us": "W32",
+    "eu": "42",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "L",
+    "uk": "W34",
+    "us": "W34",
+    "eu": "44",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "XL",
+    "uk": "W36",
+    "us": "W36",
+    "eu": "46",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "XXL",
+    "uk": "W38",
+    "us": "W38",
+    "eu": "48",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "XXXL",
+    "uk": "W40",
+    "us": "W40",
+    "eu": "50",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "4XL",
+    "uk": "W42",
+    "us": "W42",
+    "eu": "52",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "5XL",
+    "uk": "W44",
+    "us": "W44",
+    "eu": "54",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "6XL",
+    "uk": "W46",
+    "us": "W46",
+    "eu": "56",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "7XL",
+    "uk": "W48",
+    "us": "W48",
+    "eu": "58",
+    "type": "MEN'S PANT"
+  },
+  {
+    "international": "8XL",
+    "uk": "W50",
+    "us": "W50",
+    "eu": "60",
+    "type": "MEN'S PANT"
+  }
+]

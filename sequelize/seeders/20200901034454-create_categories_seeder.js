@@ -6,13 +6,13 @@ import menSecondLevelData from '../data/men_second_level_categories.json';
 import kidsSecondLevelData from '../data/kids_second_level_categories.json';
 
 import womenThirdLevelClothing from '../data/women_third_level_categories_clothing.json';
-import womenThirdLevelAccessories from '../data/women_third_level_categories_accessories.json';
+// import womenThirdLevelAccessories from '../data/women_third_level_categories_accessories.json';
 
-import kidsThirdLevelAccessories from '../data/kids_third_level_categories_accessories.json';
+// import kidsThirdLevelAccessories from '../data/kids_third_level_categories_accessories.json';
 import kidsThirdLevelClothing from '../data/kids_third_level_categories_clothing.json';
 
 import menThirdLevelClothing from '../data/men_third_level_categories_clothing.json';
-import menThirdLevelAccessories from '../data/men_third_level_categories_accessories.json';
+// import menThirdLevelAccessories from '../data/men_third_level_categories_accessories.json';
 
 const seedWomenClothing = async parentId => {
   try {
@@ -47,38 +47,38 @@ const seedKidsClothing = async parentId => {
   }
 };
 
-const seedWomenAccessories = async parentId => {
-  try {
-    const data = [];
-    womenThirdLevelAccessories.map(obj => data.push({ ...obj, parentId }));
-    await Categories.bulkCreate(data);
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+// const seedWomenAccessories = async parentId => {
+//   try {
+//     const data = [];
+//     womenThirdLevelAccessories.map(obj => data.push({ ...obj, parentId }));
+//     await Categories.bulkCreate(data);
+//     return Promise.resolve();
+//   } catch (e) {
+//     return Promise.reject(e);
+//   }
+// };
 
-const seedMenAccessories = async parentId => {
-  try {
-    const data = [];
-    menThirdLevelAccessories.map(obj => data.push({ ...obj, parentId }));
-    await Categories.bulkCreate(data);
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+// const seedMenAccessories = async parentId => {
+//   try {
+//     const data = [];
+//     menThirdLevelAccessories.map(obj => data.push({ ...obj, parentId }));
+//     await Categories.bulkCreate(data);
+//     return Promise.resolve();
+//   } catch (e) {
+//     return Promise.reject(e);
+//   }
+// };
 
-const seedKidsAccessories = async parentId => {
-  try {
-    const data = [];
-    kidsThirdLevelAccessories.map(obj => data.push({ ...obj, parentId }));
-    await Categories.bulkCreate(data);
-    return Promise.resolve();
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+// const seedKidsAccessories = async parentId => {
+//   try {
+//     const data = [];
+//     kidsThirdLevelAccessories.map(obj => data.push({ ...obj, parentId }));
+//     await Categories.bulkCreate(data);
+//     return Promise.resolve();
+//   } catch (e) {
+//     return Promise.reject(e);
+//   }
+// };
 
 const seedWomenFirstLevel = async data => {
   try {
@@ -126,8 +126,8 @@ const seedWomenSecondLevel = async parentId => {
           }
 
           case 'Accessories': {
-            const accessories = await Categories.create({ ...data, parentId });
-            await seedWomenAccessories(accessories.id);
+            await Categories.create({ ...data, parentId });
+            // await seedWomenAccessories(accessories.id);
             break;
           }
 
@@ -160,8 +160,8 @@ const seedMenSecondLevel = async parentId => {
           }
 
           case 'Accessories': {
-            const accessories = await Categories.create({ ...data, parentId });
-            await seedMenAccessories(accessories.id);
+            await Categories.create({ ...data, parentId });
+            // await seedMenAccessories(accessories.id);
             break;
           }
 
@@ -194,8 +194,8 @@ const seedKidsSecondLevel = async parentId => {
           }
 
           case 'Accessories': {
-            const accessories = await Categories.create({ ...data, parentId });
-            await seedKidsAccessories(accessories.id);
+            await Categories.create({ ...data, parentId });
+            // await seedKidsAccessories(accessories.id);
             break;
           }
 

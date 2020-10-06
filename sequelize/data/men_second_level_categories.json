@@ -3,9 +3,11 @@
     "title": "Clothing"
   },
   {
-    "title": "Accessories"
+    "title": "Accessories",
+    "shippingFeeId": 1
   },
   {
-    "title": "Shoes"
+    "title": "Shoes",
+    "shippingFeeId": 1
   }
 ]

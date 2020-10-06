@@ -161,10 +161,7 @@ export const checkout = async (req, res, next) => {
 
     const defaultAddress = await Addresses.scope({ method: ['defaultId', id] }).findOne();
 
-    const priceSummary = await services.getPriceSummary({
-      courier,
-      productIds
-    });
+    const priceSummary = await services.getPriceSummary(productIds);
 
     return res.status(200).json({
       message: 'success',
@@ -188,11 +185,7 @@ export const pay = async (req, res, next) => {
     const { id: userId } = req.user;
     const { productIds, addressId, courier, paymentMethod } = req.body;
 
-    const { subTotal, tax, total, shippingFee } = await services.getPriceSummary({
-      productIds,
-      addressId,
-      courier
-    });
+    const { subTotal, tax, total, shippingFee } = await services.getPriceSummary(productIds);
 
     const fakeTrackingNo = 'MCB000134456';
 
@@ -249,7 +242,7 @@ export const pay = async (req, res, next) => {
 
     await R.pipeP(storeSaleOrder, parseOrderItems(productIds), storeOrderItems)();
 
-    cartListener.emit('pay', productIds);
+    cartListener.emit('Payment Made', productIds);
 
     await transaction.commit();
     return res.status(200).json({

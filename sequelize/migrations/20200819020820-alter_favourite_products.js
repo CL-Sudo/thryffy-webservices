@@ -1,6 +1,7 @@
 module.exports = {
   up: queryInterface =>
-    queryInterface.addConstraint('favourite_products', ['product_id', 'user_id'], {
+    queryInterface.addConstraint('favourite_products', {
+      fields: ['product_id', 'user_id'],
       type: 'unique'
     }),
 

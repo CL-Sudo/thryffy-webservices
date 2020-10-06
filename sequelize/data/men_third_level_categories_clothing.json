@@ -1,65 +1,86 @@
 [
   {
-    "title": "Tops & T-Shirts"
+    "title": "Tops & T-Shirts",
+    "shippingFeeId": 2
   },
   {
-    "title": "Shirts"
+    "title": "Shirts",
+    "shippingFeeId": 2
   },
   {
-    "title": "Upper Active Wear"
+    "title": "Upper Active Wears",
+    "shippingFeeId": 2
   },
   {
-    "title": "Pajama Pants"
+    "title": "Pajama Pants",
+    "shippingFeeId": 2
   },
   {
-    "title": "Pajama Tops"
+    "title": "Pajama Tops",
+    "shippingFeeId": 2
   },
   {
-    "title": "Cloth"
+    "title": "Active Wears",
+    "shippingFeeId": 3
   },
   {
-    "title": "Active Wear"
+    "title": "Swim Wears",
+    "shippingFeeId": 3
   },
   {
-    "title": "Swimwear"
+    "title": "Shorts",
+    "shippingFeeId": 3
   },
   {
-    "title": "Shirts"
+    "title": "Pants",
+    "shippingFeeId": 3
   },
   {
-    "title": "Shorts"
+    "title": "Jeans",
+    "shippingFeeId": 3
   },
   {
-    "title": "Pants"
+    "title": "Sweaters",
+    "shippingFeeId": 3
   },
   {
-    "title": "Jeans"
+    "title": "Lower Active Wears",
+    "shippingFeeId": 3
   },
   {
-    "title": "Sweaters"
+    "title": "Swim Trunks",
+    "shippingFeeId": 3
   },
   {
-    "title": "Lower Active Wear"
+    "title": "Winter Jackets",
+    "shippingFeeId": 3
   },
   {
-    "title": "Swim Trunks"
+    "title": "Jackets",
+    "shippingFeeId": 3
   },
   {
-    "title": "Sweaters"
+    "title": "Coats",
+    "shippingFeeId": 3
   },
   {
-    "title": "Winter Jackets"
+    "title": "Suits",
+    "shippingFeeId": 3
   },
   {
-    "title": "Jackets"
+    "title": "Blazers",
+    "shippingFeeId": 3
   },
   {
-    "title": "Blazers"
+    "title": "Special Costumes & Outfits",
+    "shippingFeeId": 3
   },
   {
-    "title": "Underwear"
+    "title": "Underwears",
+    "shippingFeeId": 1
   },
   {
-    "title": "Socks"
+    "title": "Socks",
+    "shippingFeeId": 1
   }
 ]

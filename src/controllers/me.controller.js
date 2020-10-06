@@ -21,10 +21,14 @@ export const addAddress = async (req, res, next) => {
       }
     }
 
-    await Addresses.create({
+    const address = await Addresses.create({
       ...req.body,
       userId: id
     });
+
+    const count = await Addresses.count({ where: { userId: id } });
+
+    if (count === 1) await address.update({ isDefault: true });
 
     const addresses = await Addresses.findAndCountAll({ where: { userId: id } });
 

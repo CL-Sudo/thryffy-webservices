@@ -2,7 +2,7 @@ import R from 'ramda';
 import formidable from 'formidable';
 import { getShippingFee, saveProductImages, setThumbnail, getProductBrandId } from '@services';
 import { isJSON } from '@utils';
-import { Products, ProductColors, SalesOrders, Brands } from '@models';
+import { Products, ProductColors, SalesOrders, Categories, Sizes } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
 import { requestValidator } from '@validators/index';

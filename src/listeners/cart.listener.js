@@ -11,8 +11,8 @@ const removeCartItems = async productIds => {
     await transaction.commit();
   } catch (e) {
     await transaction.rollback();
-    throw e;
+    console.error('e', e);
   }
 };
 
-cartListener.on('pay', removeCartItems);
+cartListener.on('Payment Made', removeCartItems);
