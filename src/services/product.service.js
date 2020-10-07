@@ -50,6 +50,11 @@ export const getShippingFee = async productIds =>
         return resolve(shippingFee.price);
       }
 
+      if (product.category.title === 'Shoes' && root.title === 'Kids') {
+        const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
+        return resolve(shippingFee.price);
+      }
+
       return resolve(product.category.shippingFee.price);
     } catch (e) {
       return reject(e);
