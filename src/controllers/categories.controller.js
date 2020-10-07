@@ -55,7 +55,7 @@ export const list = async (req, res, next) => {
   }
 };
 
-export const getRespectiveSizes = async (req, res, next) => {
+export const getSizes = async (req, res, next) => {
   try {
     const { categoryId } = req.params;
     const { limit, offset } = req.query;
