@@ -1,5 +1,5 @@
 import { check } from 'express-validator/check';
-import { Categories, SalesOrders, OrderItems, Products } from '@models';
+import { Categories, SalesOrders, OrderItems, Products, Sizes } from '@models';
 import R from 'ramda';
 import { mapObjectsToArray } from '@utils/utils';
 import { CONDITION, DELIVERY_STATUS } from '@constants';
@@ -9,8 +9,13 @@ const isEmpty = param => R.isNil(param) || R.length(R.toString(param)) === 0;
 export const addProductValidator = async fields =>
   new Promise(async (resolve, reject) => {
     try {
-      const { title, brand, categoryId, condition, price, thumbnailIndex, colors } = fields;
+      const { title, brand, categoryId, condition, price, thumbnailIndex, colors, sizeId } = fields;
       const conditions = mapObjectsToArray(CONDITION);
+
+      if (sizeId) {
+        const size = await Sizes.findOne({ where: { id: sizeId } });
+        if (!size) throw new Error('Invalid sizeId given');
+      }
 
       if (isEmpty(categoryId)) throw new Error('categoryId: Required');
       if (isEmpty(title)) throw new Error('title: Required');

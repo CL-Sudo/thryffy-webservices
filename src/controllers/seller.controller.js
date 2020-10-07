@@ -1,12 +1,19 @@
 import R from 'ramda';
 import formidable from 'formidable';
-import { getShippingFee, saveProductImages, setThumbnail, getProductBrandId } from '@services';
+import {
+  getShippingFee,
+  saveProductImages,
+  setThumbnail,
+  getProductBrandId,
+  updateProductImages
+} from '@services';
 import { isJSON } from '@utils';
 import { Products, ProductColors, SalesOrders, Sizes } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
+import { updateProductValidator } from '@validators/Admin/products.validator';
 import { requestValidator } from '@validators/index';
-import { DELIVERY_STATUS } from '@constants';
+import { DELIVERY_STATUS, USER_TYPE } from '@constants';
 
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
@@ -15,23 +22,25 @@ export const addProduct = async (req, res, next) => {
     if (err) return next(err);
     try {
       await addProductValidator(fields);
-      const { id } = req.user;
+      const { id, type } = req.user;
+      const isAdmin = type === USER_TYPE.ADMIN;
+
+      const {
+        sellerId,
+        title,
+        description,
+        brand,
+        categoryId,
+        sizeId,
+        condition,
+        price,
+        thumbnailIndex
+      } = fields;
 
       const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
 
-      const saveProduct = async (userId, formFields, images) => {
+      const saveProduct = async images => {
         try {
-          const {
-            title,
-            description,
-            brand,
-            categoryId,
-            sizeId,
-            condition,
-            price,
-            thumbnailIndex
-          } = formFields;
-
           const size = await Sizes.findOne({ where: { id: sizeId } });
           if (!size) throw new Error('Invalid sizeId given');
 
@@ -39,14 +48,15 @@ export const addProduct = async (req, res, next) => {
 
           const product = await Products.create(
             {
-              userId,
+              userId: isAdmin ? sellerId : id,
               categoryId,
               title,
               description,
               price,
               condition,
               sizeId,
-              brandId
+              brandId,
+              createdBy: isAdmin ? id : null
             },
             transaction
           );
@@ -83,7 +93,7 @@ export const addProduct = async (req, res, next) => {
         }
       };
 
-      const payload = await R.pipeP(saveProduct, saveColors, getProduct)(id, fields, files);
+      const payload = await R.pipeP(saveProduct, saveColors, getProduct)(files);
 
       return res.status(200).json({
         message: 'success',
@@ -136,4 +146,89 @@ export const markAsShipped = async (req, res, next) => {
   } catch (e) {
     return next(e);
   }
+};
+
+export const updateProduct = async (req, res, next) => {
+  const form = formidable({ multiple: true });
+  form.parse(req, async (err, fields, files) => {
+    if (err) return next(err);
+    try {
+      await updateProductValidator(addProductValidator)(fields, files);
+
+      const { id, type } = req.user;
+      const { id: productId } = req.params;
+      const isAdmin = type === USER_TYPE.ADMIN;
+
+      const existingProduct = await Products.findOne({ where: { id: productId } });
+      if (!existingProduct) throw new Error('Invalid productId given.');
+
+      const imagesToPersist = R.ifElse(
+        isJSON,
+        param => JSON.parse(param),
+        R.identity
+      )(fields.imagesToPersist);
+
+      const {
+        title,
+        description,
+        brand,
+        categoryId,
+        sizeId,
+        condition,
+        price,
+        thumbnailIndex
+      } = fields;
+
+      const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
+
+      const brandId = await getProductBrandId(brand);
+
+      const updateProductAndImages = async () => {
+        try {
+          const product = await Products.findOne({ where: { id: productId } });
+          await product.update(
+            {
+              title,
+              description,
+              brandId,
+              categoryId,
+              sizeId,
+              condition,
+              price,
+              thumbnailIndex,
+              updatedBy: isAdmin ? id : product.userId
+            },
+            { where: { id: productId } }
+          );
+          await updateProductImages(productId, imagesToPersist);
+          await saveProductImages(product.id, files);
+          await setThumbnail(productId, thumbnailIndex);
+          return Promise.resolve();
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      const updateColors = async () => {
+        try {
+          await ProductColors.destroy({ where: { productId }, force: true });
+          const arr = colors.map(color => ({
+            productId,
+            color
+          }));
+          await ProductColors.bulkCreate(arr);
+          return Promise.resolve();
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      await R.pipeP(updateProductAndImages, updateColors)();
+
+      const payload = await Products.scope({ method: ['productPage', productId] }).findOne();
+      return res.status(200).json({ message: 'success', payload });
+    } catch (e) {
+      return next(e);
+    }
+  });
 };

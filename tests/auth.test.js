@@ -3,6 +3,10 @@
 // import app from '../src/app';
 // import { userAuthenticator } from './utils';
 
+describe('test', () => {
+  //
+});
+
 // describe('Authentication', () => {
 //   describe('[POST] - /api/mobile/auth/login', () => {
 //     it('shoud log user in when email and password is correct', async () => {

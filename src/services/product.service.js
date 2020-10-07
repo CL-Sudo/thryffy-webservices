@@ -1,12 +1,13 @@
 import R from 'ramda';
 import S3 from '@configs/s3.config';
-import { uploadFileToS3 } from '@tools/s3';
+import { uploadFileToS3, deleteObjectFromS3 } from '@tools/s3';
 import { Galleries, Products, Brands, Categories, ShippingFees, Sizes } from '@models';
 import { parseImageWithIndex } from '@utils';
 import { normaliseBrand } from '@utils/product.utils';
 import { Op } from 'sequelize';
 import Parcel from '@constants/parcel_types.constant';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
+import { parsePathForDeleting } from '@utils/s3.util';
 
 /**
  *
@@ -72,9 +73,11 @@ export const getShippingFee = async productIds =>
  * @param {File} images
  * @param {Number} productId
  */
-export const saveProductImages = async (productId, images) =>
+export const saveProductImages = async (productId, images = {}) =>
   new Promise(async (resolve, reject) => {
     try {
+      if (R.isEmpty(images)) return resolve();
+
       const { AWS_S3_URL } = process.env;
 
       const upload = async obj => {
@@ -100,6 +103,52 @@ export const saveProductImages = async (productId, images) =>
     }
   });
 
+export const deleteProductImages = async imageIds =>
+  new Promise(async (resolve, reject) => {
+    try {
+      await Promise.all(
+        imageIds.map(async id => {
+          const image = await Galleries.findOne({ where: { id } });
+          await deleteObjectFromS3(parsePathForDeleting(image.filePath));
+          await image.destroy({ force: true });
+        })
+      );
+      return resolve();
+    } catch (e) {
+      return reject(e);
+    }
+  });
+
+export const updateProductImages = (productId, imagesToPersist) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const ids = R.map(R.prop('id'))(
+        await Galleries.findAll({ raw: true, attributes: ['id'], where: { productId } })
+      );
+
+      const idsToPersist = R.map(R.prop('id'))(imagesToPersist);
+
+      if (!imagesToPersist || imagesToPersist.length === 0) {
+        await deleteProductImages(ids);
+        return resolve();
+      }
+
+      await Promise.all(
+        imagesToPersist.map(async obj => {
+          await Galleries.update({ index: obj.index }, { where: { id: obj.id } });
+        })
+      );
+
+      const idsToDelete = R.without(idsToPersist, ids);
+
+      await deleteProductImages(idsToDelete);
+
+      return resolve();
+    } catch (e) {
+      return reject(e);
+    }
+  });
+
 /**
  *
  * @param {Number} productId
@@ -114,7 +163,8 @@ export const setThumbnail = (productId, index) =>
           productId
         }
       });
-      await Products.update({ thumbnail: image.filePath }, { where: { id: productId } });
+      const product = await Products.findOne({ where: { id: productId } });
+      await product.update({ thumbnail: image.filePath });
       return resolve();
     } catch (e) {
       return reject(e);

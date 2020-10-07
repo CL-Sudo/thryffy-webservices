@@ -34,6 +34,33 @@ export const create = async (req, res, next) => {
   }
 };
 
+export const updateAdmin = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { id } = req.user;
+    const { adminId } = req.params;
+
+    const { email, username } = req.body;
+
+    const adminByEmail = await Admins.findOne({ where: { email } });
+    if (adminByEmail && adminByEmail.id !== id) throw new Error('Email is not available.');
+
+    const adminByUsername = await Admins.findOne({ where: { username } });
+    if (adminByUsername && adminByUsername.id !== id) throw new Error('Username is not available.');
+
+    const admin = await Admins.findOne({ where: { id: adminId } });
+    if (!admin) throw new Error('Invalid adminId given');
+
+    await admin.update({ email, username, updatedBy: id });
+    await admin.reload();
+
+    return res.status(200).json({ message: 'success', payload: admin });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 export const adminChangePassword = async (req, res, next) => {
   try {
     requestValidator(req);
