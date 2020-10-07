@@ -2,6 +2,7 @@ import { Admins } from '@models';
 import { USER_TYPE } from '@constants';
 import { hashPassword } from '@tools/bcrypt';
 import { requestValidator } from '@validators';
+import R from 'ramda';
 
 export const create = async (req, res, next) => {
   try {
@@ -39,9 +40,12 @@ export const updateAdmin = async (req, res, next) => {
     requestValidator(req);
 
     const { id } = req.user;
-    const { adminId } = req.params;
+    const { id: adminId } = req.params;
 
-    const { email, username } = req.body;
+    const { email, username, password = null } = req.body;
+
+    if (!R.isNil(password) && password.length < 4)
+      throw new Error('Must contain at least 4 characters');
 
     const adminByEmail = await Admins.findOne({ where: { email } });
     if (adminByEmail && adminByEmail.id !== id) throw new Error('Email is not available.');
@@ -52,7 +56,11 @@ export const updateAdmin = async (req, res, next) => {
     const admin = await Admins.findOne({ where: { id: adminId } });
     if (!admin) throw new Error('Invalid adminId given');
 
-    await admin.update({ email, username, updatedBy: id });
+    const updateObj = password
+      ? { email, username, password: hashPassword(password), updatedBy: id }
+      : { email, username, updatedBy: id };
+
+    await admin.update(updateObj);
     await admin.reload();
 
     return res.status(200).json({ message: 'success', payload: admin });

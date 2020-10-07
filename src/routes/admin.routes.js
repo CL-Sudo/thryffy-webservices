@@ -1,7 +1,7 @@
 import Router from 'express';
 import passport from 'passport';
 import * as Config from '@configs';
-import { create, adminChangePassword } from '@controllers/Admin/admins.controller';
+import { create, adminChangePassword, updateAdmin } from '@controllers/Admin/admins.controller';
 import { crud } from '@utils/controller-crud.util';
 import { Admins } from '@models';
 import { changePasswordValidator, createValidator } from '@validators/Admin/admins.validator';
@@ -23,7 +23,8 @@ router
 router
   .route('/:id')
   .get(adminPassportMiddleware, controller.readOne)
-  .delete(adminPassportMiddleware, controller.destroy);
+  .delete(adminPassportMiddleware, controller.destroy)
+  .put(updateAdmin);
 
 router.patch('/activate/:id', adminPassportMiddleware, controller.activate);
 router.patch('/deactivate/:id', adminPassportMiddleware, controller.deactivate);
