@@ -1,6 +1,12 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
+import {
+  AT_RECORDER,
+  BY_RECORDER,
+  primaryKey,
+  foreignKey,
+  defaultExcludeFields
+} from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { Users } from '@models/users.model';
 import { Categories } from '@models/categories.model';
@@ -9,6 +15,7 @@ import { ProductColors } from '@models/product_colors.model';
 import { FavouriteProducts } from '@models/favourite_products.model';
 import { CartItems } from '@models/cart_items.model';
 import { Brands } from '@models/brands.model';
+import { Sizes } from '@models/sizes.model';
 import { Op } from 'sequelize';
 import R from 'ramda';
 
@@ -19,6 +26,7 @@ const Products = SequelizeConnector.define(
     userId: foreignKey('user_id', 'users', false),
     categoryId: foreignKey('category_id', 'categories', false),
     brandId: foreignKey('brand_id', 'brands', false),
+    sizeId: foreignKey('size_id', 'sizes', false),
     title: {
       type: Sequelize.STRING(100)
     },
@@ -32,9 +40,6 @@ const Products = SequelizeConnector.define(
       type: Sequelize.DECIMAL(10, 2)
     },
     condition: {
-      type: Sequelize.STRING(50)
-    },
-    size: {
       type: Sequelize.STRING(50)
     },
     viewCount: {
@@ -72,6 +77,7 @@ const Products = SequelizeConnector.define(
         return {
           where: { id: productId },
           include: [
+            { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
             { model: Brands, as: 'brand', attributes: ['id', 'title'] },
             {
               model: Categories,
@@ -98,7 +104,7 @@ const Products = SequelizeConnector.define(
           'description',
           'price',
           'brandId',
-          'size',
+          'sizeId',
           'isAddedToFavourite'
         ],
         include: [
@@ -106,7 +112,8 @@ const Products = SequelizeConnector.define(
             model: Brands,
             as: 'brand',
             attributes: ['id', 'title']
-          }
+          },
+          { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
         ],
         where: {
           id: {

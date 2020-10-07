@@ -1,12 +1,12 @@
-import { Categories, Products, Brands } from '@models';
+import { Categories, Products, Brands, Sizes } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { parseKeywordForNLP } from '@utils/query.util';
 import R from 'ramda';
-import { paginate } from '@utils';
 import { saveKeyword, getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 export const home = async (req, res, next) => {
   try {
@@ -37,8 +37,8 @@ export const discoverList = async (req, res, next) => {
     const {
       categoryId,
       keyword,
-      brand,
-      size,
+      brandId,
+      sizeId,
       condition,
       minPrice,
       maxPrice,
@@ -76,15 +76,15 @@ export const discoverList = async (req, res, next) => {
     //   R.append({ category_id: categoryId })
     // );
 
-    const assignBrand = R.ifElse(
-      R.always(R.isNil(brand)),
-      R.identity,
-      R.append({ brand: { [Op.like]: `%${brand}%` } })
-    );
+    // const assignBrand = R.ifElse(
+    //   R.always(R.isNil(brand)),
+    //   R.identity,
+    //   R.append({ brand: { [Op.like]: `%${brand}%` } })
+    // );
 
     const assignCond = R.ifElse(R.always(R.isNil(condition)), R.identity, R.append({ condition }));
 
-    const assignSize = R.ifElse(R.always(R.isNil(size)), R.identity, R.append({ size }));
+    // const assignSize = R.ifElse(R.always(R.isNil(size)), R.identity, R.append({ size }));
 
     const assignTitle = param => {
       if (R.isNil(keyword)) {
@@ -106,28 +106,37 @@ export const discoverList = async (req, res, next) => {
     );
 
     const where = R.pipe(
-      assignBrand,
+      // assignBrand,
       assignCond,
-      assignSize,
+      // assignSize,
       assignTitle,
       assignPrice
       // assignCategoryId
     )(initWhere);
 
-    const childIds = await getChildIds(categoryId);
+    const childIds = categoryId ? await getChildIds(categoryId) : null;
 
     const include = [
       {
         model: Categories,
         as: 'category',
-        where: {
-          id: [categoryId, ...childIds]
-        }
+        where: categoryId
+          ? {
+              id: [categoryId, ...childIds]
+            }
+          : null
       },
       {
         model: Brands,
         as: 'brand',
-        attributes: ['id', 'title']
+        attributes: ['id', 'title'],
+        where: brandId ? { id: brandId } : null
+      },
+      {
+        model: Sizes,
+        as: 'size',
+        attributes: { exclude: defaultExcludeFields },
+        where: sizeId ? { id: sizeId } : null
       }
     ];
 
@@ -203,7 +212,8 @@ export const autocomplete = async (req, res, next) => {
           model: Brands,
           as: 'brand',
           attributes: ['id', 'title']
-        }
+        },
+        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
       ],
       where: {
         title: {

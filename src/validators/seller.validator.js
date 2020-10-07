@@ -65,3 +65,24 @@ export const markAsShippedValidator = [
       return Promise.resolve();
     })
 ];
+
+export const getShippingFeeValidator = [
+  check('productId')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+    .trim()
+    .custom(async productId => {
+      const ids = productId.split(',');
+
+      if (ids.length > 3) throw new Error('Item cannot be more than 3');
+
+      await Promise.all(
+        ids.map(async id => {
+          const product = await Products.findOne({ where: { id } });
+          if (!product) throw new Error(`Invalid productId ${id} given`);
+        })
+      );
+      return Promise.resolve();
+    })
+];
