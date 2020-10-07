@@ -54,6 +54,7 @@ Models.Products.belongsTo(Models.Users, { foreignKey: 'userId', as: 'seller' });
 Models.Products.belongsTo(Models.Brands, { foreignKey: 'brandId', as: 'brand' });
 Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos' });
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });
+Models.Products.belongsTo(Models.Sizes, { foreignKey: 'sizeId', as: 'size' });
 
 /**
  * Categories
@@ -101,6 +102,7 @@ Models.Sizes.belongsToMany(Models.Categories, {
   through: Models.CategorySize,
   as: 'categories'
 });
+Models.Sizes.hasMany(Models.Products, { foreignKey: 'sizeId', as: 'products' });
 
 /**
  * ShippingFees

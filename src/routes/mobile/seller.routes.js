@@ -1,11 +1,11 @@
 import Router from 'express';
 import { addProduct, getProductShippingFee, markAsShipped } from '@controllers';
-import { markAsShippedValidator } from '@validators/seller.validator';
+import { markAsShippedValidator, getShippingFeeValidator } from '@validators/seller.validator';
 
 const router = new Router();
 
 router.post('/product', addProduct);
-router.get('/shipping-fee', getProductShippingFee);
+router.get('/shipping-fee', getShippingFeeValidator, getProductShippingFee);
 router.patch('/mark-as-shipped', markAsShippedValidator, markAsShipped);
 
 export default router;

@@ -1,11 +1,12 @@
 import R from 'ramda';
 import S3 from '@configs/s3.config';
 import { uploadFileToS3 } from '@tools/s3';
-import { Galleries, Products, Brands, Categories, ShippingFees } from '@models';
+import { Galleries, Products, Brands, Categories, ShippingFees, Sizes } from '@models';
 import { parseImageWithIndex } from '@utils';
 import { normaliseBrand } from '@utils/product.utils';
 import { Op } from 'sequelize';
 import Parcel from '@constants/parcel_types.constant';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 /**
  *
@@ -27,6 +28,11 @@ export const getShippingFee = async productIds =>
         where: { id: productIds[0] },
         include: [
           {
+            model: Sizes,
+            as: 'size',
+            attributes: { exclude: defaultExcludeFields }
+          },
+          {
             model: Categories,
             as: 'category',
             include: [
@@ -42,7 +48,7 @@ export const getShippingFee = async productIds =>
       const root = await product.category.getRoot();
 
       if (product.category.title === 'Shoes' && root.title !== 'Kids') {
-        if (Number(product.size) > 9) {
+        if (Number(product.size.uk) > 9) {
           const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.LARGE_PARCEL } });
           return resolve(shippingFee.price);
         }

@@ -2,7 +2,7 @@ import R from 'ramda';
 import formidable from 'formidable';
 import { getShippingFee, saveProductImages, setThumbnail, getProductBrandId } from '@services';
 import { isJSON } from '@utils';
-import { Products, ProductColors, SalesOrders, Categories, Sizes } from '@models';
+import { Products, ProductColors, SalesOrders, Sizes } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
 import { requestValidator } from '@validators/index';
@@ -26,11 +26,14 @@ export const addProduct = async (req, res, next) => {
             description,
             brand,
             categoryId,
-            size,
+            sizeId,
             condition,
             price,
             thumbnailIndex
           } = formFields;
+
+          const size = await Sizes.findOne({ where: { id: sizeId } });
+          if (!size) throw new Error('Invalid sizeId given');
 
           const brandId = await getProductBrandId(brand);
 
@@ -42,7 +45,7 @@ export const addProduct = async (req, res, next) => {
               description,
               price,
               condition,
-              size,
+              sizeId,
               brandId
             },
             transaction
@@ -95,8 +98,12 @@ export const addProduct = async (req, res, next) => {
 
 export const getProductShippingFee = async (req, res, next) => {
   try {
-    const { categoryId, size } = req.query;
-    const shippingFee = await getShippingFee(categoryId, size);
+    requestValidator(req);
+
+    const { productId } = req.query;
+    const ids = productId.split(',');
+
+    const shippingFee = await getShippingFee(ids);
     return res.status(200).json({
       message: 'success',
       payload: {
