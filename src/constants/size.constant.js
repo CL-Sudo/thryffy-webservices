@@ -13,9 +13,5 @@ export default {
 
   WOMEN_PANT: "WOMEN'S PANT",
 
-  MEN_PANT: "MEN'S PANT",
-
-  SOCKS: 'SOCKS',
-
-  UNDERWEAR: 'UNDERWEAR'
+  MEN_PANT: "MEN'S PANT"
 };

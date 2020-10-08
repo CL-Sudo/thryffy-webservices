@@ -8,6 +8,8 @@ import { Op } from 'sequelize';
 import Parcel from '@constants/parcel_types.constant';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { parsePathForDeleting } from '@utils/s3.util';
+import SHIPPING from '@constants/shipping.constant';
+import CATEGORY from '@constants/category.constant';
 
 /**
  *
@@ -48,7 +50,7 @@ export const getShippingFee = async productIds =>
 
       const root = await product.category.getRoot();
 
-      if (product.category.title === 'Shoes' && root.title !== 'Kids') {
+      if (product.category.title === CATEGORY.SHOES && root.title !== CATEGORY.KIDS) {
         if (Number(product.size.uk) > 9) {
           const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.LARGE_PARCEL } });
           return resolve(shippingFee.price);
@@ -57,7 +59,7 @@ export const getShippingFee = async productIds =>
         return resolve(shippingFee.price);
       }
 
-      if (product.category.title === 'Shoes' && root.title === 'Kids') {
+      if (product.category.title === CATEGORY.SHOES && root.title === CATEGORY.KIDS) {
         const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
         return resolve(shippingFee.price);
       }
@@ -193,6 +195,55 @@ export const getProductBrandId = async brand =>
       }
 
       return resolve(existingBrand.id);
+    } catch (e) {
+      return reject(e);
+    }
+  });
+
+export const getOneProductShippingFee = (categoryId, sizeId) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const category = await Categories.findOne({
+        where: { id: categoryId },
+        include: [
+          {
+            attributes: ['price', 'markupPrice'],
+            model: ShippingFees,
+            as: 'shippingFee'
+          }
+        ]
+      });
+
+      if (category.title !== CATEGORY.SHOES) {
+        return resolve({
+          shippingFee: category.shippingFee.price,
+          markupPrice: category.shippingFee.markupPrice
+        });
+      }
+
+      const size = await Sizes.findOne({ where: { id: sizeId } });
+
+      if (size.uk > SHIPPING.MAX_SHOES_SIZE_FOR_MEDIUM_PARCEL) {
+        const largeParcelShippingFee = await ShippingFees.findOne({
+          attributes: ['price', 'markupPrice'],
+          where: { type: Parcel.LARGE_PARCEL }
+        });
+
+        return resolve({
+          shippingFee: largeParcelShippingFee.price,
+          markupPrice: largeParcelShippingFee.markupPrice
+        });
+      }
+
+      const mediumParcelShippingFee = await ShippingFees.findOne({
+        attributes: ['price', 'markupPrice'],
+        where: { type: Parcel.MEDIUM_PARCEL }
+      });
+
+      return resolve({
+        shippingFee: mediumParcelShippingFee.price,
+        markupPrice: mediumParcelShippingFee.markupPrice
+      });
     } catch (e) {
       return reject(e);
     }

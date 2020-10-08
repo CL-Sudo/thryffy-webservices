@@ -72,22 +72,25 @@ export const markAsShippedValidator = [
 ];
 
 export const getShippingFeeValidator = [
-  check('productId')
+  check('categoryId')
     .exists()
     .isLength({ min: 1 })
     .withMessage('Required')
-    .trim()
-    .custom(async productId => {
-      const ids = productId.split(',');
+    .custom(async categoryId => {
+      const category = await Categories.findOne({ where: { id: categoryId } });
+      if (!category) throw new Error('Invalid categoryId given.');
 
-      if (ids.length > 3) throw new Error('Item cannot be more than 3');
+      return Promise.resolve();
+    }),
 
-      await Promise.all(
-        ids.map(async id => {
-          const product = await Products.findOne({ where: { id } });
-          if (!product) throw new Error(`Invalid productId ${id} given`);
-        })
-      );
+  check('sizeId')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+    .custom(async sizeId => {
+      const size = await Sizes.findOne({ where: { id: sizeId } });
+      if (!size) throw new Error('Invalid sizeId given.');
+
       return Promise.resolve();
     })
 ];

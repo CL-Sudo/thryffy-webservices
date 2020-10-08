@@ -648,7 +648,7 @@
     "type": "KID'S SHOES"
   },
   {
-    "waist_size": "W24",
+    "waistSize": "W24",
     "international": "XXXS",
     "uk": "2",
     "us": "00",
@@ -656,7 +656,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W25",
+    "waistSize": "W25",
     "international": "XXS",
     "uk": "4",
     "us": "0",
@@ -664,7 +664,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W26",
+    "waistSize": "W26",
     "international": "XS",
     "uk": "6",
     "us": "2",
@@ -672,7 +672,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W27",
+    "waistSize": "W27",
     "international": "S",
     "uk": "8",
     "us": "4",
@@ -680,7 +680,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W28",
+    "waistSize": "W28",
     "international": "M",
     "uk": "10",
     "us": "6",
@@ -688,7 +688,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W29",
+    "waistSize": "W29",
     "international": "L",
     "uk": "12",
     "us": "8",
@@ -696,7 +696,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W30",
+    "waistSize": "W30",
     "international": "XL",
     "uk": "14",
     "us": "10",
@@ -704,7 +704,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W31",
+    "waistSize": "W31",
     "international": "XXL",
     "uk": "16",
     "us": "12",
@@ -712,7 +712,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W32",
+    "waistSize": "W32",
     "international": "XXXL",
     "uk": "18",
     "us": "14",
@@ -720,7 +720,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W33",
+    "waistSize": "W33",
     "international": "4XL",
     "uk": "20",
     "us": "16",
@@ -728,7 +728,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W34",
+    "waistSize": "W34",
     "international": "5XL",
     "uk": "22",
     "us": "18",
@@ -736,7 +736,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W35",
+    "waistSize": "W35",
     "international": "6XL",
     "uk": "24",
     "us": "20",
@@ -744,7 +744,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W36",
+    "waistSize": "W36",
     "international": "7XL",
     "uk": "26",
     "us": "22",
@@ -752,7 +752,7 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W37",
+    "waistSize": "W37",
     "international": "8XL",
     "uk": "28",
     "us": "24",
@@ -760,68 +760,12 @@
     "type": "WOMEN'S PANT"
   },
   {
-    "waist_size": "W38",
+    "waistSize": "W38",
     "international": "9XL",
     "uk": "30",
     "us": "26",
     "eu": "58",
     "type": "WOMEN'S PANT"
-  },
-  {
-    "international": "XS",
-    "type": "SOCKS"
-  },
-  {
-    "international": "S",
-    "type": "SOCKS"
-  },
-  {
-    "international": "M",
-    "type": "SOCKS"
-  },
-  {
-    "international": "L",
-    "type": "SOCKS"
-  },
-  {
-    "international": "XL",
-    "type": "SOCKS"
-  },
-  {
-    "international": "XXL",
-    "type": "SOCKS"
-  },
-  {
-    "international": "XXXL",
-    "type": "SOCKS"
-  },
-  {
-    "international": "Xs",
-    "type": "UNDERWEAR"
-  },
-  {
-    "international": "S",
-    "type": "UNDERWEAR"
-  },
-  {
-    "international": "M",
-    "type": "UNDERWEAR"
-  },
-  {
-    "international": "L",
-    "type": "UNDERWEAR"
-  },
-  {
-    "international": "XL",
-    "type": "UNDERWEAR"
-  },
-  {
-    "international": "XXL",
-    "type": "UNDERWEAR"
-  },
-  {
-    "international": "XXXL",
-    "type": "UNDERWEAR"
   },
   {
     "international": "XXXS",

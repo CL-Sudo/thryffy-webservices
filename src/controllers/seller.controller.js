@@ -1,14 +1,14 @@
 import R from 'ramda';
 import formidable from 'formidable';
 import {
-  getShippingFee,
   saveProductImages,
   setThumbnail,
   getProductBrandId,
-  updateProductImages
+  updateProductImages,
+  getOneProductShippingFee
 } from '@services';
 import { isJSON } from '@utils';
-import { Products, ProductColors, SalesOrders, Sizes } from '@models';
+import { Products, ProductColors, SalesOrders, Sizes, Users } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
 import { updateProductValidator } from '@validators/Admin/products.validator';
@@ -36,6 +36,11 @@ export const addProduct = async (req, res, next) => {
         price,
         thumbnailIndex
       } = fields;
+
+      if (sellerId) {
+        const seller = await Users.findOne({ where: { id: sellerId } });
+        if (!seller) throw new Error('Invalid sellerId given');
+      }
 
       const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
 
@@ -110,15 +115,12 @@ export const getProductShippingFee = async (req, res, next) => {
   try {
     requestValidator(req);
 
-    const { productId } = req.query;
-    const ids = productId.split(',');
+    const { categoryId, sizeId } = req.query;
 
-    const shippingFee = await getShippingFee(ids);
+    const shippingFee = await getOneProductShippingFee(categoryId, sizeId);
     return res.status(200).json({
       message: 'success',
-      payload: {
-        shippingFee
-      }
+      payload: shippingFee
     });
   } catch (e) {
     return next(e);
