@@ -2,6 +2,7 @@ import { Admins } from '@models';
 import { USER_TYPE } from '@constants';
 import { hashPassword } from '@tools/bcrypt';
 import { requestValidator } from '@validators';
+import ADMIN_ROLE from '@constants/admin.constant';
 import R from 'ramda';
 
 export const create = async (req, res, next) => {
@@ -21,7 +22,7 @@ export const create = async (req, res, next) => {
     if (password !== confirmPassword)
       throw new Error('Confirmation Password is incorrect, please try again.');
 
-    const admin = await Admins.create({ ...req.body });
+    const admin = await Admins.create({ ...req.body, role: ADMIN_ROLE.OPERATOR });
 
     const payload = Object.assign(admin.dataValues, { type: USER_TYPE.ADMIN });
     delete payload.password;
@@ -37,24 +38,28 @@ export const create = async (req, res, next) => {
 
 export const updateAdmin = async (req, res, next) => {
   try {
-    requestValidator(req);
-
     const { id } = req.user;
     const { id: adminId } = req.params;
+
+    const superadmin = await Admins.findOne({ where: { id } });
+
+    if (superadmin.role !== ADMIN_ROLE.SUPER_ADMIN) {
+      throw new Error('Only Super Admins are allowed to do this operation.');
+    }
 
     const { email, username, password = null } = req.body;
 
     if (!R.isNil(password) && password.length < 4)
       throw new Error('Must contain at least 4 characters');
 
+    const admin = await Admins.findOne({ where: { id: adminId } });
+    if (!admin) throw new Error('Invalid adminId given');
+
     const adminByEmail = await Admins.findOne({ where: { email } });
     if (adminByEmail && adminByEmail.id !== id) throw new Error('Email is not available.');
 
     const adminByUsername = await Admins.findOne({ where: { username } });
     if (adminByUsername && adminByUsername.id !== id) throw new Error('Username is not available.');
-
-    const admin = await Admins.findOne({ where: { id: adminId } });
-    if (!admin) throw new Error('Invalid adminId given');
 
     const updateObj = password
       ? { email, username, password: hashPassword(password), updatedBy: id }

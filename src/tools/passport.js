@@ -52,30 +52,6 @@ passport.use(
 );
 
 passport.use(
-  'phone-number-login',
-  new LocalStrategy(
-    { usernameField: 'phoneNumber', passwordField: 'password' },
-    async (phoneNumber, password, done) => {
-      try {
-        const user = await Users.unscoped().findOne({
-          where: {
-            phoneNumber
-          }
-        });
-        if (R.isNil(user)) return done(null, false, { message: 'User not found' });
-        if (!user.active) return done(null, false, { message: 'Inactive user account' });
-        const isPasswordValid = await user.comparePassword(password);
-        if (!isPasswordValid)
-          return done(null, false, { message: 'Password is incorrect, please try again...' });
-        return done(null, user, { message: 'Login Successfully' });
-      } catch (e) {
-        return done(e);
-      }
-    }
-  )
-);
-
-passport.use(
   'admin-login',
   new LocalStrategy(
     { usernameField: 'email', passwordField: 'password' },

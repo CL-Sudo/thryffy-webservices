@@ -6,7 +6,7 @@ export const SEARCH_TYPES = {
 export const USER_TYPE = {
   ADMIN: 1,
   CUSTOMER: 2,
-  SELLER: 3
+  SUPER_ADMIN: 3
 };
 
 export const COURIER = {

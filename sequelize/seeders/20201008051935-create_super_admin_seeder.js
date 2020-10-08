@@ -5,11 +5,11 @@ module.exports = {
   up: async () => {
     try {
       await Admins.create({
-        id: 2,
-        username: 'admin01',
-        email: 'admin@test.com',
+        id: 1,
+        username: 'superadmin',
+        email: 'superadmin@test.com',
         password: '1234',
-        role: ROLE.OPERATOR
+        role: ROLE.SUPER_ADMIN
       });
       return Promise.resolve();
     } catch (e) {
@@ -17,5 +17,5 @@ module.exports = {
     }
   },
 
-  down: queryInterface => queryInterface.bulkDelete('admins')
+  down: async () => Promise.resolve()
 };
