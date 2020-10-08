@@ -27,14 +27,6 @@ const Admins = SequelizeConnector.define(
       type: Sequelize.STRING,
       allowNull: false
     },
-    firstName: {
-      type: Sequelize.STRING,
-      field: 'first_name'
-    },
-    lastName: {
-      type: Sequelize.STRING,
-      field: 'last_name'
-    },
     active: {
       type: Sequelize.BOOLEAN,
       defaultValue: true
