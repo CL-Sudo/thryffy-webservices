@@ -21,6 +21,9 @@ const Categories = SequelizeConnector.define(
       defaultValue: null
     },
     shippingFeeId: foreignKey('shipping_fee_id', 'shipping_fees', false),
+    default: {
+      type: Sequelize.STRING(30)
+    },
     title: {
       type: Sequelize.STRING(100)
     },
