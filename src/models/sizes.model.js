@@ -10,9 +10,6 @@ const Sizes = SequelizeConnector.define(
     type: {
       type: Sequelize.STRING(50)
     },
-    default: {
-      type: Sequelize.STRING(30)
-    },
     international: {
       type: Sequelize.STRING(30)
     },

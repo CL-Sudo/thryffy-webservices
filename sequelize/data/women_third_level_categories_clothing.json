@@ -12,7 +12,7 @@
     "shippingFeeId": 1
   },
   {
-    "title": "Tops & T-shirts",
+    "title": "Tops & T-Shirts",
     "shippingFeeId": 2
   },
   {
@@ -62,10 +62,6 @@
   {
     "title": "Swim Suits",
     "shippingFeeId": 1
-  },
-  {
-    "title": "Special Outfits",
-    "shippingFeeId": 3
   },
   {
     "title": "Sweaters",

@@ -5,9 +5,27 @@ import R from 'ramda';
 const seedSizes = async (type, categoryId) =>
   new Promise(async (resolve, reject) => {
     try {
+      const waitSize = 'waistSize';
+      const uk = 'uk';
+      const international = 'international';
+      const age = 'age';
       const sizesId = R.map(R.prop('id'))(
         await Sizes.findAll({ raw: true, attributes: ['id'], where: { type } })
       );
+
+      const defaultType = R.cond([
+        [R.equals(Type.WOMEN_CLOTHING), R.always(uk)],
+        [R.equals(Type.WOMEN_PANT), R.always(waitSize)],
+        [R.equals(Type.WOMEN_SHOES), R.always(uk)],
+        [R.equals(Type.MEN_SHOES), R.always(uk)],
+        [R.equals(Type.KID_SHOES), R.always(uk)],
+        [R.equals(Type.MEN_CLOTHING), R.always(international)],
+        [R.equals(Type.KID_CLOTHING), R.always(age)],
+        [R.equals(Type.MEN_PANT), R.always(uk)]
+      ])(type);
+
+      const category = await Categories.findOne({ where: { id: categoryId } });
+      await category.update({ default: defaultType });
 
       const rows = R.map(id => ({
         categoryId,
@@ -62,6 +80,7 @@ module.exports = {
               (c.title === 'Tights & Pantyhoses' ||
                 c.title === 'Leggings' ||
                 c.title === 'Shorts & Capri Pants' ||
+                c.title === 'Pants' ||
                 c.title === 'Lower Active Wears')
             ) {
               await seedSizes(Type.WOMEN_PANT, c.id);
@@ -83,6 +102,7 @@ module.exports = {
                 c.title === 'Jackets' ||
                 c.title === 'Coats' ||
                 c.title === 'Suits' ||
+                c.title === 'Special Costumes & Outfits' ||
                 c.title === 'Blazers')
             ) {
               await seedSizes(Type.MEN_CLOTHING, c.id);
@@ -91,6 +111,7 @@ module.exports = {
               (c.title === 'Pajamas Pants' ||
                 c.title === 'Pants' ||
                 c.title === 'Jeans' ||
+                c.title === 'Shorts' ||
                 c.title === 'Lower Active Wears' ||
                 c.title === 'Swim Trunks')
             ) {
@@ -113,7 +134,8 @@ module.exports = {
                 c.title === 'Coats' ||
                 c.title === 'Suits' ||
                 c.title === 'Blazers' ||
-                c.title === 'Special Costumes & Outfits')
+                c.title === 'Special Costumes & Outfits' ||
+                c.title === 'Winter Jackets')
             ) {
               await seedSizes(Type.KID_CLOTHING, c.id);
             } else if (c.title === 'Shoes' && c.title !== 'Kids') {
