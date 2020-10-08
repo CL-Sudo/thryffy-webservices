@@ -24,7 +24,7 @@ router
   .route('/:id')
   .get(adminPassportMiddleware, controller.readOne)
   .delete(adminPassportMiddleware, controller.destroy)
-  .put(updateAdmin);
+  .put(adminPassportMiddleware, updateAdmin);
 
 router.patch('/activate/:id', adminPassportMiddleware, controller.activate);
 router.patch('/deactivate/:id', adminPassportMiddleware, controller.deactivate);
