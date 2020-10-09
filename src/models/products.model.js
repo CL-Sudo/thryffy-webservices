@@ -73,12 +73,33 @@ const Products = SequelizeConnector.define(
     underscored: false,
     scopes: {
       search: params => search(Products, params, []),
+      default: {
+        attributes: { exclude: defaultExcludeFields },
+        include: [
+          { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
+          { model: Brands, as: 'brand', attributes: { exclude: defaultExcludeFields } },
+          {
+            model: Categories,
+            as: 'category',
+            attributes: { exclude: defaultExcludeFields }
+            // through: { attributes: [] }
+            // include: [{ model: Categories, as: 'parentCategory' }]
+          },
+          { model: ProductColors, as: 'colors', attributes: { exclude: defaultExcludeFields } },
+          { model: Galleries, as: 'photos', attributes: { exclude: defaultExcludeFields } },
+          {
+            model: Users,
+            as: 'seller',
+            attributes: ['id', 'fullName', 'username', 'profilePicture']
+          }
+        ]
+      },
       productPage(productId) {
         return {
           where: { id: productId },
           include: [
             { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
-            { model: Brands, as: 'brand', attributes: ['id', 'title'] },
+            { model: Brands, as: 'brand', attributes: { exclude: defaultExcludeFields } },
             {
               model: Categories,
               as: 'category',
@@ -86,8 +107,8 @@ const Products = SequelizeConnector.define(
               // through: { attributes: [] }
               // include: [{ model: Categories, as: 'parentCategory' }]
             },
-            { model: ProductColors, as: 'colors' },
-            { model: Galleries, as: 'photos' },
+            { model: ProductColors, as: 'colors', attributes: { exclude: defaultExcludeFields } },
+            { model: Galleries, as: 'photos', attributes: { exclude: defaultExcludeFields } },
             {
               model: Users,
               as: 'seller',
