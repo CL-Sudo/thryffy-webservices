@@ -82,7 +82,7 @@ const Products = SequelizeConnector.define(
             {
               model: Categories,
               as: 'category',
-              attributes: ['id', 'title']
+              attributes: { exclude: defaultExcludeFields }
               // through: { attributes: [] }
               // include: [{ model: Categories, as: 'parentCategory' }]
             },

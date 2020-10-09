@@ -133,7 +133,15 @@ Categories.prototype.getListingCount = async function() {
 Categories.prototype.getRoot = async function(categoryId = this.id) {
   try {
     const category = await Categories.findOne({
-      attributes: ['id', 'shipping_fee_id', 'parentId', 'title', 'description', 'thumbnail'],
+      attributes: [
+        'id',
+        'shipping_fee_id',
+        'parentId',
+        'title',
+        'description',
+        'thumbnail',
+        'default'
+      ],
       raw: true,
       where: { id: categoryId }
     });
