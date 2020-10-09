@@ -3,30 +3,35 @@
     "id": 1,
     "price": 2.5,
     "markupPrice": 3,
+    "actualPrice": 4.5,
     "type": "SMALL"
   },
   {
     "id": 2,
     "price": 3,
     "markupPrice": 4,
+    "actualPrice": 6.0,
     "type": "MEDIUM"
   },
   {
     "id": 3,
     "price": 5,
     "markupPrice": 4,
+    "actualPrice": 8.0,
     "type": "LARGE"
   },
   {
     "id": 4,
     "price": 8,
     "markupPrice": 4,
+    "actualPrice": 11.0,
     "type": "MEDIUM PARCEL"
   },
   {
     "id": 5,
     "price": 10,
     "markupPrice": 4,
+    "actualPrice": 13.0,
     "type": "LARGE PARCEL"
   }
 ]

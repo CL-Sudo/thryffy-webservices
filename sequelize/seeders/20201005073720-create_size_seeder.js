@@ -13,5 +13,16 @@ module.exports = {
     }
   },
 
-  down: queryInterface => queryInterface.bulkDelete('sizes')
+  down: async queryInterface => {
+    try {
+      await queryInterface.bulkDelete('product_colors');
+      await queryInterface.bulkDelete('view_histories');
+      await queryInterface.bulkDelete('products');
+      await queryInterface.bulkDelete('category_size');
+      await queryInterface.bulkDelete('sizes');
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
 };
