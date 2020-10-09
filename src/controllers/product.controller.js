@@ -1,4 +1,5 @@
 import { Products, FavouriteProducts } from '@models';
+import { logView } from '@services/view_history.service';
 import R from 'ramda';
 
 export const getOne = async (req, res, next) => {
@@ -14,9 +15,7 @@ export const getOne = async (req, res, next) => {
 
     await product.getExtraFields(id);
 
-    /**
-     * TODO: You may also like
-     */
+    await logView(productId, id);
 
     return res.status(200).json({
       message: 'success',

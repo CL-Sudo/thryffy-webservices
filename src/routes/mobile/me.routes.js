@@ -28,6 +28,6 @@ router.patch(
   controllers.confirmOrderReceived
 );
 
-router.post('/contact-us', validators.contactUsValidator, controllers.contactUs);
+router.get('/products/recommendations', controllers.recommendProducts);
 
 export default router;

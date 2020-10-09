@@ -16,6 +16,11 @@ Models.Users.belongsToMany(Models.Products, {
   through: Models.FavouriteProducts,
   as: 'favouriteProducts'
 });
+Models.Users.belongsToMany(Models.Products, {
+  foreignKey: 'userId',
+  through: Models.ViewHistories,
+  as: 'viewedProducts'
+});
 
 /**
  * Addresses

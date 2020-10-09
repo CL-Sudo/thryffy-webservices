@@ -6,6 +6,7 @@ import formidable from 'formidable';
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
 import { paginate } from '@utils';
 import { DELIVERY_STATUS } from '@constants';
+import { shuffle } from 'lodash';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -366,15 +367,53 @@ export const getMyProfile = async (req, res, next) => {
   }
 };
 
-export const contactUs = async (req, res, next) => {
+export const recommendProducts = async (req, res, next) => {
   try {
-    requestValidator(req);
-    // const { title, description } = req.body;
+    const { id } = req.user;
+    const { limit, offset } = req.query;
 
-    // send Email
+    const user = await Users.findOne({
+      attributes: ['id'],
+      where: { id },
+      include: [
+        {
+          model: Products,
+          as: 'viewedProducts',
+          attributes: ['categoryId'],
+          through: { attributes: [] }
+        }
+      ]
+    });
+
+    const parseObjectToArr = obj =>
+      Object.keys(obj).map(key => ({
+        categoryId: key,
+        length: obj[key].length
+      }));
+    const groupByCategoryId = R.groupBy(product => product.categoryId);
+    const sortByLength = R.sortBy(obj => obj.length);
+
+    const topThreeMostViewedCategories = R.pipe(
+      groupByCategoryId,
+      parseObjectToArr,
+      sortByLength,
+      R.reverse,
+      R.take(3),
+      R.map(R.prop('categoryId'))
+    )(user.viewedProducts);
+
+    const products = await Products.scope('default').findAll({
+      where: { categoryId: topThreeMostViewedCategories }
+    });
+
+    const result = shuffle(products);
 
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload: {
+        count: products.length,
+        rows: paginate(limit)(offset)(result)
+      }
     });
   } catch (e) {
     return next(e);
