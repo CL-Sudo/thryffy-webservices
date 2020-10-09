@@ -1,35 +1,7 @@
 import R from 'ramda';
-import { SearchHistories, Products, Categories } from '@models';
+import { Products, Categories } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { parseKeywordForNLP } from '@utils/query.util';
-
-export const saveKeyword = keyword =>
-  new Promise(async (resolve, reject) => {
-    try {
-      const history = await SearchHistories.findOne({
-        where: { keyword }
-      });
-
-      const saveOrUpdate = async () => {
-        try {
-          if (R.isNil(history)) {
-            await SearchHistories.create({ keyword, searchCount: 1 });
-          } else {
-            history.increment('searchCount');
-          }
-          return Promise.resolve();
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      };
-
-      await saveOrUpdate();
-
-      return resolve();
-    } catch (e) {
-      return reject(e);
-    }
-  });
 
 export const getMostRelevantCategories = async keyword =>
   new Promise(async (resolve, reject) => {

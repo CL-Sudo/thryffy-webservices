@@ -6,12 +6,14 @@ import menSecondLevelData from '../data/men_second_level_categories.json';
 import kidsSecondLevelData from '../data/kids_second_level_categories.json';
 
 import womenThirdLevelClothing from '../data/women_third_level_categories_clothing.json';
+import womenThirdLevelBagWallet from '../data/women_third_level_bag_wallet.json';
 // import womenThirdLevelAccessories from '../data/women_third_level_categories_accessories.json';
 
 // import kidsThirdLevelAccessories from '../data/kids_third_level_categories_accessories.json';
 import kidsThirdLevelClothing from '../data/kids_third_level_categories_clothing.json';
 
 import menThirdLevelClothing from '../data/men_third_level_categories_clothing.json';
+import menThirdLevelBagWallet from '../data/men_third_level_bag_wallet.json';
 // import menThirdLevelAccessories from '../data/men_third_level_categories_accessories.json';
 
 const seedWomenClothing = async parentId => {
@@ -47,6 +49,27 @@ const seedKidsClothing = async parentId => {
   }
 };
 
+const seedMenBagWallet = async parentId => {
+  try {
+    const data = [];
+    menThirdLevelBagWallet.map(obj => data.push({ ...obj, parentId }));
+    await Categories.bulkCreate(data);
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+const seedWomenBagWallet = async parentId => {
+  try {
+    const data = [];
+    womenThirdLevelBagWallet.map(obj => data.push({ ...obj, parentId }));
+    await Categories.bulkCreate(data);
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
 // const seedWomenAccessories = async parentId => {
 //   try {
 //     const data = [];
@@ -121,7 +144,8 @@ const seedWomenSecondLevel = async parentId => {
           }
 
           case 'Bags & Wallets': {
-            await Categories.create({ ...data, parentId });
+            const bagWallet = await Categories.create({ ...data, parentId });
+            await seedWomenBagWallet(bagWallet.id);
             break;
           }
 
@@ -156,6 +180,12 @@ const seedMenSecondLevel = async parentId => {
           case 'Clothing': {
             const cloth = await Categories.create({ ...data, parentId });
             await seedMenClothing(cloth.id);
+            break;
+          }
+
+          case 'Bags & Wallets': {
+            const bagWallet = await Categories.create({ ...data, parentId });
+            await seedMenBagWallet(bagWallet.id);
             break;
           }
 
@@ -251,5 +281,13 @@ module.exports = {
     }
   },
 
-  down: queryInterface => queryInterface.bulkDelete('categories')
+  down: async queryInterface => {
+    try {
+      await queryInterface.bulkDelete('brands');
+      await queryInterface.bulkDelete('categories');
+      return Promise.resolve();
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
 };

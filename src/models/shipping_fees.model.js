@@ -14,6 +14,10 @@ const ShippingFees = SequelizeConnector.define(
       type: Sequelize.DECIMAL(10, 2),
       field: 'markup_price'
     },
+    actualPrice: {
+      type: Sequelize.DECIMAL(10, 2),
+      field: 'actual_price'
+    },
     type: {
       type: Sequelize.STRING(50)
     },

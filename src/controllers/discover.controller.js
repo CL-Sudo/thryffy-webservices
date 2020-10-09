@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { parseKeywordForNLP } from '@utils/query.util';
 import R from 'ramda';
-import { saveKeyword, getChildIds } from '@services';
+import { getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 
@@ -48,8 +48,6 @@ export const discoverList = async (req, res, next) => {
     } = req.query;
 
     const { id } = req.user;
-
-    if (keyword) await saveKeyword(keyword);
 
     const initWhere = [{}];
 
