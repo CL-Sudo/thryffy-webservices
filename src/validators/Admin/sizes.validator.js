@@ -21,7 +21,9 @@ export const createValidator = [
       return Promise.resolve();
     }),
 
-  check('international').trim(),
+  check('international')
+    .trim()
+    .customSanitizer(international => String.prototype.toUpperCase.call(international)),
   check('us').trim(),
   check('uk').trim(),
   check('eu').trim(),
