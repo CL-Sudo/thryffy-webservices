@@ -60,6 +60,19 @@ export const getSizes = async (req, res, next) => {
     const { categoryId } = req.params;
     const { limit, offset } = req.query;
 
+    if (categoryId === 'null') {
+      const sizes = await Sizes.findAndCountAll({
+        attributes: { exclude: defaultExcludeFields },
+        limit: Number(limit) || null,
+        offset: Number(offset) || null
+      });
+
+      return res.status(200).json({
+        message: 'success',
+        payload: sizes
+      });
+    }
+
     const categorySizeIds = R.map(R.prop('sizeId'))(
       await CategorySize.findAll({
         raw: true,
