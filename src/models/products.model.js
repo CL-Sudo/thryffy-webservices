@@ -36,8 +36,19 @@ const Products = SequelizeConnector.define(
     thumbnail: {
       type: Sequelize.STRING
     },
-    price: {
-      type: Sequelize.DECIMAL(10, 2)
+    originalPrice: {
+      type: Sequelize.DECIMAL(10, 2),
+      field: 'original_price'
+    },
+    markupPrice: {
+      type: Sequelize.DECIMAL(10, 2),
+      field: 'markup_price'
+    },
+    displayPrice: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('originalPrice') + this.getDataValue('markupPrice');
+      }
     },
     condition: {
       type: Sequelize.STRING(50)
@@ -123,7 +134,7 @@ const Products = SequelizeConnector.define(
           'title',
           'thumbnail',
           'description',
-          'price',
+          'displayPrice',
           'brandId',
           'sizeId',
           'isAddedToFavourite'

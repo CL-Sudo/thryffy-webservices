@@ -33,7 +33,7 @@ export const addProduct = async (req, res, next) => {
         categoryId,
         sizeId,
         condition,
-        price,
+        price: originalPrice,
         thumbnailIndex
       } = fields;
 
@@ -51,16 +51,19 @@ export const addProduct = async (req, res, next) => {
 
           const brandId = await getProductBrandId(brand);
 
+          const extraCharges = await getOneProductShippingFee(categoryId, sizeId);
+
           const product = await Products.create(
             {
               userId: isAdmin ? sellerId : id,
               categoryId,
               title,
               description,
-              price,
+              originalPrice,
               condition,
               sizeId,
               brandId,
+              markupPrice: extraCharges.markupPrice,
               createdBy: isAdmin ? id : null
             },
             transaction
@@ -177,9 +180,11 @@ export const updateProduct = async (req, res, next) => {
         categoryId,
         sizeId,
         condition,
-        price,
+        price: originalPrice,
         thumbnailIndex
       } = fields;
+
+      const extraCharges = await getOneProductShippingFee(categoryId, sizeId);
 
       const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
 
@@ -196,7 +201,8 @@ export const updateProduct = async (req, res, next) => {
               categoryId,
               sizeId,
               condition,
-              price,
+              originalPrice,
+              markupPrice: extraCharges.markupPrice,
               thumbnailIndex,
               updatedBy: isAdmin ? id : product.userId
             },
