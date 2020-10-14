@@ -20,21 +20,21 @@ export default app => {
   /*
    * Private API
    */
-  app.use('/api/mobile/products', mobileAuth, require('./mobile/products.routes').default);
   app.use('/api/mobile/cart', mobileAuth, require('./mobile/cart.routes').default);
+  app.use('/api/mobile/categories', mobileAuth, require('./mobile/categories.routes').default);
+  app.use('/api/mobile/discover', mobileAuth, require('./mobile/discover.routes').default);
   app.use('/api/mobile/favourites', mobileAuth, require('./mobile/favourites.routes').default);
   app.use('/api/mobile/me', mobileAuth, require('./mobile/me.routes').default);
   app.use('/api/mobile/reviews', mobileAuth, require('./mobile/review.routes').default);
-  app.use('/api/mobile/discover', mobileAuth, require('./mobile/discover.routes').default);
+  app.use('/api/mobile/products', mobileAuth, require('./mobile/products.routes').default);
   app.use('/api/mobile/seller', mobileAuth, require('./mobile/seller.routes').default);
-  app.use('/api/mobile/categories', mobileAuth, require('./mobile/categories.routes').default);
   app.use('/api/mobile/sizes', mobileAuth, require('./mobile/sizes.routes').default);
 
   /*
    * PUBLIC API
    */
-  app.use('/api/mobile/auth/', require('./mobile/authentication.routes').default);
   app.use('/api/auth', require('./authentication.routes').default);
+  app.use('/api/mobile/auth/', require('./mobile/authentication.routes').default);
 
   app.use('/api/test', test);
   /*
