@@ -54,7 +54,7 @@ export const discoverList = async (req, res, next) => {
     const assignPrice = R.ifElse(
       R.always(!R.isNil(maxPrice) && !R.isNil(minPrice)),
       R.append({
-        price: {
+        displayPrice: {
           [Op.and]: [
             {
               [Op.gte]: minPrice
@@ -100,7 +100,7 @@ export const discoverList = async (req, res, next) => {
     const assignOrder = R.ifElse(
       R.always(R.equals('RELEVANCE', order)),
       R.identity,
-      R.assoc('order', [['price', order]])
+      R.assoc('order', [['displayPrice', order]])
     );
 
     const where = R.pipe(

@@ -200,6 +200,12 @@ export const getProductBrandId = async brand =>
     }
   });
 
+/**
+ *
+ * @param {Number} categoryId
+ * @param {Number} sizeId
+ * @returns {Object}
+ */
 export const getOneProductShippingFee = (categoryId, sizeId) =>
   new Promise(async (resolve, reject) => {
     try {
