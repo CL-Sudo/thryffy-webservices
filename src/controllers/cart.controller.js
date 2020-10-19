@@ -185,7 +185,7 @@ export const pay = async (req, res, next) => {
     const { id: userId } = req.user;
     const { productIds, addressId, courier, paymentMethod } = req.body;
 
-    const { subTotal, tax, total, shippingFee } = await services.getPriceSummary(productIds);
+    const { subTotal, tax, total, shippingFeeId } = await services.getPriceSummary(productIds);
 
     const fakeTrackingNo = 'MCB000134456';
 
@@ -219,7 +219,7 @@ export const pay = async (req, res, next) => {
             deliveryStatus: DELIVERY_STATUS.PAID,
             deliveryTrackingNo: fakeTrackingNo,
             subTotal,
-            shippingFee,
+            shippingFeeId,
             tax,
             total
           },
