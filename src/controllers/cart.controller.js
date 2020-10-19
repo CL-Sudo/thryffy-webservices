@@ -187,8 +187,6 @@ export const pay = async (req, res, next) => {
 
     const { subTotal, tax, total, shippingFeeId } = await services.getPriceSummary(productIds);
 
-    const fakeTrackingNo = 'MCB000134456';
-
     const parseOrderItems = ids => async salesOrderId => {
       try {
         const products = await Products.findAll({
@@ -217,7 +215,6 @@ export const pay = async (req, res, next) => {
             courier,
             paymentStatus: PAYMENT_STATUS.SUCCESS,
             deliveryStatus: DELIVERY_STATUS.PAID,
-            deliveryTrackingNo: fakeTrackingNo,
             subTotal,
             shippingFeeId,
             tax,
@@ -243,10 +240,12 @@ export const pay = async (req, res, next) => {
 
     const getPayload = async salesOrderId => {
       try {
-        const payload = await SalesOrders.scope({
+        const order = await SalesOrders.scope({
           method: ['orderDetails', salesOrderId]
         }).findOne();
-        await payload.getItemQuantity();
+        await order.getItemQuantity();
+        const { seller } = order.orderItems[0].product;
+        const payload = R.assoc('seller', seller)(order.dataValues);
         return Promise.resolve(payload);
       } catch (e) {
         return Promise.reject(e);

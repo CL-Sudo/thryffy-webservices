@@ -12,6 +12,10 @@ const Addresses = SequelizeConnector.define(
       type: Sequelize.STRING(100),
       allowNull: false
     },
+    phoneCountryCode: {
+      type: Sequelize.STRING(5),
+      field: 'phone_country_code'
+    },
     phoneNumber: {
       type: Sequelize.STRING(25),
       field: 'phone_number',
