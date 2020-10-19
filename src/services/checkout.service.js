@@ -7,6 +7,7 @@ export const getPriceSummary = async productIds =>
   new Promise(async (resolve, reject) => {
     try {
       const summary = {
+        shippingFeeId: null,
         subTotal: 0,
         shippingFee: 0,
         tax: 0,
@@ -24,14 +25,12 @@ export const getPriceSummary = async productIds =>
           const total = R.view(totalLens, summaryObj);
 
           const products = await Products.findAll({
-            raw: true,
-            attributes: ['price', 'id'],
             where: {
               id: productIds
             }
           });
 
-          const getPriceArr = R.map(R.prop('price'));
+          const getPriceArr = R.map(R.prop('displayPrice'));
           const newSubTotal = R.pipe(getPriceArr, R.sum)(products);
           const newTotal = R.add(total, newSubTotal);
 
@@ -47,17 +46,23 @@ export const getPriceSummary = async productIds =>
         try {
           const shippingLens = R.lens(R.prop('shippingFee'), R.assoc('shippingFee'));
           const totalLens = R.lens(R.prop('total'), R.assoc('total'));
+          const shippingFeeLens = R.lens(R.prop('shippingFeeId'), R.assoc('shippingFeeId'));
 
           const setShipping = R.set(shippingLens);
           const setTotal = R.set(totalLens);
+          const setShippingFeeId = R.set(shippingFeeLens);
 
           const total = R.view(totalLens)(summaryObj);
 
-          const newShipping = await getShippingFee(productIds);
+          const { price, id } = await getShippingFee(productIds);
 
-          const newTotal = R.add(total, newShipping);
+          const newTotal = R.add(total, price);
 
-          const newSummary = R.pipe(setShipping(newShipping), setTotal(newTotal))(summaryObj);
+          const newSummary = R.pipe(
+            setShipping(price),
+            setTotal(newTotal),
+            setShippingFeeId(id)
+          )(summaryObj);
 
           return Promise.resolve(newSummary);
         } catch (e) {

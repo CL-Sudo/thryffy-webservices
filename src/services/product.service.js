@@ -20,11 +20,17 @@ export const getShippingFee = async productIds =>
   new Promise(async (resolve, reject) => {
     try {
       if (productIds.length === 2) {
-        return resolve(7.0);
+        const shippingFee = await ShippingFees.findOne({
+          where: { type: Parcel.TWO_ITEM_LARGE_PARCEL }
+        });
+        return resolve(shippingFee.dataValues);
       }
 
       if (productIds.length > 2) {
-        return resolve(4.0);
+        const shippingFee = await ShippingFees.findOne({
+          where: { type: Parcel.THREE_ITEM_LARGE_PARCEL }
+        });
+        return resolve(shippingFee.dataValues);
       }
 
       const product = await Products.findOne({
@@ -51,20 +57,20 @@ export const getShippingFee = async productIds =>
       const root = await product.category.getRoot();
 
       if (product.category.title === CATEGORY.SHOES && root.title !== CATEGORY.KIDS) {
-        if (Number(product.size.uk) > 9) {
+        if (Number(product.size.uk) > SHIPPING.MAX_SHOES_SIZE_FOR_MEDIUM_PARCEL) {
           const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.LARGE_PARCEL } });
-          return resolve(shippingFee.price);
+          return resolve(shippingFee.dataValues);
         }
         const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
-        return resolve(shippingFee.price);
+        return resolve(shippingFee.dataValues);
       }
 
       if (product.category.title === CATEGORY.SHOES && root.title === CATEGORY.KIDS) {
         const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
-        return resolve(shippingFee.price);
+        return resolve(shippingFee.dataValues);
       }
 
-      return resolve(product.category.shippingFee.price);
+      return resolve(product.category.shippingFee.dataValues);
     } catch (e) {
       return reject(e);
     }
@@ -213,7 +219,6 @@ export const getOneProductShippingFee = (categoryId, sizeId) =>
         where: { id: categoryId },
         include: [
           {
-            attributes: ['price', 'markupPrice'],
             model: ShippingFees,
             as: 'shippingFee'
           }
@@ -221,36 +226,48 @@ export const getOneProductShippingFee = (categoryId, sizeId) =>
       });
 
       if (category.title !== CATEGORY.SHOES) {
-        return resolve({
-          shippingFee: category.shippingFee.price,
-          markupPrice: category.shippingFee.markupPrice
-        });
+        return resolve(category.shippingFee);
       }
 
       const size = await Sizes.findOne({ where: { id: sizeId } });
 
       if (size.uk > SHIPPING.MAX_SHOES_SIZE_FOR_MEDIUM_PARCEL) {
         const largeParcelShippingFee = await ShippingFees.findOne({
-          attributes: ['price', 'markupPrice'],
           where: { type: Parcel.LARGE_PARCEL }
         });
 
-        return resolve({
-          shippingFee: largeParcelShippingFee.price,
-          markupPrice: largeParcelShippingFee.markupPrice
-        });
+        return resolve(largeParcelShippingFee.dataValues);
       }
 
       const mediumParcelShippingFee = await ShippingFees.findOne({
-        attributes: ['price', 'markupPrice'],
         where: { type: Parcel.MEDIUM_PARCEL }
       });
 
-      return resolve({
-        shippingFee: mediumParcelShippingFee.price,
-        markupPrice: mediumParcelShippingFee.markupPrice
-      });
+      return resolve(mediumParcelShippingFee.dataValues);
     } catch (e) {
       return reject(e);
     }
   });
+
+export const getProductCommission = data => price => {
+  const maxPriceLens = R.lens(R.prop('maxPrice'), R.assoc('maxPrice'));
+
+  const setMaxToInfinityIfNull = R.ifElse(
+    R.propEq('maxPrice', null),
+    R.set(maxPriceLens, Infinity),
+    R.identity
+  );
+
+  const isWithinRange = d => d.maxPrice >= price && d.minPrice <= price;
+  const getCommissionPrice = d => R.prop('commissionPrice')(d);
+  const multiplyByRate = d => R.multiply(price, R.prop('commissionRate', d));
+
+  const commission = R.pipe(
+    R.map(setMaxToInfinityIfNull),
+    R.filter(isWithinRange),
+    d => d[0],
+    R.ifElse(d => R.isNil(R.prop('commissionRate', d)), getCommissionPrice, multiplyByRate)
+  )(data);
+
+  return commission;
+};
