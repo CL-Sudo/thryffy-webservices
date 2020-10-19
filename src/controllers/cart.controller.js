@@ -234,19 +234,37 @@ export const pay = async (req, res, next) => {
     const storeOrderItems = async storeArrObj => {
       try {
         await OrderItems.bulkCreate(storeArrObj, { transaction });
-        return Promise.resolve();
+        await transaction.commit();
+        return Promise.resolve(storeArrObj[0].salesOrderId);
       } catch (e) {
         return Promise.reject(e);
       }
     };
 
-    await R.pipeP(storeSaleOrder, parseOrderItems(productIds), storeOrderItems)();
+    const getPayload = async salesOrderId => {
+      try {
+        const payload = await SalesOrders.scope({
+          method: ['orderDetails', salesOrderId]
+        }).findOne();
+        await payload.getItemQuantity();
+        return Promise.resolve(payload);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
+    const payload = await R.pipeP(
+      storeSaleOrder,
+      parseOrderItems(productIds),
+      storeOrderItems,
+      getPayload
+    )();
 
     cartListener.emit('Payment Made', productIds);
 
-    await transaction.commit();
     return res.status(200).json({
-      message: 'success'
+      message: 'success',
+      payload
     });
   } catch (e) {
     await transaction.rollback();
