@@ -160,11 +160,12 @@ export const getOrderDetails = async (req, res, next) => {
   try {
     const { orderId } = req.params;
 
-    const payload = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
+    const order = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
 
-    if (R.isNil(payload)) throw new Error('Invalid orderId given.');
-
-    await payload.getItemQuantity();
+    if (R.isNil(order)) throw new Error('Invalid orderId given.');
+    await order.getItemQuantity();
+    const { seller } = order.orderItems[0].product;
+    const payload = R.assoc('seller', seller)(order.dataValues);
 
     return res.status(200).json({
       message: 'success',
