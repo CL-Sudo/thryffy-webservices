@@ -34,6 +34,10 @@ Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'userId', as: 'buyer' }
 Models.SalesOrders.hasMany(Models.OrderItems, { foreignKey: 'salesOrderId', as: 'orderItems' });
 Models.SalesOrders.belongsTo(Models.Addresses, { foreignKey: 'addressId', as: 'address' });
 Models.SalesOrders.hasOne(Models.Reviews, { foreignKey: 'orderId', as: 'review' });
+Models.SalesOrders.belongsTo(Models.ShippingFees, {
+  foreignKey: 'shippingFeeId',
+  as: 'shippingFee'
+});
 
 /**
  * OrderItems

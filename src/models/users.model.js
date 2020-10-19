@@ -3,10 +3,19 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, active } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
-import { Products, Reviews, FavouriteProducts, Brands } from '@models';
+import {
+  Products,
+  Reviews,
+  FavouriteProducts,
+  Brands,
+  SalesOrders,
+  OrderItems,
+  ShippingFees
+} from '@models';
 import R from 'ramda';
 import { Op } from 'sequelize';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
+import { getShippingFee } from '@services/product.service';
 
 const Users = SequelizeConnector.define(
   'Users',
@@ -255,34 +264,59 @@ Users.prototype.getAverageRating = async function() {
 
 Users.prototype.getEarnings = async function() {
   try {
-    const products = await Products.findAll({
+    const sales = await SalesOrders.findAll({
       where: {
-        id: {
-          [Op.in]: [
-            Sequelize.literal(`
-            SELECT product_id from order_items
-            WHERE sales_order_id IN (
-              SELECT id FROM sales_orders
-              WHERE
-              payment_status = '${PAYMENT_STATUS.SUCCESS}'
-              AND
-              delivery_status = '${DELIVERY_STATUS.COMPLETED}'
-            )
-          `)
+        id: [
+          Sequelize.literal(
+            `SELECT id FROM order_items
+              WHERE product_id IN (
+                SELECT id FROM products
+                WHERE user_id = ${this.id}
+          )`
+          )
+        ],
+        paymentStatus: PAYMENT_STATUS.SUCCESS,
+        deliveryStatus: DELIVERY_STATUS.COMPLETED
+      },
+      include: [
+        {
+          model: OrderItems,
+          as: 'orderItems',
+          include: [
+            {
+              model: Products,
+              as: 'product'
+            }
           ]
         },
-        userId: this.id
-      }
+        {
+          model: ShippingFees,
+          as: 'shippingFee'
+        }
+      ]
     });
 
-    const prices = R.map(R.prop('price'))(products);
+    const productOriginalPrices = R.pipe(
+      R.map(R.prop('orderItems')),
+      R.flatten,
+      R.map(R.prop('product')),
+      R.map(R.prop('originalPrice'))
+    )(sales);
 
-    const earning = R.cond([
-      [R.isEmpty, R.always(0)],
-      [R.T, R.sum]
-    ])(prices);
+    const shippingFees = R.map(R.path(['shippingFee', 'actualPrice']))(sales);
 
-    this.setDataValue('earning', earning);
+    const commission = R.sum(
+      await Promise.all(
+        sales.map(async sale => {
+          const c = await sale.getCommission();
+          return c;
+        })
+      )
+    );
+
+    const earning = R.sum(productOriginalPrices) + R.sum(shippingFees) - commission;
+    this.setDataValue('earning', Number(earning.toFixed(2)));
+    return Number(earning.toFixed(2));
   } catch (e) {
     throw e;
   }
