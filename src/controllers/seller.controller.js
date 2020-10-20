@@ -240,3 +240,23 @@ export const updateProduct = async (req, res, next) => {
     }
   });
 };
+
+export const updateTrackingNo = async (req, res, next) => {
+  try {
+    const { orderId, deliveryTrackingNo } = req.body;
+
+    if (!orderId || orderId.length === 0) throw new Error('orderId required');
+    if (!deliveryTrackingNo || deliveryTrackingNo.length === 0)
+      throw new Error('deliveryTrackingNo required');
+
+    const order = await SalesOrders.findOne({ where: { id: orderId } });
+    if (!order) throw new Error('Invalid orderId given.');
+
+    await order.update({ deliveryTrackingNo, deliveryStatus: DELIVERY_STATUS.SHIPPED });
+    await order.reload();
+
+    return res.status(200).json({ message: 'success', payload: order });
+  } catch (e) {
+    return next(e);
+  }
+};
