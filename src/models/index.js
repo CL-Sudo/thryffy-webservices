@@ -21,3 +21,4 @@ export * from './sizes.model';
 export * from './category_size.model';
 export * from './view_histories.model';
 export * from './commission.model';
+export * from './banners.model';

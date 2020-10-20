@@ -17,6 +17,7 @@ export default app => {
   app.use('/api/categories', adminAuth, require('./category.routes').default);
   app.use('/api/products', adminAuth, require('./product.routes').default);
   app.use('/api/sizes', adminAuth, require('./size.routes').default);
+  app.use('/api/banners', adminAuth, require('./banner.routes').default);
   /*
    * Private API
    */

@@ -5,5 +5,7 @@ export default {
 
   GALLERY_URL: 'thryffy/gallery/',
 
-  CATEGORY_THUMBNAIL: 'thryffy/category-thumbnail/'
+  CATEGORY_THUMBNAIL: 'thryffy/category-thumbnail/',
+
+  BANNER_URL: 'thryffy/banner/'
 };
