@@ -36,15 +36,15 @@ export const addProductValidator = async fields =>
   });
 
 export const markAsShippedValidator = [
-  check('deliveryTrackingNo')
+  check('orderId')
     .exists()
     .isLength({ min: 1 })
     .withMessage('Required')
-    .custom(async (deliveryTrackingNo, { req }) => {
+    .custom(async (orderId, { req }) => {
       const { id } = req.user;
 
       const order = await SalesOrders.findOne({
-        where: { deliveryTrackingNo },
+        where: { id: orderId },
         include: [
           {
             model: OrderItems,
@@ -60,8 +60,7 @@ export const markAsShippedValidator = [
       });
 
       const sellerId = R.pathOr(null, ['orderItems', 0, 'product', 'userId'])(order);
-
-      if (R.isNil(order) || sellerId !== id) throw new Error('Invalid Tracking No. Given.');
+      if (R.isNil(order) || sellerId !== id) throw new Error('Invalid orderId Given.');
 
       if (order.deliveryStatus !== DELIVERY_STATUS.TO_SHIP) {
         throw new Error(`This order has been ${R.toLower(order.deliveryStatus)}`);

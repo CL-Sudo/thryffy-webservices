@@ -134,10 +134,10 @@ export const markAsShipped = async (req, res, next) => {
   try {
     requestValidator(req);
 
-    const { deliveryTrackingNo } = req.body;
+    const { orderId } = req.body;
 
     const order = await SalesOrders.findOne({
-      where: { deliveryTrackingNo }
+      where: { id: orderId }
     });
 
     await order.update({ deliveryStatus: DELIVERY_STATUS.SHIPPED });
