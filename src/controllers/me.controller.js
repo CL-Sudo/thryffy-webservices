@@ -7,6 +7,7 @@ import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
 import { paginate } from '@utils';
 import { DELIVERY_STATUS } from '@constants';
 import { shuffle } from 'lodash';
+import { Op } from 'sequelize';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -98,8 +99,13 @@ export const updateAddress = async (req, res, next) => {
       throw new Error('Invalid addressId given');
     }
 
+    if (address.userId !== id) throw new Error('This address does not belong to you.');
+
     if (isDefault) {
-      await Addresses.update({ isDefault: false }, { where: { userId: id, isDefault: true } });
+      await Addresses.update(
+        { isDefault: false },
+        { where: { userId: id, isDefault: true, id: { [Op.ne]: addressId } } }
+      );
     }
 
     await address.update(req.body);
