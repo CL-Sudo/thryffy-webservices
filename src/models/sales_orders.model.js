@@ -173,7 +173,7 @@ const SalesOrders = SequelizeConnector.define(
                     {
                       model: Brands,
                       as: 'brand',
-                      attributes: ['id', 'title']
+                      attributes: { exclude: defaultExcludeFields }
                     }
                   ]
                 }
@@ -200,19 +200,19 @@ const SalesOrders = SequelizeConnector.define(
           attributes: { exclude: ['deletedAt', 'createdBy', 'updatedBy', 'deletedBy'] },
           include: [
             {
-              attributes: ['id', 'salesOrderId', 'productId'],
+              attributes: { exclude: defaultExcludeFields },
               model: OrderItems,
               as: 'orderItems',
               include: [
                 {
-                  attributes: ['id', 'title', 'thumbnail'],
+                  attributes: { exclude: defaultExcludeFields },
                   model: Products,
                   as: 'product',
                   include: [
                     {
                       model: Brands,
                       as: 'brand',
-                      attributes: ['id', 'title']
+                      attributes: { exclude: defaultExcludeFields }
                     }
                   ]
                 }
