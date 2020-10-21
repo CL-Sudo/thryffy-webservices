@@ -9,7 +9,16 @@ import {
 } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
-import { OrderItems, Users, Products, Addresses, Brands, Commissions, ShippingFees } from '@models';
+import {
+  OrderItems,
+  Users,
+  Products,
+  Addresses,
+  Brands,
+  Commissions,
+  ShippingFees,
+  Reviews
+} from '@models';
 import R from 'ramda';
 import { Op } from 'sequelize';
 import { getProductCommission } from '@services/product.service';
@@ -66,6 +75,12 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.VIRTUAL,
       get() {
         return this.getDataValue('itemQuantity');
+      }
+    },
+    hasReview: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('hasReview');
       }
     },
     ...AT_RECORDER,
@@ -263,6 +278,25 @@ SalesOrders.prototype.getCommission = async function() {
     )(items);
 
     return commission;
+  } catch (e) {
+    throw e;
+  }
+};
+
+SalesOrders.prototype.checkHasReviewed = async function() {
+  try {
+    const review = await Reviews.findOne({ where: { orderId: this.id } });
+    this.setDataValue('hasReview', review !== null);
+  } catch (e) {
+    throw e;
+  }
+};
+
+SalesOrders.prototype.getExtraFields = async function() {
+  try {
+    await this.checkHasReviewed();
+    await this.getCommission();
+    await this.getItemQuantity();
   } catch (e) {
     throw e;
   }

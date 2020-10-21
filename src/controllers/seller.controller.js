@@ -143,6 +143,7 @@ export const markAsShipped = async (req, res, next) => {
     await order.update({ deliveryStatus: DELIVERY_STATUS.SHIPPED, deliveryTrackingNo });
 
     const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+    await payload.getExtraFields();
 
     return res.status(200).json({
       message: 'success',
