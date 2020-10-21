@@ -157,7 +157,7 @@ const SalesOrders = SequelizeConnector.define(
         const where = assignDeliveryStatus(processedDeliveryStatus)(initialWhereObj);
 
         return {
-          attributes: ['id', 'total', 'deliveryStatus', 'createdAt', 'updatedAt'],
+          attributes: { exclude: ['deletedAt', 'createdBy', 'updatedBy', 'deletedBy'] },
           where,
           include: [
             {
@@ -197,7 +197,7 @@ const SalesOrders = SequelizeConnector.define(
 
         return {
           where,
-          attributes: ['id', 'total', 'deliveryStatus', 'createdAt', 'updatedAt'],
+          attributes: { exclude: ['deletedAt', 'createdBy', 'updatedBy', 'deletedBy'] },
           include: [
             {
               attributes: ['id', 'salesOrderId', 'productId'],
