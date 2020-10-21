@@ -214,7 +214,7 @@ export const pay = async (req, res, next) => {
             paymentMethod,
             courier,
             paymentStatus: PAYMENT_STATUS.SUCCESS,
-            deliveryStatus: DELIVERY_STATUS.PAID,
+            deliveryStatus: DELIVERY_STATUS.TO_SHIP,
             subTotal,
             shippingFeeId,
             tax,
