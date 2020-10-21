@@ -151,7 +151,7 @@ const Users = SequelizeConnector.define(
     reviewCount: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.getDataValue('reviewQuantity');
+        return this.getDataValue('reviewCount');
       }
     },
     averageRating: {

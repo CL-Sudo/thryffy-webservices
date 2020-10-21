@@ -244,6 +244,7 @@ export const pay = async (req, res, next) => {
           method: ['orderDetails', salesOrderId]
         }).findOne();
         await order.getItemQuantity();
+        await order.checkHasReviewed();
         const { seller } = order.orderItems[0].product;
         const payload = R.assoc('seller', seller)(order.dataValues);
         return Promise.resolve(payload);

@@ -170,6 +170,7 @@ export const getOrderDetails = async (req, res, next) => {
 
     if (R.isNil(order)) throw new Error('Invalid orderId given.');
     await order.getItemQuantity();
+    await order.checkHasReviewed();
     const { seller } = order.orderItems[0].product;
     const payload = R.assoc('seller', seller)(order.dataValues);
 
@@ -347,6 +348,7 @@ export const confirmOrderReceived = async (req, res, next) => {
     await order.update({ deliveryStatus: DELIVERY_STATUS.COMPLETED });
 
     const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+    await payload.getExtraFields();
 
     return res.status(200).json({
       message: 'success',
