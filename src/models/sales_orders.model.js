@@ -77,10 +77,10 @@ const SalesOrders = SequelizeConnector.define(
         return this.getDataValue('itemQuantity');
       }
     },
-    hasReview: {
+    hasReviewed: {
       type: Sequelize.VIRTUAL,
       get() {
-        return this.getDataValue('hasReview');
+        return this.getDataValue('hasReviewed');
       }
     },
     ...AT_RECORDER,
@@ -286,7 +286,7 @@ SalesOrders.prototype.getCommission = async function() {
 SalesOrders.prototype.checkHasReviewed = async function() {
   try {
     const review = await Reviews.findOne({ where: { orderId: this.id } });
-    this.setDataValue('hasReview', review !== null);
+    this.setDataValue('hasReviewed', review !== null);
   } catch (e) {
     throw e;
   }
