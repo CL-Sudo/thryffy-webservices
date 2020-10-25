@@ -207,9 +207,11 @@ export const pay = async (req, res, next) => {
 
     const storeSaleOrder = async () => {
       try {
+        const product = await Products.findOne({ where: { id: productIds[0] } });
         const saleOrder = await SalesOrders.create(
           {
             userId,
+            sellerId: product.userId,
             addressId,
             paymentMethod,
             courier,
@@ -238,6 +240,16 @@ export const pay = async (req, res, next) => {
       }
     };
 
+    const storeCommission = async salesOrderId => {
+      try {
+        const sale = await SalesOrders.findOne({ where: { id: salesOrderId } });
+        await sale.update({ commission: await sale.getCommission() });
+        return Promise.resolve(salesOrderId);
+      } catch (e) {
+        return Promise.reject(e);
+      }
+    };
+
     const getPayload = async salesOrderId => {
       try {
         const order = await SalesOrders.scope({
@@ -257,6 +269,7 @@ export const pay = async (req, res, next) => {
       storeSaleOrder,
       parseOrderItems(productIds),
       storeOrderItems,
+      storeCommission,
       getPayload
     )();
 

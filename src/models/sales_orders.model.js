@@ -35,6 +35,7 @@ const SalesOrders = SequelizeConnector.define(
   {
     id: primaryKey,
     userId: foreignKey('user_id', 'users', false),
+    sellerId: foreignKey('seller_id', 'users', false),
     addressId: foreignKey('address_id', 'addresses', false),
     orderRef: {
       type: Sequelize.STRING(20),
@@ -70,6 +71,18 @@ const SalesOrders = SequelizeConnector.define(
     },
     total: {
       type: Sequelize.DECIMAL(10, 2)
+    },
+    commission: {
+      type: Sequelize.DECIMAL(10, 2)
+    },
+    isCommissionPaid: {
+      type: Sequelize.BOOLEAN,
+      field: 'is_commission_paid',
+      defaultValue: false
+    },
+    commissionPaidAt: {
+      type: Sequelize.DATE,
+      field: 'commission_paid_at'
     },
     itemQuantity: {
       type: Sequelize.VIRTUAL,
@@ -276,7 +289,6 @@ SalesOrders.prototype.getCommission = async function() {
       R.map(getProductCommission(rates)),
       R.sum
     )(items);
-
     return commission;
   } catch (e) {
     throw e;

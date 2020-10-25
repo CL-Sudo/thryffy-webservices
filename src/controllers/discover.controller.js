@@ -68,18 +68,6 @@ export const discoverList = async (req, res, next) => {
       R.identity
     );
 
-    // const assignCategoryId = R.ifElse(
-    //   R.always(R.isNil(categoryId) || categoryId === 'ALL'),
-    //   R.identity,
-    //   R.append({ category_id: categoryId })
-    // );
-
-    // const assignBrand = R.ifElse(
-    //   R.always(R.isNil(brand)),
-    //   R.identity,
-    //   R.append({ brand: { [Op.like]: `%${brand}%` } })
-    // );
-
     const assignCond = R.ifElse(R.always(R.isNil(condition)), R.identity, R.append({ condition }));
 
     // const assignSize = R.ifElse(R.always(R.isNil(size)), R.identity, R.append({ size }));
@@ -103,14 +91,7 @@ export const discoverList = async (req, res, next) => {
       R.assoc('order', [['displayPrice', order]])
     );
 
-    const where = R.pipe(
-      // assignBrand,
-      assignCond,
-      // assignSize,
-      assignTitle,
-      assignPrice
-      // assignCategoryId
-    )(initWhere);
+    const where = R.pipe(assignCond, assignTitle, assignPrice)(initWhere);
 
     const childIds = categoryId ? await getChildIds(categoryId) : null;
 

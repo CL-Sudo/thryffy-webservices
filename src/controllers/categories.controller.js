@@ -1,8 +1,7 @@
-import { Categories, Sizes, CategorySize } from '@models';
+import { Categories } from '@models';
 import { Op } from 'sequelize';
 import { requestValidator } from '@validators';
 import R from 'ramda';
-import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 export const list = async (req, res, next) => {
   try {
