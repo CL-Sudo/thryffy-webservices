@@ -13,9 +13,7 @@ import {
   ShippingFees
 } from '@models';
 import R from 'ramda';
-import { Op } from 'sequelize';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
-import { getShippingFee } from '@services/product.service';
 
 const Users = SequelizeConnector.define(
   'Users',

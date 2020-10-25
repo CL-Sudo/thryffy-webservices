@@ -21,6 +21,7 @@ Models.Users.belongsToMany(Models.Products, {
   through: Models.ViewHistories,
   as: 'viewedProducts'
 });
+Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'sellerId', as: 'seller' });
 
 /**
  * Addresses
@@ -38,6 +39,7 @@ Models.SalesOrders.belongsTo(Models.ShippingFees, {
   foreignKey: 'shippingFeeId',
   as: 'shippingFee'
 });
+Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'sellerId', as: 'seller' });
 
 /**
  * OrderItems
