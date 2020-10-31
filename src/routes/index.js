@@ -31,6 +31,7 @@ export default app => {
   app.use('/api/mobile/products', mobileAuth, require('./mobile/products.routes').default);
   app.use('/api/mobile/seller', mobileAuth, require('./mobile/seller.routes').default);
   app.use('/api/mobile/sizes', mobileAuth, require('./mobile/sizes.routes').default);
+  app.use('/api/mobile/contact-us', mobileAuth, require('./mobile/contact_us.routes').default);
 
   /*
    * PUBLIC API
