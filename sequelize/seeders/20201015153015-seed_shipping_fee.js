@@ -10,16 +10,16 @@ module.exports = {
           markup_price: 4.0,
           actual_price: 13.0,
           type: PARCEL.TWO_ITEM_LARGE_PARCEL,
-          createdAt: dateTime,
-          updatedAt: dateTime
+          created_at: dateTime,
+          updated_at: dateTime
         },
         {
           price: 4.0,
           markup_price: 4.0,
           actual_price: 13.0,
           type: PARCEL.THREE_ITEM_LARGE_PARCEL,
-          createdAt: dateTime,
-          updatedAt: dateTime
+          created_at: dateTime,
+          updated_at: dateTime
         }
       ]);
       return Promise.resolve();
