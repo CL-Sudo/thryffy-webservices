@@ -3,9 +3,11 @@ export default {
 
   PROFILE_PHOTO_DIR: 'thryffy/profile_pictures/',
 
-  GALLERY_URL: 'thryffy/gallery/',
+  GALLERY_URL: 'thryffy/galleries/',
 
-  CATEGORY_THUMBNAIL: 'thryffy/category-thumbnail/',
+  CATEGORY_THUMBNAIL: 'thryffy/category-thumbnails/',
 
-  BANNER_URL: 'thryffy/banner/'
+  BANNER_URL: 'thryffy/banners/',
+
+  ENQUIRY_URL: 'thryffy/enquiries/'
 };

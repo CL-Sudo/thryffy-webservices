@@ -119,3 +119,5 @@ Models.Sizes.hasMany(Models.Products, { foreignKey: 'sizeId', as: 'products' });
  * ShippingFees
  */
 Models.ShippingFees.hasMany(Models.Categories, { foreignKey: 'shippingFeeId', as: 'category' });
+
+Models.Enquiries.hasMany(Models.EnquiryImages, { foreignKey: 'enquiryId', as: 'images' });
