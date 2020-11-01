@@ -40,6 +40,7 @@ Models.SalesOrders.belongsTo(Models.ShippingFees, {
   as: 'shippingFee'
 });
 Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'sellerId', as: 'seller' });
+Models.SalesOrders.hasOne(Models.Disputes, { foreignKey: 'orderId', as: 'dispute' });
 
 /**
  * OrderItems
@@ -120,4 +121,18 @@ Models.Sizes.hasMany(Models.Products, { foreignKey: 'sizeId', as: 'products' });
  */
 Models.ShippingFees.hasMany(Models.Categories, { foreignKey: 'shippingFeeId', as: 'category' });
 
+/**
+ * Enquiries
+ */
 Models.Enquiries.hasMany(Models.EnquiryImages, { foreignKey: 'enquiryId', as: 'images' });
+
+/**
+ * Disputes
+ */
+Models.Disputes.hasMany(Models.DisputesImages, { foreignKey: 'disputeId', as: 'images' });
+Models.Disputes.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'order' });
+
+/**
+ * DisputeImages
+ */
+Models.DisputesImages.belongsTo(Models.Disputes, { foreignKey: 'disputeId', as: 'dispute' });

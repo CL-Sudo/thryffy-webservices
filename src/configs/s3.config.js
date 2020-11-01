@@ -9,5 +9,7 @@ export default {
 
   BANNER_URL: 'thryffy/banners/',
 
-  ENQUIRY_URL: 'thryffy/enquiries/'
+  ENQUIRY_URL: 'thryffy/enquiries/',
+
+  DISPUTE_URL: 'thryffy/disputes/'
 };
