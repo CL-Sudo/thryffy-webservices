@@ -24,3 +24,5 @@ export * from './commission.model';
 export * from './banners.model';
 export * from './enquiries.model';
 export * from './enquiry_images.model';
+export * from './disputes.model';
+export * from './dispute_images.model';

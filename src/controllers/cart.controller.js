@@ -240,10 +240,13 @@ export const pay = async (req, res, next) => {
       }
     };
 
-    const storeCommission = async salesOrderId => {
+    const storeExtraFields = async salesOrderId => {
       try {
         const sale = await SalesOrders.findOne({ where: { id: salesOrderId } });
-        await sale.update({ commission: await sale.getCommission() });
+        await sale.update({
+          commission: await sale.getCommission(),
+          parcelType: await sale.getParcelType()
+        });
         return Promise.resolve(salesOrderId);
       } catch (e) {
         return Promise.reject(e);
@@ -269,7 +272,7 @@ export const pay = async (req, res, next) => {
       storeSaleOrder,
       parseOrderItems(productIds),
       storeOrderItems,
-      storeCommission,
+      storeExtraFields,
       getPayload
     )();
 

@@ -9,6 +9,7 @@ import {
 } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
+import PARCEL_TYPES from '@constants/parcel_types.constant';
 import {
   OrderItems,
   Users,
@@ -40,6 +41,10 @@ const SalesOrders = SequelizeConnector.define(
     orderRef: {
       type: Sequelize.STRING(20),
       field: 'order_ref'
+    },
+    parcelType: {
+      type: Sequelize.STRING(20),
+      field: 'parcel_type'
     },
     paymentMethod: {
       type: Sequelize.STRING(50),
@@ -299,6 +304,30 @@ SalesOrders.prototype.checkHasReviewed = async function() {
   try {
     const review = await Reviews.findOne({ where: { orderId: this.id } });
     this.setDataValue('hasReviewed', review !== null);
+  } catch (e) {
+    throw e;
+  }
+};
+
+SalesOrders.prototype.getParcelType = async function() {
+  try {
+    const items = await OrderItems.findAll({ where: { salesOrderId: this.id } });
+
+    switch (items.length) {
+      case 1: {
+        const shippingFee = await ShippingFees.findOne({ where: { id: this.shippingFeeId } });
+        return shippingFee.type;
+      }
+
+      case 2: {
+        return PARCEL_TYPES.LARGE_PARCEL;
+      }
+
+      case 3:
+        return PARCEL_TYPES.LARGE_PARCEL;
+
+      default:
+    }
   } catch (e) {
     throw e;
   }
