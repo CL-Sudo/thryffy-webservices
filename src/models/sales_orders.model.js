@@ -89,6 +89,16 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'commission_paid_at'
     },
+    hasBuyerDispute: {
+      type: Sequelize.BOOLEAN,
+      field: 'has_buyer_dispute',
+      defaultValue: false
+    },
+    hasSellerDispute: {
+      type: Sequelize.BOOLEAN,
+      field: 'has_seller_dispute',
+      defaultValue: false
+    },
     itemQuantity: {
       type: Sequelize.VIRTUAL,
       get() {

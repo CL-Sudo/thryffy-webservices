@@ -6,6 +6,7 @@ import { uploadFileToS3 } from '@tools/s3';
 import { parsePathForDBStoring } from '@utils/s3.util';
 import S3 from '@configs/s3.config';
 import { DELIVERY_STATUS } from '@constants';
+import { disputeListener } from '@listeners/dispute.listener';
 
 export const create = async (req, res, next) => {
   const { orderId } = req.params;
@@ -39,6 +40,8 @@ export const create = async (req, res, next) => {
           await DisputesImages.bulkCreate(imageArr, { transaction });
         }
 
+        await order.update({ hasBuyerDispute: true }, { transaction });
+
         return dispute.id;
       });
 
@@ -51,6 +54,8 @@ export const create = async (req, res, next) => {
           }
         ]
       });
+
+      disputeListener.emit('DISPUTE CREATED', order.dataValues);
 
       return res.status(200).json({
         message: 'success',

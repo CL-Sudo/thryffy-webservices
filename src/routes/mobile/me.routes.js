@@ -30,4 +30,6 @@ router.patch(
 
 router.get('/products/recommendations', controllers.recommendProducts);
 
+router.patch('/device-token', controllers.updateDeviceToken);
+
 export default router;
