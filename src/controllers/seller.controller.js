@@ -14,6 +14,7 @@ import { addProductValidator } from '@validators/seller.validator';
 import { updateProductValidator } from '@validators/Admin/products.validator';
 import { requestValidator } from '@validators/index';
 import { DELIVERY_STATUS, USER_TYPE } from '@constants';
+import { postTrackingNumber } from '@services/trackingmore.service';
 
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
@@ -145,11 +146,14 @@ export const markAsShipped = async (req, res, next) => {
     const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
     await payload.getExtraFields();
 
+    await postTrackingNumber(deliveryTrackingNo);
+
     return res.status(200).json({
       message: 'success',
       payload
     });
   } catch (e) {
+    console.log('e', e);
     return next(e);
   }
 };

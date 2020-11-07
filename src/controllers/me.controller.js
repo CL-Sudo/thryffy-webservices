@@ -428,3 +428,15 @@ export const recommendProducts = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const updateDeviceToken = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { deviceToken } = req.body;
+    const user = await Users.findOne({ where: { id } });
+    await user.update({ deviceToken });
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};

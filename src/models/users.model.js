@@ -113,6 +113,10 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'google_id'
     },
+    deviceToken: {
+      type: Sequelize.STRING,
+      field: 'device_token'
+    },
     profilePicture: {
       type: Sequelize.STRING,
       field: 'profile_picture'

@@ -22,6 +22,7 @@ Models.Users.belongsToMany(Models.Products, {
   as: 'viewedProducts'
 });
 Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'sellerId', as: 'seller' });
+Models.Users.hasMany(Models.Notifications, { foreignKey: 'notifierId', as: 'notifications' });
 
 /**
  * Addresses
@@ -136,3 +137,10 @@ Models.Disputes.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'orde
  * DisputeImages
  */
 Models.DisputesImages.belongsTo(Models.Disputes, { foreignKey: 'disputeId', as: 'dispute' });
+
+/**
+ * Notifications
+ */
+
+Models.Notifications.belongsTo(Models.Users, { foreignKey: 'notifierId', as: 'notifier' });
+Models.Notifications.belongsTo(Models.Users, { foreignKey: 'actorId', as: 'actor' });
