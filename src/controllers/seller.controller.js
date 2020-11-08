@@ -15,6 +15,7 @@ import { updateProductValidator } from '@validators/Admin/products.validator';
 import { requestValidator } from '@validators/index';
 import { DELIVERY_STATUS, USER_TYPE } from '@constants';
 import { postTrackingNumber } from '@services/trackingmore.service';
+import { sellerListener } from '@listeners/seller.listener';
 
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
@@ -148,12 +149,13 @@ export const markAsShipped = async (req, res, next) => {
 
     await postTrackingNumber(deliveryTrackingNo);
 
+    sellerListener.emit('MARKED AS SHIPPED', payload);
+
     return res.status(200).json({
       message: 'success',
       payload
     });
   } catch (e) {
-    console.log('e', e);
     return next(e);
   }
 };

@@ -1,5 +1,6 @@
 import { requestValidator } from '@validators';
 import { Brands, OrderItems, Products, Reviews } from '@models';
+import { reviewListener } from '@listeners/review.listener';
 
 export const create = async (req, res, next) => {
   try {
@@ -32,6 +33,8 @@ export const create = async (req, res, next) => {
       comment,
       createdBy
     });
+
+    reviewListener.emit('REVIEW RECEIVED', review);
 
     return res.status(200).json({
       message: 'success',

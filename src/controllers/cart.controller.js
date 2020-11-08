@@ -276,7 +276,7 @@ export const pay = async (req, res, next) => {
       getPayload
     )();
 
-    cartListener.emit('Payment Made', productIds);
+    cartListener.emit('Payment Made', productIds, payload);
 
     return res.status(200).json({
       message: 'success',

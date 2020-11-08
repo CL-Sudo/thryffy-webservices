@@ -132,6 +132,7 @@ Models.Enquiries.hasMany(Models.EnquiryImages, { foreignKey: 'enquiryId', as: 'i
  */
 Models.Disputes.hasMany(Models.DisputesImages, { foreignKey: 'disputeId', as: 'images' });
 Models.Disputes.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'order' });
+Models.Disputes.hasOne(Models.DisputeResponses, { foreignKey: 'disputeId', as: 'response' });
 
 /**
  * DisputeImages
@@ -144,3 +145,17 @@ Models.DisputesImages.belongsTo(Models.Disputes, { foreignKey: 'disputeId', as: 
 
 Models.Notifications.belongsTo(Models.Users, { foreignKey: 'notifierId', as: 'notifier' });
 Models.Notifications.belongsTo(Models.Users, { foreignKey: 'actorId', as: 'actor' });
+
+/**
+ * DisputeResponses
+ */
+Models.DisputeResponses.hasMany(Models.ResponseImages, { foreignKey: 'responseId', as: 'images' });
+Models.DisputeResponses.belongsTo(Models.Disputes, { foreignKey: 'disputeId', as: 'dispute' });
+
+/**
+ * ResponseImages
+ */
+Models.ResponseImages.belongsTo(Models.DisputeResponses, {
+  foreignKey: 'responseId',
+  as: 'response'
+});

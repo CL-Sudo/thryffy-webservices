@@ -11,5 +11,7 @@ export default {
 
   ENQUIRY_URL: 'thryffy/enquiries/',
 
-  DISPUTE_URL: 'thryffy/disputes/'
+  DISPUTE_URL: 'thryffy/disputes/',
+
+  DISPUTE_RESPONSE_URL: 'thryffy/dispute_responses/'
 };

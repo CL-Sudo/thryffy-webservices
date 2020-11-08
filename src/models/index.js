@@ -27,3 +27,5 @@ export * from './enquiry_images.model';
 export * from './disputes.model';
 export * from './dispute_images.model';
 export * from './notifications.model';
+export * from './dispute_responses.model';
+export * from './response_images.model';
