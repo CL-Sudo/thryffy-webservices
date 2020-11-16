@@ -11,7 +11,7 @@ export const sendCloudMessage = ({ token, title, message, data }) =>
         },
         method: 'POST',
         data: {
-          to: token || 'null',
+          to: token || '',
           notification: {
             title,
             body: message,

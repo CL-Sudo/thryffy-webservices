@@ -10,6 +10,7 @@ export const sellerListener = new EventEmitter();
 const pushNotification = async order => {
   try {
     const buyer = await Users.findOne({ where: { id: order.userId } });
+    if (!buyer) throw new Error('Notifier not found');
     await sequelize.transaction(async transaction => {
       await Notifications.create(
         {

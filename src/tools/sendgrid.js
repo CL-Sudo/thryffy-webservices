@@ -1,15 +1,17 @@
 import Axios from 'axios';
+import CONFIG from '@configs/sendgrid.config';
 // import { MailLogs } from '@models';
 // import { MAIL_LOG_STATUS } from '@constants';
 
-export const sendMail = (
+export const sendMail = ({
   receiverEmail,
   receiverFirstName,
   receiverLastName,
-  templateData,
+  templateData = {},
   template,
-  attachments = null
-) =>
+  attachments = null,
+  type
+}) =>
   new Promise(async (resolve, reject) => {
     try {
       const res = await Axios({
@@ -31,7 +33,7 @@ export const sendMail = (
             }
           ],
           from: {
-            email: process.env.NO_REPLY_EMAIL,
+            email: CONFIG[`SENDGRID_${type}_SENDER`],
             name: process.env.EMAIL_SENDER_NAME
           },
           template_id: template,
