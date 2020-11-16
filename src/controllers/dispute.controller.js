@@ -9,12 +9,12 @@ import { DELIVERY_STATUS } from '@constants';
 import { disputeListener } from '@listeners/dispute.listener';
 
 export const create = async (req, res, next) => {
-  const { orderId } = req.params;
   const form = formidable({ multiple: true });
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
       await createValidator(fields, files);
+      const { orderId } = fields;
 
       const order = await SalesOrders.findOne({ where: { id: orderId } });
       if (order.deliveryStatus !== DELIVERY_STATUS.SHIPPED)
@@ -73,7 +73,7 @@ export const respond = async (req, res, next) => {
     if (err) return next(err);
     try {
       await respondValidator(req, fields, files);
-      const { disputeId } = req.params;
+      const { disputeId } = fields;
 
       const responseId = await sequelize.transaction(async transaction => {
         const dispute = await Disputes.findOne({

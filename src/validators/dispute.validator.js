@@ -7,6 +7,9 @@ export const createValidator = (fields, files) =>
       if (isEmpty(fields.title)) throw new Error('title is required');
       if (fields.description.length > 250)
         throw new Error('description cannot be more than 250 characters');
+      const { orderId } = fields;
+      const dispute = await Disputes.findOne({ where: { orderId } });
+      if (dispute) throw new Error('You cannot have more than one dispute in an order');
       return resolve();
     } catch (e) {
       return reject(e);
@@ -16,9 +19,8 @@ export const createValidator = (fields, files) =>
 export const respondValidator = (req, fields, files) =>
   new Promise(async (resolve, reject) => {
     try {
-      const { response } = fields;
+      const { response, disputeId } = fields;
       const { id } = req.user;
-      const { disputeId } = req.params;
       if (isEmpty(response)) throw new Error('response required');
 
       if (response.trim().length > 250)

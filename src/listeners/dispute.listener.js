@@ -13,6 +13,7 @@ export const disputeListener = new EventEmitter();
 const pushNotification = async order => {
   try {
     const notifier = await Users.findOne({ where: { id: order.sellerId } });
+    if (!notifier) throw new Error('Notifier not found');
     await sequelize.transaction(async transaction => {
       await Notifications.create(
         {
@@ -25,12 +26,14 @@ const pushNotification = async order => {
         { transaction }
       );
 
-      await sendCloudMessage({
-        token: notifier.deviceToken,
-        title: DISPUTE_OPENED_TITLE,
-        message: DISPUTE_OPENED_DESCRIPTIION,
-        data: order
-      });
+      if (!notifier.deviceToken) {
+        await sendCloudMessage({
+          token: notifier.deviceToken,
+          title: DISPUTE_OPENED_TITLE,
+          message: DISPUTE_OPENED_DESCRIPTIION,
+          data: order
+        });
+      }
     });
   } catch (e) {
     console.log('e', e);
