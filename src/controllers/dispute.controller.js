@@ -131,3 +131,17 @@ export const respond = async (req, res, next) => {
     }
   });
 };
+
+export const getDispute = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const payload = await Disputes.findOne({
+      where: { orderId },
+      include: [{ model: DisputesImages, as: 'images' }]
+    });
+    if (!payload) throw new Error('Invalid orderId given');
+    return res.status(200).json({ message: 'success', payload });
+  } catch (e) {
+    return next(e);
+  }
+};
