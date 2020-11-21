@@ -1,12 +1,20 @@
 import formidable from 'formidable';
 import { createValidator, respondValidator } from '@validators/dispute.validator';
-import { Disputes, DisputesImages, SalesOrders, DisputeResponses, ResponseImages } from '@models';
+import {
+  Disputes,
+  DisputesImages,
+  SalesOrders,
+  DisputeResponses,
+  ResponseImages,
+  Users
+} from '@models';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import { uploadFileToS3 } from '@tools/s3';
 import { parsePathForDBStoring } from '@utils/s3.util';
 import S3 from '@configs/s3.config';
 import { DELIVERY_STATUS } from '@constants';
 import { disputeListener } from '@listeners/dispute.listener';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 export const create = async (req, res, next) => {
   const form = formidable({ multiple: true });
@@ -135,12 +143,26 @@ export const respond = async (req, res, next) => {
 export const getDispute = async (req, res, next) => {
   try {
     const { orderId } = req.params;
-    const payload = await Disputes.findOne({
+    const order = await SalesOrders.findOne({
+      where: { id: orderId },
+      include: [
+        {
+          model: Users,
+          as: 'buyer',
+          attributes: { exclude: [...defaultExcludeFields] }
+        }
+      ]
+    });
+
+    const dispute = await Disputes.findOne({
       where: { orderId },
       include: [{ model: DisputesImages, as: 'images' }]
     });
-    if (!payload) throw new Error('Invalid orderId given');
-    return res.status(200).json({ message: 'success', payload });
+    if (!dispute) throw new Error('Invalid orderId given');
+    return res.status(200).json({
+      message: 'success',
+      payload: { ...dispute.dataValues, buyer: order.dataValues.buyer }
+    });
   } catch (e) {
     return next(e);
   }
