@@ -200,6 +200,10 @@ export const mobileRevoke = async (req, res, next) => {
           if (!payload.active) {
             return next(new Error('Inactive account'));
           }
+
+          if (!payload.isVerified) {
+            return next(new Error('Account is not verified'));
+          }
           const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
           const token = await generateJWT(withType);
           const rf = payload.get('refreshToken');
@@ -218,6 +222,9 @@ export const mobileRevoke = async (req, res, next) => {
           });
           if (!payload.active) {
             throw new Error('This account is not active');
+          }
+          if (!payload.isVerified) {
+            return next(new Error('Account is not verified'));
           }
           const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
           const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
