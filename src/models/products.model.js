@@ -129,16 +129,7 @@ const Products = SequelizeConnector.define(
         };
       },
       listings: {
-        attributes: [
-          'id',
-          'title',
-          'thumbnail',
-          'description',
-          'displayPrice',
-          'brandId',
-          'sizeId',
-          'isAddedToFavourite'
-        ],
+        attributes: { exclude: ['deletedBy', 'deletedAt', 'updatedBy', 'updatedAt'] },
         include: [
           {
             model: Brands,
