@@ -1,4 +1,4 @@
-import { Categories, Products, Brands, Sizes } from '@models';
+import { Categories, Products, Brands, Sizes, Users, Subscriptions } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -7,6 +7,7 @@ import R from 'ramda';
 import { getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
+import { paginate } from '@utils/utils';
 
 export const home = async (req, res, next) => {
   try {
@@ -51,22 +52,22 @@ export const discoverList = async (req, res, next) => {
 
     const initWhere = [{}];
 
-    const assignPrice = R.ifElse(
-      R.always(!R.isNil(maxPrice) && !R.isNil(minPrice)),
-      R.append({
-        displayPrice: {
-          [Op.and]: [
-            {
-              [Op.gte]: minPrice
-            },
-            {
-              [Op.lte]: maxPrice
-            }
-          ]
-        }
-      }),
-      R.identity
-    );
+    // const assignPrice = R.ifElse(
+    //   R.always(!R.isNil(maxPrice) && !R.isNil(minPrice)),
+    //   R.append({
+    //     displayPrice: {
+    //       [Op.and]: [
+    //         {
+    //           [Op.gte]: minPrice
+    //         },
+    //         {
+    //           [Op.lte]: maxPrice
+    //         }
+    //       ]
+    //     }
+    //   }),
+    //   R.identity
+    // );
 
     const assignCond = R.ifElse(R.always(R.isNil(condition)), R.identity, R.append({ condition }));
 
@@ -85,13 +86,13 @@ export const discoverList = async (req, res, next) => {
       )(param);
     };
 
-    const assignOrder = R.ifElse(
-      R.always(R.equals('RELEVANCE', order)),
-      R.identity,
-      R.assoc('order', [['displayPrice', order]])
-    );
+    // const assignOrder = R.ifElse(
+    //   R.always(R.equals('RELEVANCE', order)),
+    //   R.identity,
+    //   R.assoc('order', [['displayPrice', order]])
+    // );
 
-    const where = R.pipe(assignCond, assignTitle, assignPrice)(initWhere);
+    const where = R.pipe(assignCond, assignTitle)(initWhere);
 
     const childIds = categoryId ? await getChildIds(categoryId) : null;
 
@@ -116,27 +117,41 @@ export const discoverList = async (req, res, next) => {
         as: 'size',
         attributes: { exclude: defaultExcludeFields },
         where: sizeId ? { id: sizeId } : null
+      },
+      {
+        model: Users,
+        as: 'seller',
+        include: [{ model: Subscriptions, as: 'subscription' }]
       }
     ];
 
-    const filter = R.pipe(assignOrder)({
+    const filter = {
       where,
-      include,
-      limit,
-      offset
-    });
+      include
+    };
 
-    const products = await Products.findAndCountAll(filter);
+    const products = await Products.findAll(filter);
+
+    const filteredProducts = R.pipe(
+      R.filter(product => product.seller.subscription.expiryDate > new Date()),
+      R.filter(product => product.displayPrice >= minPrice && product.displayPrice <= maxPrice)
+    )(products);
 
     await Promise.all(
       R.map(async product => {
         await product.getExtraFields(id);
-      })(products.rows)
+      })(filteredProducts)
     );
+
+    const sorted =
+      order === 'RELEVANCE' ? filteredProducts : R.sortBy(R.prop('displayPrice'))(filteredProducts);
 
     return res.status(200).json({
       message: 'success',
-      payload: products
+      payload: {
+        count: filteredProducts.length,
+        rows: paginate(limit)(offset)(sorted)
+      }
     });
   } catch (e) {
     return next(e);

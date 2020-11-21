@@ -3,28 +3,27 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
-const Subscriptions = SequelizeConnector.define(
-  'Subscriptions',
+const Packages = SequelizeConnector.define(
+  'Packages',
   {
     id: primaryKey,
-    userId: foreignKey('user_id', 'users', false),
-    packageId: foreignKey('package_id', 'packages', false),
-    listingCount: {
-      type: Sequelize.INTEGER,
-      field: 'listing_count'
+    title: {
+      type: Sequelize.STRING(50)
     },
-    expiryDate: {
-      type: Sequelize.DATE,
-      field: 'expiry_date'
+    listing: {
+      type: Sequelize.INTEGER
+    },
+    price: {
+      type: Sequelize.DECIMAL(10, 2)
     },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
   {
-    tableName: 'subscriptions',
+    tableName: 'packages',
     underscored: false,
     scopes: {
-      search: params => search(Subscriptions, params, [])
+      search: params => search(Packages, params, [])
     },
     hooks: {
       beforeFind: query => {
@@ -34,7 +33,7 @@ const Subscriptions = SequelizeConnector.define(
   }
 );
 
-addScopesByAllFields(Subscriptions, []);
+addScopesByAllFields(Packages, []);
 
-export { Subscriptions };
-export default Subscriptions;
+export { Packages };
+export default Packages;
