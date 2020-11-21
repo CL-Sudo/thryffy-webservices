@@ -26,7 +26,7 @@ const pushNotification = async order => {
         { transaction }
       );
 
-      if (!notifier.deviceToken) {
+      if (notifier.deviceToken) {
         await sendCloudMessage({
           token: notifier.deviceToken,
           title: DISPUTE_OPENED_TITLE,
