@@ -19,6 +19,9 @@ export default app => {
   app.use('/api/sizes', adminAuth, require('./size.routes').default);
   app.use('/api/banners', adminAuth, require('./banner.routes').default);
   app.use('/api/finances', adminAuth, require('./finances.routes').default);
+  app.use('/api/users', adminAuth, require('./users.routes').default);
+  app.use('/api/feature-items', adminAuth, require('./feature_items.routes').default);
+
   /*
    * Private API
    */
@@ -33,6 +36,12 @@ export default app => {
   app.use('/api/mobile/sizes', mobileAuth, require('./mobile/sizes.routes').default);
   app.use('/api/mobile/contact-us', mobileAuth, require('./mobile/contact_us.routes').default);
   app.use('/api/mobile/disputes', mobileAuth, require('./mobile/dispute.routes').default);
+  app.use('/api/mobile/notifications', mobileAuth, require('./mobile/notification.routes').default);
+  app.use(
+    '/api/mobile/subscriptions',
+    mobileAuth,
+    require('./mobile/subscriptions.routes').default
+  );
 
   /*
    * PUBLIC API

@@ -8,7 +8,7 @@ import {
   getOneProductShippingFee
 } from '@services';
 import { isJSON } from '@utils';
-import { Products, ProductColors, SalesOrders, Sizes, Users } from '@models';
+import { Products, ProductColors, SalesOrders, Sizes, Users, Subscriptions } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { addProductValidator } from '@validators/seller.validator';
 import { updateProductValidator } from '@validators/Admin/products.validator';
@@ -23,7 +23,7 @@ export const addProduct = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
-      await addProductValidator(fields);
+      await addProductValidator(req, fields);
       const { id, type } = req.user;
       const isAdmin = type === USER_TYPE.ADMIN;
 
@@ -73,6 +73,12 @@ export const addProduct = async (req, res, next) => {
 
           await saveProductImages(product.id, images);
           await setThumbnail(product.id, thumbnailIndex);
+
+          const subscription = await Subscriptions.findOne({ where: { userId: id }, transaction });
+          await subscription.update(
+            { listingCount: subscription.listingCount + 1 },
+            { transaction }
+          );
           return Promise.resolve(product.id);
         } catch (e) {
           return Promise.reject(e);

@@ -1,14 +1,40 @@
 import { check } from 'express-validator/check';
-import { Categories, SalesOrders, OrderItems, Products, Sizes } from '@models';
+import {
+  Categories,
+  SalesOrders,
+  OrderItems,
+  Products,
+  Sizes,
+  Packages,
+  Subscriptions
+} from '@models';
 import R from 'ramda';
 import { mapObjectsToArray } from '@utils/utils';
 import { CONDITION, DELIVERY_STATUS } from '@constants';
 
 const isEmpty = param => R.isNil(param) || R.length(R.toString(param)) === 0;
 
-export const addProductValidator = async fields =>
+const parsePackageMaxListing = listing => (listing === 0 ? Infinity : listing);
+
+export const addProductValidator = async (req, fields) =>
   new Promise(async (resolve, reject) => {
     try {
+      const { id } = req.user;
+
+      const subscription = await Subscriptions.findOne({
+        where: { userId: id },
+        include: [{ model: Packages, as: 'package' }]
+      });
+      if (!subscription) {
+        throw new Error('You need to subscribe to a package before you can list item');
+      }
+
+      if (subscription.listingCount >= parsePackageMaxListing(subscription.package.listing)) {
+        throw new Error(
+          `You are allowed to list ${subscription.package.listing} item only, upgrade to list more item.`
+        );
+      }
+
       const { title, brand, categoryId, condition, price, thumbnailIndex, colors, sizeId } = fields;
       const conditions = mapObjectsToArray(CONDITION);
 
