@@ -42,6 +42,7 @@ export default app => {
     mobileAuth,
     require('./mobile/subscriptions.routes').default
   );
+  app.use('/api/mobile/packages', mobileAuth, require('./mobile/packages.routes').default);
 
   /*
    * PUBLIC API
