@@ -31,3 +31,4 @@ export * from './response_images.model';
 export * from './feature_items.model';
 export * from './packages.model';
 export * from './subscriptions.model';
+export * from './preferences.model';

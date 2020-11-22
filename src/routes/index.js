@@ -43,6 +43,7 @@ export default app => {
     require('./mobile/subscriptions.routes').default
   );
   app.use('/api/mobile/packages', mobileAuth, require('./mobile/packages.routes').default);
+  app.use('/api/mobile/home', mobileAuth, require('./mobile/home.routes').default);
 
   /*
    * PUBLIC API

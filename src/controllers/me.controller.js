@@ -1,6 +1,6 @@
 import R from 'ramda';
 import { requestValidator } from '@validators';
-import { Addresses, SalesOrders, Users, Reviews, Products } from '@models';
+import { Addresses, SalesOrders, Users, Reviews, Products, Preferences, Categories } from '@models';
 import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
@@ -8,6 +8,7 @@ import { paginate } from '@utils';
 import { DELIVERY_STATUS } from '@constants';
 import { shuffle } from 'lodash';
 import { Op } from 'sequelize';
+import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -436,6 +437,52 @@ export const updateDeviceToken = async (req, res, next) => {
     const user = await Users.findOne({ where: { id } });
     await user.update({ deviceToken });
     return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const updatePreferences = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const categoryId = R.uniq(req.body.categoryId);
+    const { id } = req.user;
+
+    await sequelize.transaction(async transaction => {
+      const currentPreferences = R.map(R.prop('categoryId'))(
+        await Preferences.findAll({ where: { userId: id }, transaction })
+      );
+
+      const intersectedIds = R.intersection(categoryId, currentPreferences);
+      const idsToBeDeleted = R.without(intersectedIds)(currentPreferences);
+      const idsToBeAdded = R.without(intersectedIds)(categoryId);
+
+      await Preferences.destroy({
+        where: { userId: id, categoryId: idsToBeDeleted },
+        force: true,
+        transaction
+      });
+
+      const objs = R.map(cId => ({
+        categoryId: cId,
+        userId: id
+      }))(idsToBeAdded);
+
+      await Preferences.bulkCreate(objs, transaction);
+    });
+
+    const payload = await Preferences.findAndCountAll({
+      where: { userId: id },
+      include: [
+        {
+          model: Categories,
+          as: 'category'
+        }
+      ]
+    });
+
+    return res.status(200).json({ message: 'success', payload });
   } catch (e) {
     return next(e);
   }
