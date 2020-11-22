@@ -24,6 +24,11 @@ Models.Users.belongsToMany(Models.Products, {
 Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'sellerId', as: 'seller' });
 Models.Users.hasMany(Models.Notifications, { foreignKey: 'notifierId', as: 'notifications' });
 Models.Users.hasOne(Models.Subscriptions, { foreignKey: 'userId', as: 'subscription' });
+Models.Users.belongsToMany(Models.Categories, {
+  foreignKey: 'userId',
+  through: Models.Preferences,
+  as: 'preferences'
+});
 
 /**
  * Addresses
@@ -84,6 +89,11 @@ Models.Categories.belongsToMany(Models.Sizes, {
   foreignKey: 'categoryId',
   through: Models.CategorySize,
   as: 'sizes'
+});
+Models.Categories.belongsToMany(Models.Users, {
+  foreignKey: 'categoryId',
+  through: Models.Preferences,
+  as: 'users'
 });
 
 /**
@@ -165,3 +175,5 @@ Models.FeatureItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'p
 
 Models.Subscriptions.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 Models.Subscriptions.belongsTo(Models.Packages, { foreignKey: 'packageId', as: 'package' });
+
+Models.Preferences.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });

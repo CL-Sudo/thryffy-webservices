@@ -1,5 +1,5 @@
 import { check } from 'express-validator/check';
-import { SalesOrders, Addresses } from '@models';
+import { SalesOrders, Addresses, Categories } from '@models';
 import R from 'ramda';
 import { DELIVERY_STATUS } from '@constants';
 
@@ -94,6 +94,29 @@ export const getOneAddressValidator = [
         where: { id: addressId }
       });
       if (!address) throw new Error('Invalid addressId given');
+      return Promise.resolve();
+    })
+];
+
+export const updatePreferencesValidator = [
+  check('categoryId')
+    .exists()
+    .withMessage('Required')
+    .custom(async (categoryId = []) => {
+      const processedCategoryId = R.pipe(R.uniq)(categoryId);
+
+      const categoryIdsInDB = R.map(R.prop('id'))(
+        await Categories.findAll({
+          attributes: ['id'],
+          raw: true
+        })
+      );
+
+      const removedCategoryIds = R.without(processedCategoryId)(categoryIdsInDB);
+
+      if (removedCategoryIds.length !== categoryIdsInDB.length - processedCategoryId.length) {
+        throw new Error('Invalid categoryId given');
+      }
       return Promise.resolve();
     })
 ];
