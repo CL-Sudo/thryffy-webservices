@@ -2,6 +2,11 @@ import Router from 'express';
 import * as controllers from '@controllers/me.controller';
 import * as validators from '@validators/me.validator';
 
+import { crud } from '@utils/controller-crud.util';
+import { Preferences } from '@models';
+
+const crudController = crud(Preferences);
+
 const router = new Router();
 
 router.get('/', controllers.getMyProfile);
@@ -32,6 +37,9 @@ router.get('/products/recommendations', controllers.recommendProducts);
 
 router.patch('/device-token', controllers.updateDeviceToken);
 
-router.put('/preferences', validators.updatePreferencesValidator, controllers.updatePreferences);
+router
+  .route('/preferences')
+  .put(validators.updatePreferencesValidator, controllers.updatePreferences)
+  .get(crudController.read);
 
 export default router;
