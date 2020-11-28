@@ -34,7 +34,7 @@ export const addProduct = async (req, res, next) => {
         brand,
         categoryId,
         sizeId,
-        condition,
+        conditionId,
         price: originalPrice,
         thumbnailIndex
       } = fields;
@@ -62,7 +62,7 @@ export const addProduct = async (req, res, next) => {
               title,
               description,
               originalPrice,
-              condition,
+              conditionId,
               sizeId,
               brandId,
               markupPrice: extraCharges.markupPrice,
@@ -192,7 +192,7 @@ export const updateProduct = async (req, res, next) => {
         brand,
         categoryId,
         sizeId,
-        condition,
+        conditionId,
         price: originalPrice,
         thumbnailIndex
       } = fields;
@@ -213,7 +213,7 @@ export const updateProduct = async (req, res, next) => {
               brandId,
               categoryId,
               sizeId,
-              condition,
+              conditionId,
               originalPrice,
               markupPrice: extraCharges.markupPrice,
               thumbnailIndex,

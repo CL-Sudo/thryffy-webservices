@@ -4,6 +4,7 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 import { SALE_REVIEWED } from '@templates/notification.template';
 import NOTIFICATION_TYPE from '@constants/notification.constant';
 import { sendCloudMessage } from '@services/notification.service';
+import MODEL_CONSTANT from '@constants/model.constant';
 
 export const reviewListener = new EventEmitter();
 
@@ -20,7 +21,9 @@ const pushNotification = async review => {
           title: SALE_REVIEWED,
           notifierId: notifier.id,
           actorId: order.userId,
-          type: NOTIFICATION_TYPE.REVIEW_RECEIVED
+          type: NOTIFICATION_TYPE.REVIEW_RECEIVED,
+          notifiableId: review.id,
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.REVIEW
         },
         { transaction }
       );

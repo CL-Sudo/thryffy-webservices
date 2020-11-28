@@ -33,7 +33,7 @@ router.patch(
   controllers.confirmOrderReceived
 );
 
-router.get('/products/recommendations', controllers.recommendProducts);
+// router.get('/products/recommendations', controllers.recommendProducts);
 
 router.patch('/device-token', controllers.updateDeviceToken);
 

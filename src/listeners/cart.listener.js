@@ -4,6 +4,7 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 import { sendCloudMessage } from '@services/notification.service';
 import { SALE_MADE_SELLER } from '@templates/notification.template';
 import NOTIFICATION_TYPE from '@constants/notification.constant';
+import MODEL_CONSTANT from '@constants/model.constant';
 
 export const cartListener = new EventEmitter();
 
@@ -27,7 +28,9 @@ const pushNotification = async (productIds, order) => {
           title: SALE_MADE_SELLER,
           notifierId: seller.id,
           actorId: order.userId,
-          type: NOTIFICATION_TYPE.SALE_MADE
+          type: NOTIFICATION_TYPE.SALE_MADE,
+          notifiableId: order.id,
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
         },
         { transaction }
       );

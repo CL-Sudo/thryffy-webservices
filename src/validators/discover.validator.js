@@ -45,9 +45,9 @@ export const listValidator = [
   check('brand')
     .trim()
     .customSanitizer(brand => identityOrDefault(brand, null)),
-  check('condition')
+  check('conditionId')
     .trim()
-    .customSanitizer(condition => identityOrDefault(condition, null)),
+    .customSanitizer(conditionId => identityOrDefault(conditionId, null)),
   check('size')
     .trim()
     .customSanitizer(size => identityOrDefault(size, null)),

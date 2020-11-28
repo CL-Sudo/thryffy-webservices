@@ -1,6 +1,16 @@
 import R from 'ramda';
 import { requestValidator } from '@validators';
-import { Addresses, SalesOrders, Users, Reviews, Products, Preferences, Categories } from '@models';
+import {
+  Addresses,
+  SalesOrders,
+  Users,
+  Reviews,
+  Products,
+  Preferences,
+  Categories,
+  Brands,
+  Conditions
+} from '@models';
 import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
@@ -377,58 +387,58 @@ export const getMyProfile = async (req, res, next) => {
   }
 };
 
-export const recommendProducts = async (req, res, next) => {
-  try {
-    const { id } = req.user;
-    const { limit, offset } = req.query;
+// export const recommendProducts = async (req, res, next) => {
+//   try {
+//     const { id } = req.user;
+//     const { limit, offset } = req.query;
 
-    const user = await Users.findOne({
-      attributes: ['id'],
-      where: { id },
-      include: [
-        {
-          model: Products,
-          as: 'viewedProducts',
-          attributes: ['categoryId'],
-          through: { attributes: [] }
-        }
-      ]
-    });
+//     const user = await Users.findOne({
+//       attributes: ['id'],
+//       where: { id },
+//       include: [
+//         {
+//           model: Products,
+//           as: 'viewedProducts',
+//           attributes: ['categoryId'],
+//           through: { attributes: [] }
+//         }
+//       ]
+//     });
 
-    const parseObjectToArr = obj =>
-      Object.keys(obj).map(key => ({
-        categoryId: key,
-        length: obj[key].length
-      }));
-    const groupByCategoryId = R.groupBy(product => product.categoryId);
-    const sortByLength = R.sortBy(obj => obj.length);
+//     const parseObjectToArr = obj =>
+//       Object.keys(obj).map(key => ({
+//         categoryId: key,
+//         length: obj[key].length
+//       }));
+//     const groupByCategoryId = R.groupBy(product => product.categoryId);
+//     const sortByLength = R.sortBy(obj => obj.length);
 
-    const topThreeMostViewedCategories = R.pipe(
-      groupByCategoryId,
-      parseObjectToArr,
-      sortByLength,
-      R.reverse,
-      R.take(3),
-      R.map(R.prop('categoryId'))
-    )(user.viewedProducts);
+//     const topThreeMostViewedCategories = R.pipe(
+//       groupByCategoryId,
+//       parseObjectToArr,
+//       sortByLength,
+//       R.reverse,
+//       R.take(3),
+//       R.map(R.prop('categoryId'))
+//     )(user.viewedProducts);
 
-    const products = await Products.scope('default').findAll({
-      where: { categoryId: topThreeMostViewedCategories }
-    });
+//     const products = await Products.scope('default').findAll({
+//       where: { categoryId: topThreeMostViewedCategories }
+//     });
 
-    const result = shuffle(products);
+//     const result = shuffle(products);
 
-    return res.status(200).json({
-      message: 'success',
-      payload: {
-        count: products.length,
-        rows: paginate(limit)(offset)(result)
-      }
-    });
-  } catch (e) {
-    return next(e);
-  }
-};
+//     return res.status(200).json({
+//       message: 'success',
+//       payload: {
+//         count: products.length,
+//         rows: paginate(limit)(offset)(result)
+//       }
+//     });
+//   } catch (e) {
+//     return next(e);
+//   }
+// };
 
 export const updateDeviceToken = async (req, res, next) => {
   try {
@@ -446,35 +456,92 @@ export const updatePreferences = async (req, res, next) => {
   try {
     requestValidator(req);
 
-    const categoryId = R.uniq(req.body.categoryId);
     const { id } = req.user;
+    const { categoryId, brandId, conditionId } = req.body;
+
+    const groupId = (acc, { preferableId }) => acc.concat(preferableId);
+    const toType = R.prop('preferableType');
+
+    const currentPreferences = R.pipe(
+      R.reduceBy(groupId, [], toType),
+      R.merge({ condition: [], category: [], brand: [] })
+    )(
+      await Preferences.findAll({
+        where: { userId: id }
+      })
+    );
+
+    const intersectedCategoryIds = R.intersection(categoryId)(currentPreferences.category);
+    const categoryIdsToBeDeleted = R.without(intersectedCategoryIds)(currentPreferences.category);
+    const categoryIdsToBeAdded = R.without(intersectedCategoryIds)(categoryId);
+
+    const intersectedbrandIds = R.intersection(brandId)(currentPreferences.brand);
+    const brandIdsToBeDeleted = R.without(intersectedbrandIds)(currentPreferences.brand);
+    const brandIdsToBeAdded = R.without(intersectedbrandIds)(brandId);
+
+    const intersectedconditionIds = R.intersection(conditionId)(currentPreferences.condition);
+    const conditionIdsToBeDeleted = R.without(intersectedconditionIds)(
+      currentPreferences.condition
+    );
+    const conditionIdsToBeAdded = R.without(intersectedconditionIds)(conditionId);
+
+    const categoryObjs = R.map(cId => ({
+      userId: id,
+      preferableId: cId,
+      preferableType: 'category'
+    }))(categoryIdsToBeAdded);
+
+    const brandObjs = R.map(bId => ({
+      userId: id,
+      preferableId: bId,
+      preferableType: 'brand'
+    }))(brandIdsToBeAdded);
+
+    const conditionObjs = R.map(condId => ({
+      userId: id,
+      preferableId: condId,
+      preferableType: 'condition'
+    }))(conditionIdsToBeAdded);
 
     await sequelize.transaction(async transaction => {
-      const currentPreferences = R.map(R.prop('categoryId'))(
-        await Preferences.findAll({ where: { userId: id }, transaction })
-      );
-
-      const intersectedIds = R.intersection(categoryId, currentPreferences);
-      const idsToBeDeleted = R.without(intersectedIds)(currentPreferences);
-      const idsToBeAdded = R.without(intersectedIds)(categoryId);
-
       await Preferences.destroy({
-        where: { userId: id, categoryId: idsToBeDeleted },
+        where: { userId: id, preferableId: conditionIdsToBeDeleted, preferableType: 'condition' },
         force: true,
         transaction
       });
 
-      const objs = R.map(cId => ({
-        categoryId: cId,
-        userId: id
-      }))(idsToBeAdded);
+      await Preferences.destroy({
+        where: { userId: id, preferableId: categoryIdsToBeDeleted, preferableType: 'category' },
+        force: true,
+        transaction
+      });
 
-      await Preferences.bulkCreate(objs, transaction);
+      await Preferences.destroy({
+        where: { userId: id, preferableId: brandIdsToBeDeleted, preferableType: 'brand' },
+        force: true,
+        transaction
+      });
+    });
+
+    await sequelize.transaction(async transaction => {
+      await Preferences.bulkCreate(categoryObjs, transaction);
+
+      await Preferences.bulkCreate(conditionObjs, transaction);
+
+      await Preferences.bulkCreate(brandObjs, transaction);
     });
 
     const payload = await Preferences.findAndCountAll({
       where: { userId: id },
       include: [
+        {
+          model: Brands,
+          as: 'brand'
+        },
+        {
+          model: Conditions,
+          as: 'condition'
+        },
         {
           model: Categories,
           as: 'category'
