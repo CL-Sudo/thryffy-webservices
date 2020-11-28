@@ -18,7 +18,8 @@ import {
   Brands,
   Commissions,
   ShippingFees,
-  Reviews
+  Reviews,
+  Sizes
 } from '@models';
 import R from 'ramda';
 import { Op } from 'sequelize';
@@ -154,6 +155,7 @@ const SalesOrders = SequelizeConnector.define(
                         ]
                       }
                     },
+                    { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
                     {
                       model: Brands,
                       as: 'brand',
@@ -217,7 +219,8 @@ const SalesOrders = SequelizeConnector.define(
                       model: Brands,
                       as: 'brand',
                       attributes: { exclude: defaultExcludeFields }
-                    }
+                    },
+                    { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
                   ]
                 }
               ]
@@ -252,6 +255,7 @@ const SalesOrders = SequelizeConnector.define(
                   model: Products,
                   as: 'product',
                   include: [
+                    { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
                     {
                       model: Brands,
                       as: 'brand',

@@ -1,6 +1,8 @@
 import { Products, FavouriteProducts } from '@models';
 import { logView } from '@services/view_history.service';
 import R from 'ramda';
+import _ from 'lodash';
+import { paginate } from '@utils';
 
 export const getOne = async (req, res, next) => {
   try {
@@ -56,6 +58,27 @@ export const addFavouriteProduct = async (req, res, next) => {
       userId: id
     });
     return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const youMayAlsoLike = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const { limit, offset } = req.query;
+    const product = await Products.findOne({ where: { id: productId } });
+
+    const recommedations = await Products.scope('default').findAll({
+      where: { categoryId: product.categoryId }
+    });
+
+    const payload = _.shuffle(recommedations);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: { count: recommedations.length, rows: paginate(limit)(offset)(payload) }
+    });
   } catch (e) {
     return next(e);
   }

@@ -6,12 +6,28 @@ export const getCuratedList = async (req, res, next) => {
     const { id } = req.user;
     const { limit, offset } = req.params;
 
-    const preferenceIds = R.map(R.prop('categoryId'))(
-      await Preferences.findAll({ where: { userId: id } })
+    const preferences = await Preferences.findAll({ raw: true, where: { userId: id } });
+
+    const groupId = (acc, { preferableId }) => acc.concat(preferableId);
+    const groupByType = R.reduceBy(groupId, [], R.prop('preferableType'));
+
+    const getPreferableObjList = R.pipe(
+      R.map(data => ({
+        preferableId: data.preferableId,
+        preferableType: data.preferableType
+      })),
+      groupByType,
+      R.merge({ condition: [], category: [], brand: [] })
     );
 
+    const preferenceIds = getPreferableObjList(preferences);
+
     const products = await Products.scope('default').findAndCountAll({
-      where: { categoryId: preferenceIds },
+      where: {
+        categoryId: preferenceIds.category,
+        brandId: preferenceIds.brand,
+        conditionId: preferenceIds.condition
+      },
       limit: Number(limit) || null,
       offset: Number(offset) || null
     });

@@ -53,3 +53,15 @@ export const list = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const getDefaultSize = async (req, res, next) => {
+  try {
+    const { categoryId } = req.params;
+    const category = await Categories.findOne({ where: { id: categoryId } });
+    if (!category) throw new Error('Invalid categoryId given');
+
+    return res.status(200).json({ message: 'success', payload: category.default });
+  } catch (e) {
+    return next(e);
+  }
+};

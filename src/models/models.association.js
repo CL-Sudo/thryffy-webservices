@@ -24,9 +24,8 @@ Models.Users.belongsToMany(Models.Products, {
 Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'sellerId', as: 'seller' });
 Models.Users.hasMany(Models.Notifications, { foreignKey: 'notifierId', as: 'notifications' });
 Models.Users.hasOne(Models.Subscriptions, { foreignKey: 'userId', as: 'subscription' });
-Models.Users.belongsToMany(Models.Categories, {
+Models.Users.hasMany(Models.Preferences, {
   foreignKey: 'userId',
-  through: Models.Preferences,
   as: 'preferences'
 });
 
@@ -74,6 +73,7 @@ Models.Products.belongsTo(Models.Brands, { foreignKey: 'brandId', as: 'brand' })
 Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos' });
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });
 Models.Products.belongsTo(Models.Sizes, { foreignKey: 'sizeId', as: 'size' });
+Models.Products.belongsTo(Models.Conditions, { foreignKey: 'conditionId', as: 'condition' });
 
 /**
  * Categories
@@ -90,10 +90,11 @@ Models.Categories.belongsToMany(Models.Sizes, {
   through: Models.CategorySize,
   as: 'sizes'
 });
-Models.Categories.belongsToMany(Models.Users, {
-  foreignKey: 'categoryId',
-  through: Models.Preferences,
-  as: 'users'
+Models.Categories.hasMany(Models.Preferences, {
+  foreignKey: 'preferableId',
+  constraints: false,
+  as: 'preferences',
+  scope: { preferableType: 'category' }
 });
 
 /**
@@ -117,6 +118,12 @@ Models.CartItems.belongsTo(Models.Users, { foreignKey: 'userId', as: 'cartOnwer'
  * Brands
  */
 Models.Brands.hasMany(Models.Products, { foreignKey: 'brand_id', as: 'product' });
+Models.Brands.hasMany(Models.Preferences, {
+  foreignKey: 'preferableId',
+  constraints: false,
+  as: 'preferences',
+  scope: { preferableType: 'brand' }
+});
 
 /**
  * Sizes
@@ -156,6 +163,26 @@ Models.DisputesImages.belongsTo(Models.Disputes, { foreignKey: 'disputeId', as: 
 
 Models.Notifications.belongsTo(Models.Users, { foreignKey: 'notifierId', as: 'notifier' });
 Models.Notifications.belongsTo(Models.Users, { foreignKey: 'actorId', as: 'actor' });
+Models.Notifications.belongsTo(Models.Products, {
+  foreignKey: 'notifiableId',
+  as: 'product',
+  constraints: false
+});
+Models.Notifications.belongsTo(Models.Disputes, {
+  foreignKey: 'notifiableId',
+  as: 'dispute',
+  constraints: false
+});
+Models.Notifications.belongsTo(Models.SalesOrders, {
+  foreignKey: 'notifiableId',
+  as: 'order',
+  constraints: false
+});
+Models.Notifications.belongsTo(Models.Reviews, {
+  foreignKey: 'notifiableId',
+  as: 'review',
+  constraints: false
+});
 
 /**
  * DisputeResponses
@@ -176,4 +203,28 @@ Models.FeatureItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'p
 Models.Subscriptions.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 Models.Subscriptions.belongsTo(Models.Packages, { foreignKey: 'packageId', as: 'package' });
 
-Models.Preferences.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });
+Models.Preferences.belongsTo(Models.Categories, {
+  foreignKey: 'preferableId',
+  as: 'category',
+  constraints: false
+});
+Models.Preferences.belongsTo(Models.Brands, {
+  foreignKey: 'preferableId',
+  as: 'brand',
+  constraints: false
+});
+Models.Preferences.belongsTo(Models.Conditions, {
+  foreignKey: 'preferableId',
+  as: 'condition',
+  constraints: false
+});
+
+/**
+ * Conditions
+ */
+Models.Conditions.hasMany(Models.Preferences, {
+  foreignKey: 'preferableId',
+  as: 'preferences',
+  constraints: false,
+  scope: { preferableType: 'condition' }
+});

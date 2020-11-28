@@ -1,6 +1,12 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey, active } from '@constants/sequelize.constant';
+import {
+  AT_RECORDER,
+  BY_RECORDER,
+  primaryKey,
+  active,
+  defaultExcludeFields
+} from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 import {
@@ -10,7 +16,8 @@ import {
   Brands,
   SalesOrders,
   OrderItems,
-  ShippingFees
+  ShippingFees,
+  Sizes
 } from '@models';
 import R from 'ramda';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
@@ -204,7 +211,8 @@ const Users = SequelizeConnector.define(
                   model: Brands,
                   as: 'brand',
                   attributes: ['id', 'title']
-                }
+                },
+                { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
               ]
             }
           ]

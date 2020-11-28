@@ -1,5 +1,5 @@
 import { check } from 'express-validator/check';
-import { SalesOrders, Addresses, Categories } from '@models';
+import { SalesOrders, Addresses, Categories, Brands, Conditions } from '@models';
 import R from 'ramda';
 import { DELIVERY_STATUS } from '@constants';
 
@@ -100,9 +100,8 @@ export const getOneAddressValidator = [
 
 export const updatePreferencesValidator = [
   check('categoryId')
-    .exists()
-    .withMessage('Required')
     .custom(async (categoryId = []) => {
+      if (categoryId.length === 0) return Promise.resolve();
       const processedCategoryId = R.pipe(R.uniq)(categoryId);
 
       const categoryIdsInDB = R.map(R.prop('id'))(
@@ -119,4 +118,49 @@ export const updatePreferencesValidator = [
       }
       return Promise.resolve();
     })
+    .customSanitizer(categoryId => R.uniq(categoryId)),
+
+  check('brandId')
+    .custom(async (brandId = []) => {
+      if (brandId.length === 0) return Promise.resolve();
+
+      const processedBrandId = R.pipe(R.uniq)(brandId);
+
+      const brandIdsInDB = R.map(R.prop('id'))(
+        await Brands.findAll({
+          attributes: ['id'],
+          raw: true
+        })
+      );
+
+      const removedBrandIds = R.without(processedBrandId)(brandIdsInDB);
+
+      if (removedBrandIds.length !== brandIdsInDB.length - processedBrandId.length) {
+        throw new Error('Invalid brandId given');
+      }
+      return Promise.resolve();
+    })
+    .customSanitizer(brandId => R.uniq(brandId)),
+
+  check('conditionId')
+    .custom(async (conditionId = []) => {
+      if (conditionId.length === 0) return Promise.resolve();
+
+      const processedConditionId = R.pipe(R.uniq)(conditionId);
+
+      const conditionIdsInDB = R.map(R.prop('id'))(
+        await Conditions.findAll({
+          attributes: ['id'],
+          raw: true
+        })
+      );
+
+      const removedConditionIds = R.without(processedConditionId)(conditionIdsInDB);
+
+      if (removedConditionIds.length !== conditionIdsInDB.length - processedConditionId.length) {
+        throw new Error('Invalid conditionId given');
+      }
+      return Promise.resolve();
+    })
+    .customSanitizer(conditionId => R.uniq(conditionId))
 ];

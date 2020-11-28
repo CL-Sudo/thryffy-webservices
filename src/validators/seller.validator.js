@@ -6,11 +6,11 @@ import {
   Products,
   Sizes,
   Packages,
-  Subscriptions
+  Subscriptions,
+  Conditions
 } from '@models';
 import R from 'ramda';
-import { mapObjectsToArray } from '@utils/utils';
-import { CONDITION, DELIVERY_STATUS } from '@constants';
+import { DELIVERY_STATUS } from '@constants';
 
 const isEmpty = param => R.isNil(param) || R.length(R.toString(param)) === 0;
 
@@ -35,8 +35,16 @@ export const addProductValidator = async (req, fields) =>
         );
       }
 
-      const { title, brand, categoryId, condition, price, thumbnailIndex, colors, sizeId } = fields;
-      const conditions = mapObjectsToArray(CONDITION);
+      const {
+        title,
+        brand,
+        categoryId,
+        conditionId,
+        price,
+        thumbnailIndex,
+        colors,
+        sizeId
+      } = fields;
 
       if (sizeId) {
         const size = await Sizes.findOne({ where: { id: sizeId } });
@@ -47,13 +55,15 @@ export const addProductValidator = async (req, fields) =>
       if (isEmpty(title)) throw new Error('title: Required');
       if (isEmpty(brand)) throw new Error('brand: Required');
       if (isEmpty(colors)) throw new Error('colors: Required');
-      if (isEmpty(condition)) throw new Error('condition: Required');
+      if (isEmpty(conditionId)) throw new Error('condition: Required');
       if (isEmpty(price)) throw new Error('price: Required');
       if (isEmpty(thumbnailIndex)) throw new Error('thumbnailIndex: Required');
-      if (R.isNil(R.find(R.equals(condition))(conditions)))
-        throw new Error('Invalid condition given.');
+
       const category = await Categories.findOne({ raw: true, where: { id: categoryId } });
       if (!category) throw new Error('Invalid categoryId given');
+
+      const condition = await Conditions.findOne({ where: { id: conditionId } });
+      if (!condition) throw new Error('Invalid conditionId given');
 
       return resolve();
     } catch (e) {

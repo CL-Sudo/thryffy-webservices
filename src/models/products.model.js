@@ -16,6 +16,7 @@ import { FavouriteProducts } from '@models/favourite_products.model';
 import { CartItems } from '@models/cart_items.model';
 import { Brands } from '@models/brands.model';
 import { Sizes } from '@models/sizes.model';
+import { Conditions } from '@models/conditions.model';
 import { Op } from 'sequelize';
 import R from 'ramda';
 
@@ -50,9 +51,7 @@ const Products = SequelizeConnector.define(
         return this.getDataValue('originalPrice') + this.getDataValue('markupPrice');
       }
     },
-    condition: {
-      type: Sequelize.STRING(50)
-    },
+    conditionId: foreignKey('condition_id', 'conditions', false),
     viewCount: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
@@ -98,6 +97,7 @@ const Products = SequelizeConnector.define(
           },
           { model: ProductColors, as: 'colors', attributes: { exclude: defaultExcludeFields } },
           { model: Galleries, as: 'photos', attributes: { exclude: defaultExcludeFields } },
+          { model: Conditions, as: 'condition', attributes: { exclude: defaultExcludeFields } },
           {
             model: Users,
             as: 'seller',
@@ -120,6 +120,7 @@ const Products = SequelizeConnector.define(
             },
             { model: ProductColors, as: 'colors', attributes: { exclude: defaultExcludeFields } },
             { model: Galleries, as: 'photos', attributes: { exclude: defaultExcludeFields } },
+            { model: Conditions, as: 'condition', attributes: { exclude: defaultExcludeFields } },
             {
               model: Users,
               as: 'seller',
@@ -136,7 +137,8 @@ const Products = SequelizeConnector.define(
             as: 'brand',
             attributes: ['id', 'title']
           },
-          { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
+          { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
+          { model: Conditions, as: 'condition', attributes: { exclude: defaultExcludeFields } }
         ],
         where: {
           id: {

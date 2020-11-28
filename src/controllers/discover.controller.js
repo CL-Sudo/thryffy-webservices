@@ -1,4 +1,4 @@
-import { Categories, Products, Brands, Sizes, Users, Subscriptions } from '@models';
+import { Conditions, Categories, Products, Brands, Sizes, Users, Subscriptions } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -40,7 +40,7 @@ export const discoverList = async (req, res, next) => {
       keyword,
       brandId,
       sizeId,
-      condition,
+      conditionId,
       minPrice,
       maxPrice,
       order = 'RELEVANCE',
@@ -50,7 +50,23 @@ export const discoverList = async (req, res, next) => {
 
     const { id } = req.user;
 
-    const initWhere = [{}];
+    const initWhere = [
+      {},
+      {
+        id: {
+          [Op.notIn]: [
+            Sequelize.literal(
+              `SELECT product_id FROM order_items
+              WHERE sales_order_id IN (
+                SELECT id FROM sales_orders
+                  WHERE
+                    payment_status = 'SUCCESS'
+              )`
+            )
+          ]
+        }
+      }
+    ];
 
     // const assignPrice = R.ifElse(
     //   R.always(!R.isNil(maxPrice) && !R.isNil(minPrice)),
@@ -69,7 +85,7 @@ export const discoverList = async (req, res, next) => {
     //   R.identity
     // );
 
-    const assignCond = R.ifElse(R.always(R.isNil(condition)), R.identity, R.append({ condition }));
+    // const assignCond = R.ifElse(R.always(R.isNil(condition)), R.identity, R.append({ condition }));
 
     // const assignSize = R.ifElse(R.always(R.isNil(size)), R.identity, R.append({ size }));
 
@@ -92,7 +108,7 @@ export const discoverList = async (req, res, next) => {
     //   R.assoc('order', [['displayPrice', order]])
     // );
 
-    const where = R.pipe(assignCond, assignTitle)(initWhere);
+    const where = R.pipe(assignTitle)(initWhere);
 
     const childIds = categoryId ? await getChildIds(categoryId) : null;
 
@@ -122,6 +138,12 @@ export const discoverList = async (req, res, next) => {
         model: Users,
         as: 'seller',
         include: [{ model: Subscriptions, as: 'subscription' }]
+      },
+      {
+        model: Conditions,
+        as: 'condition',
+        attributes: { exclude: defaultExcludeFields },
+        where: conditionId ? { id: conditionId } : null
       }
     ];
 
