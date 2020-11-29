@@ -42,4 +42,6 @@ router
   .put(validators.updatePreferencesValidator, controllers.updatePreferences)
   .get(crudController.read);
 
+router.get('/subscriptions', controllers.getOneSubscription);
+
 export default router;
