@@ -1,4 +1,4 @@
-import { Notifications, Users } from '@models';
+import { Notifications, Products, Users } from '@models';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 export const get = async (req, res, next) => {

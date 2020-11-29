@@ -8,8 +8,13 @@ import {
   Products,
   Preferences,
   Categories,
+<<<<<<< HEAD
   Brands,
   Conditions
+=======
+  Subscriptions,
+  Packages
+>>>>>>> d9a4cf573dd8eb62d59ee6422b4ffbdc2e12319a
 } from '@models';
 import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
@@ -550,6 +555,31 @@ export const updatePreferences = async (req, res, next) => {
     });
 
     return res.status(200).json({ message: 'success', payload });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getOneSubscription = async (req, res, next) => {
+  try {
+    requestValidator(req);
+    const { id: userId } = req.user;
+    const payload = await Subscriptions.findOne({
+      where: { userId },
+      attributes: {
+        exclude: ['createdAt', 'updatedAt', 'deletedAt', 'createdBy', 'updatedBy', 'deletedBy']
+      },
+      include: [
+        {
+          model: Packages,
+          as: 'package'
+        }
+      ]
+    });
+    return res.status(200).json({
+      message: 'success',
+      payload
+    });
   } catch (e) {
     return next(e);
   }
