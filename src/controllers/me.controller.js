@@ -8,13 +8,10 @@ import {
   Products,
   Preferences,
   Categories,
-<<<<<<< HEAD
   Brands,
-  Conditions
-=======
+  Conditions,
   Subscriptions,
   Packages
->>>>>>> d9a4cf573dd8eb62d59ee6422b4ffbdc2e12319a
 } from '@models';
 import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';

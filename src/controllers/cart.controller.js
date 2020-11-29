@@ -15,6 +15,8 @@ import { requestValidator } from '@validators';
 import { cartListener } from '@listeners';
 import { paginate } from '@utils';
 
+import LISTENER from '@constants/listener.constant';
+
 const getLatestCartList = async userId => {
   try {
     const cart = await CartItems.findAll({
@@ -276,7 +278,7 @@ export const pay = async (req, res, next) => {
       getPayload
     )();
 
-    cartListener.emit('Payment Made', productIds, payload);
+    cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
 
     return res.status(200).json({
       message: 'success',
