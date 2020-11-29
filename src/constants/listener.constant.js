@@ -1,0 +1,6 @@
+export default {
+  DISPUTE: {
+    RESPONSE_CREATED: 'DISPUTE RESPONSE CREATED',
+    CREATED: 'DISPUTE CREATED'
+  }
+};
