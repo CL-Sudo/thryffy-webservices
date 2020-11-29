@@ -24,6 +24,8 @@ import {
 import R from 'ramda';
 import { Op } from 'sequelize';
 import { getProductCommission } from '@services/product.service';
+import Conditions from './conditions.model';
+import Categories from './categories.model';
 
 const assignDeliveryStatus = status => whereObj =>
   R.ifElse(
@@ -159,6 +161,16 @@ const SalesOrders = SequelizeConnector.define(
                     {
                       model: Brands,
                       as: 'brand',
+                      attributes: { exclude: defaultExcludeFields }
+                    },
+                    {
+                      model: Conditions,
+                      as: 'condition',
+                      attributes: { exclude: defaultExcludeFields }
+                    },
+                    {
+                      model: Categories,
+                      as: 'category',
                       attributes: { exclude: defaultExcludeFields }
                     }
                   ]
