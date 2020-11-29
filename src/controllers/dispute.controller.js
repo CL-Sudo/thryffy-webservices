@@ -12,9 +12,11 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 import { uploadFileToS3 } from '@tools/s3';
 import { parsePathForDBStoring } from '@utils/s3.util';
 import S3 from '@configs/s3.config';
-import { DELIVERY_STATUS } from '@constants';
 import { disputeListener } from '@listeners/dispute.listener';
+
+import { DELIVERY_STATUS } from '@constants';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
+import LISTENER from '@constants/listener.constant';
 
 export const create = async (req, res, next) => {
   const form = formidable({ multiple: true });
@@ -63,7 +65,7 @@ export const create = async (req, res, next) => {
         ]
       });
 
-      disputeListener.emit('DISPUTE CREATED', order.dataValues);
+      disputeListener.emit(LISTENER.DISPUTE.CREATED, order.dataValues);
 
       return res.status(200).json({
         message: 'success',
@@ -126,9 +128,15 @@ export const respond = async (req, res, next) => {
           {
             model: ResponseImages,
             as: 'images'
+          },
+          {
+            model: Disputes,
+            as: 'dispute'
           }
         ]
       });
+
+      disputeListener.emit(LISTENER.DISPUTE.RESPONSE_CREATED, payload);
 
       return res.status(200).json({
         message: 'success',
