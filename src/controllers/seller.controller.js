@@ -10,8 +10,10 @@ import {
 import { isJSON } from '@utils';
 import { Products, ProductColors, SalesOrders, Sizes, Users, Subscriptions } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
+
 import { addProductValidator } from '@validators/seller.validator';
 import { updateProductValidator } from '@validators/Admin/products.validator';
+
 import { requestValidator } from '@validators/index';
 import { DELIVERY_STATUS, USER_TYPE } from '@constants';
 import { postTrackingNumber } from '@services/trackingmore.service';
