@@ -6,5 +6,9 @@ export default {
 
   CART: {
     PAYMENT_MADE: 'PAYMENT MADE'
+  },
+
+  SUBSCRIPTION: {
+    CREATED: 'SUBSCRIPTION MADE'
   }
 };

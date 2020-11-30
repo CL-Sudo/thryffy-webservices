@@ -1,6 +1,10 @@
 import { Subscriptions, Packages } from '@models';
 import { requestValidator } from '@validators';
 
+import { subscriptionListner } from '@listeners/subscription.listener';
+
+import LISTENER from '@constants/listener.constant';
+
 import moment from 'moment';
 
 export const subscribe = async (req, res, next) => {
@@ -38,6 +42,8 @@ export const subscribe = async (req, res, next) => {
         }
       ]
     });
+
+    subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, payload);
 
     return res.status(200).json({ message: 'success', payload });
   } catch (e) {
