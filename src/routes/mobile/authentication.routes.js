@@ -5,6 +5,10 @@ import * as Configs from '@configs';
 import * as validators from '@validators';
 import { Users } from '@models';
 
+import { unsubscribeTokensFromTopic } from '@services/notification.service';
+
+import NOTIFICATION from '@constants/notification.constant';
+
 const router = new Router();
 
 const mobileAuth = passport.authenticate(Configs.passport.strategy.mobile, { session: false });
@@ -20,6 +24,7 @@ router.post('/logout', mobileAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
     const user = await Users.findOne({ where: { id } });
+    await unsubscribeTokensFromTopic(user.deviceToken, NOTIFICATION.TOPIC.MARKETING);
     await user.update({ deviceToken: null });
     return res.status(200).json({ message: 'Logout successfuly' });
   } catch (e) {

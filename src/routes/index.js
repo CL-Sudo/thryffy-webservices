@@ -21,6 +21,7 @@ export default app => {
   app.use('/api/finances', adminAuth, require('./finances.routes').default);
   app.use('/api/users', adminAuth, require('./users.routes').default);
   app.use('/api/feature-items', adminAuth, require('./feature_items.routes').default);
+  app.use('/api/notifications', adminAuth, require('./notifications.routes').default);
 
   /*
    * Private API

@@ -13,13 +13,21 @@ import {
   Subscriptions,
   Packages
 } from '@models';
+
 import { hashPassword } from '@tools/bcrypt';
+
 import formidable from 'formidable';
+
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
+import { subscribeTokenToTopic } from '@services/notification.service';
+
 import { paginate } from '@utils';
+
 import { DELIVERY_STATUS } from '@constants';
-import { shuffle } from 'lodash';
+import NOTIFCATION_CONSTANT from '@constants/notification.constant';
+
 import { Op } from 'sequelize';
+
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 
 export const addAddress = async (req, res, next) => {
@@ -448,6 +456,9 @@ export const updateDeviceToken = async (req, res, next) => {
     const { deviceToken } = req.body;
     const user = await Users.findOne({ where: { id } });
     await user.update({ deviceToken });
+
+    await subscribeTokenToTopic(deviceToken, NOTIFCATION_CONSTANT.MARKETING);
+
     return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);

@@ -55,7 +55,6 @@ const pushNotification = async (productIds, order) => {
 
 const sendEmail = async (productIds, order) => {
   try {
-    console.log('sending email...');
     const receiver = await Users.findOne({ where: { id: order.userId } });
     const address = await Addresses.findOne({ where: { id: order.addressId } });
 

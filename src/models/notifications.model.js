@@ -25,6 +25,9 @@ const Notifications = SequelizeConnector.define(
     description: {
       type: Sequelize.STRING
     },
+    image: {
+      type: Sequelize.STRING
+    },
     isRead: {
       type: Sequelize.BOOLEAN,
       field: 'is_read',

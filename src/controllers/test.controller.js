@@ -1,14 +1,18 @@
-import R from 'ramda';
-import { Preferences, SalesOrders } from '@models';
+import {
+  sendCloudMessage,
+  subscribeTokenToTopic,
+  unsubscribeTokensFromTopic
+} from '@services/notification.service';
+
 export const test = async (req, res, next) => {
   try {
-    const result = await Preferences.findAll({});
-
-    const order = await SalesOrders.scope({ method: ['orderDetails', 32] }).findOne();
+    await subscribeTokenToTopic('sdfads', 'MARKETING');
+    await unsubscribeTokensFromTopic(['kjljl'], 'MARKETING');
+    // await sendCloudMessage({ topic: 'MARKETING', title: 'title', message: 'message' });
 
     return res.status(404).json({
       message: 'not found',
-      payload: order
+      payload: {}
     });
   } catch (e) {
     console.log('e', e);
