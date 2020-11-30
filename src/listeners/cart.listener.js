@@ -19,7 +19,7 @@ import LISTENER from '@constants/listener.constant';
 
 export const cartListener = new EventEmitter();
 
-const removeCartItems = async (productIds, order) => {
+const removeCartItems = async productIds => {
   const transaction = await sequelize.transaction();
   try {
     await CartItems.destroy({ where: { productId: productIds }, transaction });
@@ -53,7 +53,7 @@ const pushNotification = async (productIds, order) => {
   }
 };
 
-const sendEmail = async (productIds, order) => {
+const sendEmail = async (_, order) => {
   try {
     const receiver = await Users.findOne({ where: { id: order.userId } });
     const address = await Addresses.findOne({ where: { id: order.addressId } });
@@ -62,7 +62,7 @@ const sendEmail = async (productIds, order) => {
     const receiverEmail = receiver.email;
     const { addressLine1, addressLine2, postcode, city, state, phoneNumber } = address;
     const { orderRef } = order;
-    const date = moment(order.createdAt).format('Do MMMM YYYY HH:mm');
+    const dateTime = moment(order.createdAt).format('Do MMMM YYYY HH:mm');
     const { subTotal } = order;
     const { tax } = order;
     const shippingFee = order.shippingFee.price;
@@ -87,7 +87,7 @@ const sendEmail = async (productIds, order) => {
         state,
         phoneNumber,
         orderRef,
-        date,
+        dateTime,
         subTotal: `${subTotal}`,
         tax: `${tax}`,
         shippingFee: `${shippingFee}`,
