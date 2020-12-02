@@ -1,7 +1,7 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     try {
-      await queryInterface.removeConstraint('preferences', 'preferences_category_id_user_id_uk');
+      // await queryInterface.removeConstraint('preferences', 'preferences_category_id_user_id_uk');
       await queryInterface.removeColumn('preferences', 'category_id');
       await queryInterface.addColumn('preferences', 'preferable_id', {
         type: Sequelize.INTEGER,
