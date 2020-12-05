@@ -34,7 +34,7 @@ const Notifications = SequelizeConnector.define(
       defaultValue: false
     },
     type: {
-      type: Sequelize.STRING(20)
+      type: Sequelize.STRING(80)
     },
     ...AT_RECORDER,
     ...BY_RECORDER

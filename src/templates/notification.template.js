@@ -10,3 +10,10 @@ export const DISPUTE_OPENED_DESCRIPTIION =
   'You have 48 hours to provide information for the dispute';
 
 export const MARKED_AS_SHIPPED = 'Your product just got shipped!';
+
+export const SUBSCRIPTION_REMINDER = {
+  DAYS_BEFORE: expiryDate =>
+    `Your subscription is expiring on ${expiryDate}, please renew your subscription.`,
+
+  EXPIRED: 'Your subscription has expired'
+};
