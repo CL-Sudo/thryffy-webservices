@@ -61,8 +61,6 @@ export const listValidator = [
 
 export const searchBrandValidator = [
   check('keyword')
-    .exists()
-    .withMessage('Required')
     .trim()
     .customSanitizer(keyword => identityOrDefault(keyword, null)),
   check('limit').customSanitizer(limit => (limit ? Number(limit) : null)),

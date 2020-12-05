@@ -17,6 +17,11 @@ const Subscriptions = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'expiry_date'
     },
+    reminderCount: {
+      type: Sequelize.INTEGER,
+      field: 'reminder_count',
+      defaultValue: 0
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },

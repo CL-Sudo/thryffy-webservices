@@ -187,12 +187,13 @@ export const searchBrand = async (req, res, next) => {
     const { keyword, limit, offset } = req.query;
 
     if (!keyword) {
+      const brands = await Brands.findAndCountAll({
+        limit,
+        offset
+      });
       return res.status(200).json({
         message: 'success',
-        payload: {
-          count: 0,
-          rows: []
-        }
+        payload: brands
       });
     }
 

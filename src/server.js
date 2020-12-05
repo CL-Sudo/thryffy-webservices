@@ -8,4 +8,6 @@ app.listen(process.env[`${[nodeEnv]}_PORT`] || 3000, () => {
   console.log(`${appName} APIs is running on PORT ${process.env[`${[nodeEnv]}_PORT`] || 3000}`); // eslint-disable-line no-console
 });
 
+require('./scripts/cronjobs.script');
+
 export default app;
