@@ -10,6 +10,9 @@ const Conditions = SequelizeConnector.define(
     title: {
       type: Sequelize.STRING(100)
     },
+    description: {
+      type: Sequelize.STRING
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
