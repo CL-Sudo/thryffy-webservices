@@ -55,7 +55,7 @@ export const addProductValidator = async (req, fields) =>
       if (isEmpty(title)) throw new Error('title: Required');
       if (isEmpty(brand)) throw new Error('brand: Required');
       if (isEmpty(colors)) throw new Error('colors: Required');
-      if (isEmpty(conditionId)) throw new Error('condition: Required');
+      if (isEmpty(conditionId)) throw new Error('conditionId: Required');
       if (isEmpty(price)) throw new Error('price: Required');
       if (isEmpty(thumbnailIndex)) throw new Error('thumbnailIndex: Required');
 
