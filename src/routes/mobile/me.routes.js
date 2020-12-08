@@ -40,7 +40,7 @@ router.patch('/device-token', controllers.updateDeviceToken);
 router
   .route('/preferences')
   .put(validators.updatePreferencesValidator, controllers.updatePreferences)
-  .get(crudController.read);
+  .get(controllers.getPreferences);
 
 router.get('/subscriptions', controllers.getOneSubscription);
 

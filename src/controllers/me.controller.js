@@ -568,6 +568,37 @@ export const updatePreferences = async (req, res, next) => {
   }
 };
 
+export const getPreferences = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { limit, offset } = req.params;
+
+    const payload = await Preferences.findAndCountAll({
+      where: { userId: id },
+      include: [
+        {
+          model: Categories,
+          as: 'category'
+        },
+        {
+          model: Brands,
+          as: 'brand'
+        },
+        {
+          model: Conditions,
+          as: 'condition'
+        }
+      ],
+      limit: Number(limit) || null,
+      offest: Number(offset) || null
+    });
+
+    return res.status(200).json({ message: 'success', payload });
+  } catch (e) {
+    return next(e);
+  }
+};
+
 export const getOneSubscription = async (req, res, next) => {
   try {
     requestValidator(req);
