@@ -154,9 +154,15 @@ export const discoverList = async (req, res, next) => {
 
     const products = await Products.findAll(filter);
 
+    const filterByPrice = R.ifElse(
+      R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),
+      data => data,
+      R.filter(product => product.displayPrice >= minPrice && product.displayPrice <= maxPrice)
+    );
+
     const filteredProducts = R.pipe(
       R.filter(product => product.seller.subscription.expiryDate > new Date()),
-      R.filter(product => product.displayPrice >= minPrice && product.displayPrice <= maxPrice)
+      filterByPrice
     )(products);
 
     await Promise.all(

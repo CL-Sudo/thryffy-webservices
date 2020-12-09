@@ -480,6 +480,7 @@ export const updatePreferences = async (req, res, next) => {
       R.merge({ condition: [], category: [], brand: [] })
     )(
       await Preferences.findAll({
+        raw: true,
         where: { userId: id }
       })
     );
