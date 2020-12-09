@@ -7,7 +7,7 @@ Preferences.addHook('afterFind', async findResult => {
       if (instance.preferableType === 'brand' && instance.brand) {
         delete instance.condition;
         delete instance.category;
-        delete instance.dataValues.condtition;
+        delete instance.dataValues.condition;
         delete instance.dataValues.category;
       } else if (instance.preferableType === 'category' && instance.category) {
         instance.preferable = instance.category;
