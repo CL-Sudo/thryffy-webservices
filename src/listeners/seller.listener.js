@@ -13,7 +13,7 @@ const pushNotification = async order => {
     const buyer = await Users.findOne({ where: { id: order.userId } });
     if (!buyer) throw new Error('Notifier not found');
     await sequelize.transaction(async transaction => {
-      await Notifications.create(
+      const notification = await Notifications.create(
         {
           title: MARKED_AS_SHIPPED,
           data: order,
@@ -25,7 +25,8 @@ const pushNotification = async order => {
         },
         { transaction }
       );
-      await sendCloudMessage({ token: buyer.deviceToken, title: MARKED_AS_SHIPPED, data: order });
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+      await sendCloudMessage({ token: buyer.deviceToken, title: MARKED_AS_SHIPPED, data });
     });
   } catch (e) {
     console.error(e);

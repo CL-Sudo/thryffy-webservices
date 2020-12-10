@@ -16,7 +16,7 @@ const pushNotification = async review => {
     if (!notifier) throw new Error('Notifier not found');
 
     await sequelize.transaction(async transaction => {
-      await Notifications.findOne(
+      const notification = await Notifications.findOne(
         {
           title: SALE_REVIEWED,
           notifierId: notifier.id,
@@ -28,8 +28,10 @@ const pushNotification = async review => {
         { transaction }
       );
 
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
       if (notifier.deviceToken) {
-        await sendCloudMessage({ title: SALE_REVIEWED, token: notifier.deviceToken, data: review });
+        await sendCloudMessage({ title: SALE_REVIEWED, token: notifier.deviceToken, data });
       }
     });
   } catch (e) {

@@ -93,13 +93,18 @@ export const discoverList = async (req, res, next) => {
       if (R.isNil(keyword)) {
         return param;
       }
-      return R.append(
-        Sequelize.literal(
-          `MATCH (products.title, products.description) AGAINST ('${parseKeywordForNLP(
-            keyword
-          )}' IN NATURAL LANGUAGE MODE)`
-        )
-      )(param);
+      // return R.append(
+      //   Sequelize.literal(
+      //     `MATCH (products.title, products.description) AGAINST ('${parseKeywordForNLP(
+      //       keyword
+      //     )}' IN NATURAL LANGUAGE MODE)`
+      //   )
+      // )(param);
+      return R.append({
+        title: {
+          [Op.like]: `%${keyword}%`
+        }
+      })(param);
     };
 
     // const assignOrder = R.ifElse(
