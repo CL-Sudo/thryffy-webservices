@@ -29,7 +29,7 @@ const pushNotification = async order => {
     if (!notifier) throw new Error('Notifier not found');
     const dispute = await Disputes.findOne({ where: { orderId: order.id } });
     await sequelize.transaction(async transaction => {
-      await Notifications.create(
+      const notification = await Notifications.create(
         {
           title: DISPUTE_OPENED_TITLE,
           description: DISPUTE_OPENED_DESCRIPTIION,
@@ -42,12 +42,14 @@ const pushNotification = async order => {
         { transaction }
       );
 
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
       if (notifier.deviceToken) {
         await sendCloudMessage({
           token: notifier.deviceToken,
           title: DISPUTE_OPENED_TITLE,
           message: DISPUTE_OPENED_DESCRIPTIION,
-          data: order
+          data
         });
       }
     });

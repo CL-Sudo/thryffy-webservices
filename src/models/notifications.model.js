@@ -2,8 +2,9 @@ import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.conf
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
-import { Products, Disputes, Reviews, SalesOrders } from '@models';
+import { Products, Disputes, Reviews, SalesOrders, Galleries } from '@models';
 import OrderItems from './order_items.model';
+import DisputesImages from './dispute_images.model';
 
 const Notifications = SequelizeConnector.define(
   'Notifications',
@@ -45,7 +46,30 @@ const Notifications = SequelizeConnector.define(
     defaultScope: {
       include: [
         { model: Products, as: 'product', include: [{ all: true }] },
-        { model: Disputes, as: 'dispute', include: [{ all: true }] },
+        {
+          model: Disputes,
+          as: 'dispute',
+          include: [
+            { model: DisputesImages, as: 'images' },
+            {
+              model: SalesOrders,
+              as: 'order',
+              include: [
+                {
+                  model: OrderItems,
+                  as: 'orderItems',
+                  include: [
+                    {
+                      model: Products,
+                      as: 'product',
+                      include: [{ model: Galleries, as: 'photos' }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
         {
           model: SalesOrders,
           as: 'order',

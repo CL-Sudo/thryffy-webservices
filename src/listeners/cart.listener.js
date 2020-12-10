@@ -34,7 +34,7 @@ const pushNotification = async (productIds, order) => {
   try {
     const seller = await Users.findOne({ where: { id: order.sellerId } });
     await sequelize.transaction(async transaction => {
-      await Notifications.create(
+      const notification = await Notifications.create(
         {
           title: SALE_MADE_SELLER,
           notifierId: seller.id,
@@ -46,7 +46,9 @@ const pushNotification = async (productIds, order) => {
         { transaction }
       );
 
-      await sendCloudMessage({ token: seller.deviceToken, title: SALE_MADE_SELLER, data: order });
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
+      await sendCloudMessage({ token: seller.deviceToken, title: SALE_MADE_SELLER, data });
     });
   } catch (e) {
     console.error('e', e);

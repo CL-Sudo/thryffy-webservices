@@ -2,7 +2,7 @@ import { Notifications } from '@models';
 import MODEL from '@constants/model.constant';
 import R from 'ramda';
 
-Notifications.addHook('afterFind', findResult => {
+Notifications.addHook('afterFind', async findResult => {
   try {
     if (!Array.isArray(findResult)) findResult = [findResult];
 
@@ -16,6 +16,7 @@ Notifications.addHook('afterFind', findResult => {
           delete instance.dataValues.order;
           delete instance.review;
           delete instance.dataValues.review;
+
           break;
         }
 
