@@ -28,6 +28,7 @@ Models.Users.hasMany(Models.Preferences, {
   foreignKey: 'userId',
   as: 'preferences'
 });
+Models.Users.hasMany(Models.Reviews, { foreignKey: 'sellerId', as: 'buyerReviews' });
 
 /**
  * Addresses

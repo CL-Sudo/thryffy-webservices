@@ -7,7 +7,7 @@ import {
   updateProductImages,
   getOneProductShippingFee
 } from '@services';
-import { isJSON } from '@utils';
+import { isJSON, paginate } from '@utils';
 import { Products, ProductColors, SalesOrders, Sizes, Users, Subscriptions } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -254,4 +254,35 @@ export const updateProduct = async (req, res, next) => {
       return next(e);
     }
   });
+};
+
+export const getProducts = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { limit, offset } = req.query;
+
+    const products = await Products.scope('default').findAll({ where: { userId: id } });
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: products.length,
+        rows: paginate(limit)(offset)(products)
+      }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getSellerDetail = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+
+    const seller = await Users.scope('sellerDetail').findOne({ where: { id } });
+
+    return res.status(200).json({ message: 'success', payload: seller });
+  } catch (e) {
+    return next(e);
+  }
 };

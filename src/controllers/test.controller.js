@@ -1,20 +1,12 @@
-import { Notifications } from '@models';
-import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
+import { Users } from '@models';
 
 export const test = async (req, res, next) => {
   try {
-    await sequelize.transaction(async transaction => {
-      const notification = await Notifications.create(
-        { type: 'test', notifiableId: 43, notifiableType: 'SALE ORDER' },
-        { transaction }
-      );
-      const payload = await Notifications.findOne({ where: { id: notification.id }, transaction });
-      console.log('payload', payload);
-      throw new Error('');
-    });
+    const seller = await Users.scope('sellerDetail').findOne({ where: { id: 1 } });
+
     return res.status(404).json({
       message: 'not found',
-      payload: {}
+      payload: seller
     });
   } catch (e) {
     console.log('e', e);
