@@ -574,7 +574,7 @@ export const getPreferences = async (req, res, next) => {
     const { id } = req.user;
     const { limit, offset } = req.params;
 
-    const payload = await Preferences.findAndCountAll({
+    const preferences = await Preferences.findAll({
       where: { userId: id },
       include: [
         {
@@ -593,6 +593,21 @@ export const getPreferences = async (req, res, next) => {
       limit: Number(limit) || null,
       offest: Number(offset) || null
     });
+
+    const getPreferableTypeObject = (condition, brand, category) =>
+      R.cond([
+        [() => R.and(R.isNil(brand), R.isNil(category)), () => condition],
+        [() => R.and(R.isNil(condition), R.isNil(category)), () => brand],
+        [() => R.and(R.isNil(condition), R.isNil(brand)), () => category]
+      ])();
+
+    const groupPreferenceType = (acc, { condition, brand, category }) =>
+      acc.concat(getPreferableTypeObject(condition, brand, category));
+
+    const payload = R.pipe(
+      R.reduceBy(groupPreferenceType, [], R.prop('preferableType')),
+      R.merge({ condition: [], brand: [], category: [] })
+    )(preferences);
 
     return res.status(200).json({ message: 'success', payload });
   } catch (e) {
