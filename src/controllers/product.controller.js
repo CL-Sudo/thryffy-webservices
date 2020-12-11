@@ -4,6 +4,8 @@ import R from 'ramda';
 import _ from 'lodash';
 import { paginate } from '@utils';
 
+import { Op } from 'sequelize';
+
 export const getOne = async (req, res, next) => {
   try {
     const { id } = req.user;
@@ -70,14 +72,16 @@ export const youMayAlsoLike = async (req, res, next) => {
     const product = await Products.findOne({ where: { id: productId } });
 
     const recommedations = await Products.scope('default').findAll({
-      where: { categoryId: product.categoryId }
+      where: {
+        categoryId: product.categoryId
+      }
     });
 
-    const payload = _.shuffle(recommedations);
+    const payload = _.shuffle(R.reject(p => p.id === Number(productId))(recommedations));
 
     return res.status(200).json({
       message: 'success',
-      payload: { count: recommedations.length, rows: paginate(limit)(offset)(payload) }
+      payload: { count: payload.length, rows: paginate(limit)(offset)(payload) }
     });
   } catch (e) {
     return next(e);
