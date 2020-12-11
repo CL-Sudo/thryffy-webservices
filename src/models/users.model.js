@@ -11,7 +11,6 @@ import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 import {
   Products,
-  Reviews,
   FavouriteProducts,
   Brands,
   SalesOrders,
@@ -19,6 +18,8 @@ import {
   ShippingFees,
   Sizes
 } from '@models';
+
+import { Reviews } from '@models/reviews.model';
 import R from 'ramda';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 
@@ -237,6 +238,29 @@ const Users = SequelizeConnector.define(
       },
       order: {
         attributes: ['id', 'username', 'state', 'reviewCount', 'averageRating', 'profilePicture']
+      },
+      sellerDetail: {
+        attributes: {
+          exclude: [
+            'password',
+            'facebookId',
+            'googleId',
+            'deviceToken',
+            'otp',
+            'otpValidity',
+            'refreshToken',
+            'resetToken',
+            'loginFrequency',
+            'lastLogin',
+            ...defaultExcludeFields
+          ]
+        },
+        include: [
+          {
+            model: Reviews,
+            as: 'buyerReviews'
+          }
+        ]
       }
     },
     hooks: {
@@ -247,6 +271,15 @@ const Users = SequelizeConnector.define(
       },
       beforeFind: query => {
         parseParanoidToIncludes(query);
+      },
+      afterFind: async user => {
+        if (user) {
+          await user.getAverageRating();
+          await user.getReviewCount();
+          await user.getEarnings();
+          await user.getTotalLike();
+          await user.getTotalView();
+        }
       }
     }
   }
@@ -270,6 +303,7 @@ Users.prototype.getAverageRating = async function() {
   const averageRating = R.pipe(getRating, R.mean)(reviews);
 
   this.setDataValue('averageRating', averageRating);
+  return averageRating;
 };
 
 Users.prototype.getEarnings = async function() {

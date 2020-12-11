@@ -2,8 +2,8 @@
 import { CronJob } from 'cron';
 import { subscriptionRenewReminder } from '@services/subscription.service';
 
-const runJobEveryMinute = () => {
+const runJobEveryMorning = () => {
   subscriptionRenewReminder();
 };
 
-new CronJob('* * * * *', runJobEveryMinute, null, true, null, null, true);
+new CronJob('00 09 * * *', runJobEveryMorning, null, true, null, null, true);
