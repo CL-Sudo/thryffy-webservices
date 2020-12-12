@@ -1,4 +1,4 @@
-import { Subscriptions, Packages } from '@models';
+import { Subscriptions, Packages, Users } from '@models';
 import { requestValidator } from '@validators';
 
 import { subscriptionListner } from '@listeners/subscription.listener';
@@ -39,11 +39,21 @@ export const subscribe = async (req, res, next) => {
         {
           model: Packages,
           as: 'package'
+        },
+        {
+          model: Users,
+          as: 'user'
         }
       ]
     });
 
+    const hasValidSubscription = await payload.checkHasValidSubscription();
+    await payload.update({ hasValidSubscription });
+
     subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, payload);
+
+    delete payload.user;
+    delete payload.dataValues.user;
 
     return res.status(200).json({ message: 'success', payload });
   } catch (e) {

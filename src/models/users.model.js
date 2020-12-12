@@ -158,6 +158,11 @@ const Users = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'last_login'
     },
+    hasValidSubscription: {
+      type: Sequelize.BOOLEAN,
+      field: 'has_valid_subscription',
+      defaultValue: false
+    },
     reviewCount: {
       type: Sequelize.VIRTUAL,
       get() {
