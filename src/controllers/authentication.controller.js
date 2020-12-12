@@ -504,7 +504,6 @@ export const userRegistration = async (req, res, next) => {
     const checkUserByEmail = async requestBody => {
       try {
         const user = await Users.findOne({
-          raw: true,
           where: { email: requestBody.email }
         });
         if (R.not(R.isNil(user))) {
@@ -519,7 +518,6 @@ export const userRegistration = async (req, res, next) => {
     const checkUserByPhoneNumber = async requestBody => {
       try {
         const user = await Users.findOne({
-          raw: true,
           where: { phoneNumber: requestBody.phoneNumber }
         });
         if (R.not(R.isNil(user))) {
@@ -534,7 +532,6 @@ export const userRegistration = async (req, res, next) => {
     const checkUsername = async requestBody => {
       try {
         const user = await Users.findOne({
-          raw: true,
           where: { username: requestBody.username }
         });
         if (R.not(R.isNil(user))) {
@@ -552,6 +549,7 @@ export const userRegistration = async (req, res, next) => {
         const otp = generateOTP();
         const otpValidity = moment().add(10, 'minutes');
         const user = await Users.create({ ...requestBody, refreshToken, otp, otpValidity });
+        await user.reload();
         authListener.emit('userSignUp', user);
         return Promise.resolve(user);
       } catch (e) {

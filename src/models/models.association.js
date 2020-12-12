@@ -29,6 +29,10 @@ Models.Users.hasMany(Models.Preferences, {
   as: 'preferences'
 });
 Models.Users.hasMany(Models.Reviews, { foreignKey: 'sellerId', as: 'buyerReviews' });
+Models.Users.hasOne(Models.NotificationSettings, {
+  foreignKey: 'userId',
+  as: 'notificationSetting'
+});
 
 /**
  * Addresses
@@ -229,3 +233,8 @@ Models.Conditions.hasMany(Models.Preferences, {
   constraints: false,
   scope: { preferableType: 'condition' }
 });
+
+/**
+ * NotificationSettings
+ */
+Models.NotificationSettings.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });

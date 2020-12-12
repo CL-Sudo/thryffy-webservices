@@ -20,6 +20,8 @@ import {
 } from '@models';
 
 import { Reviews } from '@models/reviews.model';
+import { NotificationSettings } from '@models/notification_settings.model';
+
 import R from 'ramda';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 
@@ -199,12 +201,15 @@ const Users = SequelizeConnector.define(
   {
     tableName: 'users',
     underscored: false,
-    defaultScope: { attributes: { exclude: ['password'] } },
+    defaultScope: {
+      attributes: { exclude: ['password'] },
+      include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+    },
     scopes: {
       search: params => search(Users, params, []),
       cart(productIds) {
         return {
-          attributes: ['fullName', 'username', 'profilePicture'],
+          attributes: ['id', 'fullName', 'username', 'profilePicture'],
           include: [
             {
               model: Products,
@@ -274,16 +279,29 @@ const Users = SequelizeConnector.define(
           user.password = hashPassword(user.password);
         }
       },
+      afterCreate: async (user, options) => {
+        try {
+          const { transaction } = options;
+          await NotificationSettings.create({ userId: user.id }, { transaction });
+        } catch (e) {
+          throw e;
+        }
+      },
       beforeFind: query => {
         parseParanoidToIncludes(query);
       },
       afterFind: async user => {
-        if (user) {
-          await user.getAverageRating();
-          await user.getReviewCount();
-          await user.getEarnings();
-          await user.getTotalLike();
-          await user.getTotalView();
+        if (!R.isNil(user) && !R.isEmpty(user)) {
+          if (!Array.isArray(user)) user = [user];
+          await Promise.all(
+            user.map(async instance => {
+              await instance.getAverageRating();
+              await instance.getReviewCount();
+              await instance.getEarnings();
+              await instance.getTotalLike();
+              await instance.getTotalView();
+            })
+          );
         }
       }
     }
