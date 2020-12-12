@@ -190,6 +190,7 @@ Products.prototype.checkIsAddedToFavourite = async function(userId) {
       }
     });
     this.setDataValue('isAddedToFavourite', R.not(R.isNil(favouriteProduct)));
+    return !R.isNil(favouriteProduct);
   } catch (e) {
     throw e;
   }
