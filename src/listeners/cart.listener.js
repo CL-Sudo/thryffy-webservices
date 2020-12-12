@@ -2,7 +2,7 @@ import moment from 'moment';
 import R from 'ramda';
 
 import { EventEmitter } from 'events';
-import { CartItems, Users, Notifications, Addresses } from '@models';
+import { CartItems, Users, Notifications, Addresses, NotificationSettings } from '@models';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import { sendCloudMessage } from '@services/notification.service';
 
@@ -32,7 +32,10 @@ const removeCartItems = async productIds => {
 
 const pushNotification = async (productIds, order) => {
   try {
-    const seller = await Users.findOne({ where: { id: order.sellerId } });
+    const seller = await Users.findOne({
+      where: { id: order.sellerId },
+      include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+    });
     await sequelize.transaction(async transaction => {
       const notification = await Notifications.create(
         {

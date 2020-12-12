@@ -1,7 +1,7 @@
 import R from 'ramda';
 import moment from 'moment';
 
-import { Subscriptions, Users, Notifications } from '@models';
+import { Subscriptions, Users, Notifications, NotificationSettings } from '@models';
 
 import { SUBSCRIPTION_REMINDER } from '@templates/notification.template';
 
@@ -23,7 +23,18 @@ export const subscriptionRenewReminder = () =>
         where: {
           reminderCount: 1
         },
-        include: [{ model: Users, as: 'user' }]
+        include: [
+          {
+            model: Users,
+            as: 'user',
+            include: [
+              {
+                model: NotificationSettings,
+                as: 'notificationSetting'
+              }
+            ]
+          }
+        ]
       });
       const twoCount = await Subscriptions.findAll({
         where: {
@@ -36,25 +47,25 @@ export const subscriptionRenewReminder = () =>
         const a = moment(sub.expiryDate);
         const b = moment();
         const diff = a.diff(b, 'days');
-        return diff === 7;
+        return diff === 7 && sub.user.notificationSetting.isReminderAllowed;
       })(zeroCount);
 
       const threeDayReminder = R.filter(sub => {
         const a = moment(sub.expiryDate);
         const b = moment();
         const diff = a.diff(b, 'days');
-        return diff === 3;
+        return diff === 3 && sub.user.notificationSetting.isReminderAllowed;
       })(oneCount);
 
       const expiryReminder = R.filter(sub => {
         const a = moment(sub.expiryDate);
         const b = moment();
         const diff = a.diff(b, 'days');
-        return diff < 0;
+        return diff < 0 && sub.user.notificationSetting.isReminderAllowed;
       })(twoCount);
 
       await Promise.all(
-        sevenDayReminder.map(async data => {
+        R.map(async data => {
           const title = SUBSCRIPTION_REMINDER.DAYS_BEFORE(
             moment(data.expiryDate).format('DD/MM/YYYY')
           );
@@ -68,7 +79,7 @@ export const subscriptionRenewReminder = () =>
             type: NOTIFICATION_CONSTANT.SUBSCRIPTION_EXPIRY_REMINDER
           });
           await data.increment('reminderCount');
-        })
+        })(sevenDayReminder)
       );
 
       await Promise.all(

@@ -10,30 +10,32 @@ export const reviewListener = new EventEmitter();
 
 const pushNotification = async review => {
   try {
-    const notifier = await Users.findOne({ where: { id: review.sellerId } });
+    const notifier = await Users.findOne({
+      where: { id: review.sellerId }
+    });
     const order = await SalesOrders.findOne({ id: review.orderId });
 
-    if (!notifier) throw new Error('Notifier not found');
+    if (notifier.user.notificationSetting.isOrderAllowed) {
+      await sequelize.transaction(async transaction => {
+        const notification = await Notifications.findOne(
+          {
+            title: SALE_REVIEWED,
+            notifierId: notifier.id,
+            actorId: order.userId,
+            type: NOTIFICATION_TYPE.REVIEW_RECEIVED,
+            notifiableId: review.id,
+            notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.REVIEW
+          },
+          { transaction }
+        );
 
-    await sequelize.transaction(async transaction => {
-      const notification = await Notifications.findOne(
-        {
-          title: SALE_REVIEWED,
-          notifierId: notifier.id,
-          actorId: order.userId,
-          type: NOTIFICATION_TYPE.REVIEW_RECEIVED,
-          notifiableId: review.id,
-          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.REVIEW
-        },
-        { transaction }
-      );
+        const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
-
-      if (notifier.deviceToken) {
-        await sendCloudMessage({ title: SALE_REVIEWED, token: notifier.deviceToken, data });
-      }
-    });
+        if (notifier.deviceToken) {
+          await sendCloudMessage({ title: SALE_REVIEWED, token: notifier.deviceToken, data });
+        }
+      });
+    }
   } catch (e) {
     console.error(e);
   }
