@@ -50,7 +50,7 @@ export const subscriptionRenewReminder = () =>
         const a = moment(sub.expiryDate);
         const b = moment();
         const diff = a.diff(b, 'days');
-        return diff < 1;
+        return diff < 0;
       })(twoCount);
 
       await Promise.all(
@@ -100,7 +100,16 @@ export const subscriptionRenewReminder = () =>
             notifierId: data.user.id,
             type: NOTIFICATION_CONSTANT.SUBSCRIPTION_EXPIRY_REMINDER
           });
+
           await data.increment('reminderCount');
+
+          const subscription = await Subscriptions.findOne({
+            where: { userId: data.user.id },
+            include: [{ model: Users, as: 'user' }]
+          });
+
+          const hasValidSubscription = await subscription.checkHasValidSubscription();
+          await subscription.user.update({ hasValidSubscription });
         })
       );
 

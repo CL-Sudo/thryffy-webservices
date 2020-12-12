@@ -3,6 +3,10 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
+import { Users } from '@models/users.model';
+
+import moment from 'moment';
+
 const Subscriptions = SequelizeConnector.define(
   'Subscriptions',
   {
@@ -34,12 +38,44 @@ const Subscriptions = SequelizeConnector.define(
     hooks: {
       beforeFind: query => {
         parseParanoidToIncludes(query);
+      },
+      afterCreate: async subscription => {
+        try {
+          const user = await Users.findOne({ where: { id: subscription.userId } });
+          const hasValidSubscription = await subscription.checkHasValidSubscription();
+          await user.update({
+            hasValidSubscription
+          });
+        } catch (e) {
+          throw e;
+        }
+      },
+      afterUpdate: async subscription => {
+        try {
+          const user = await Users.findOne({ where: { id: subscription.userId } });
+          const hasValidSubscription = await subscription.checkHasValidSubscription();
+          await user.update({
+            hasValidSubscription
+          });
+        } catch (e) {
+          throw e;
+        }
       }
     }
   }
 );
 
 addScopesByAllFields(Subscriptions, []);
+
+Subscriptions.prototype.checkHasValidSubscription = async function() {
+  try {
+    const now = moment();
+    const diff = now.diff(this.expiryDate, 'seconds');
+    return diff <= 0;
+  } catch (e) {
+    throw e;
+  }
+};
 
 export { Subscriptions };
 export default Subscriptions;
