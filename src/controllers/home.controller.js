@@ -20,14 +20,26 @@ export const getBannersList = async (req, res, next) => {
 export const getFeatureItemsList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
+    const { id } = req.user;
 
-    const payload = await FeatureItems.findAndCountAll({
-      limit: Number(limit) || null,
-      offset: Number(offset) || null,
+    const payload = await FeatureItems.findAll({
       include: [{ model: Products, as: 'product' }]
     });
 
-    return res.status(200).json({ message: 'success', payload });
+    const rows = await Promise.all(
+      paginate(limit)(offset)(payload).map(async row => {
+        await row.product.checkIsAddedToFavourite(id);
+        return row;
+      })
+    );
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: payload.length,
+        rows
+      }
+    });
   } catch (e) {
     return next(e);
   }
@@ -36,7 +48,7 @@ export const getFeatureItemsList = async (req, res, next) => {
 export const getCuratedList = async (req, res, next) => {
   try {
     const { id } = req.user;
-    const { limit, offset } = req.params;
+    const { limit, offset } = req.query;
 
     const preferences = await Preferences.findAll({ raw: true, where: { userId: id } });
 
@@ -72,11 +84,18 @@ export const getCuratedList = async (req, res, next) => {
       where
     });
 
+    const rows = await Promise.all(
+      paginate(limit)(offset)(products).map(async row => {
+        await row.checkIsAddedToFavourite(id);
+        return row;
+      })
+    );
+
     return res.status(200).json({
       message: 'success',
       payload: {
         count: products.length,
-        rows: paginate(limit)(offset)(products)
+        rows
       }
     });
   } catch (e) {
