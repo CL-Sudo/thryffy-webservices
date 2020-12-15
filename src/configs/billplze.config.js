@@ -1,0 +1,13 @@
+export default {
+  SANDBOX_API_KEY: process.env.BILLPLZ_SANDBOX_API_KEY,
+
+  API_KEY: process.env.BILLPLZ_API_KEY,
+
+  SANDBOX_URL: process.env.BILLPLZ_SANDBOX_URL,
+
+  URL: process.env.BILLPLZ_URL,
+
+  SANDBOX_SIGNATURE_KEY: process.env.BILLPLZ_SANDBOX_SIGNATURE_KEY,
+
+  SIGNATURE_KEY: process.env.BILLPLZ_SIGNATURE_KEY
+};

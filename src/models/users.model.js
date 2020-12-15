@@ -55,27 +55,6 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING(150),
       field: 'full_name'
     },
-    // fullName: {
-    //   type: Sequelize.VIRTUAL,
-    //   get() {
-    //     const { firstName, lastName } = this;
-    //     switch (true) {
-    //       case R.isNil(firstName) && R.not(R.isNil(lastName)):
-    //         return lastName;
-    //       case R.not(R.isNil(firstName)) && R.isNil(lastName):
-    //         return firstName;
-    //       case R.isNil(firstName) && R.isNil(lastName):
-    //         return null;
-    //       default:
-    //         return `${firstName} ${lastName}`;
-    //     }
-    //   },
-    //   set(fullName) {
-    //     const { firstName, lastName } = parseFirstNameLastName(fullName);
-    //     this.setDataValue('firstName', firstName);
-    //     this.setDataValue('lastName', lastName);
-    //   }
-    // },
     state: {
       type: Sequelize.STRING(100)
     },

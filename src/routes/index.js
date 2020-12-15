@@ -58,6 +58,7 @@ export default app => {
    */
   app.use('/api/auth', require('./authentication.routes').default);
   app.use('/api/mobile/auth/', require('./mobile/authentication.routes').default);
+  app.use('/api/publics', require('./publics.routes').default);
 
   app.use('/api/test', test);
   /*
