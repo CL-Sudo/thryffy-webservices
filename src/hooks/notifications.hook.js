@@ -4,7 +4,8 @@ import R from 'ramda';
 
 Notifications.addHook('afterFind', async findResult => {
   try {
-    if (!Array.isArray(findResult)) findResult = [findResult];
+    if (findResult && !Array.isArray(findResult)) findResult = [findResult];
+    if (!findResult && !Array.isArray(findResult)) findResult = [];
 
     findResult.forEach(instance => {
       switch (true) {

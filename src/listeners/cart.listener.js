@@ -19,17 +19,6 @@ import LISTENER from '@constants/listener.constant';
 
 export const cartListener = new EventEmitter();
 
-const removeCartItems = async productIds => {
-  const transaction = await sequelize.transaction();
-  try {
-    await CartItems.destroy({ where: { productId: productIds }, transaction });
-    await transaction.commit();
-  } catch (e) {
-    await transaction.rollback();
-    console.error('e', e);
-  }
-};
-
 const pushNotification = async (productIds, order) => {
   try {
     const seller = await Users.findOne({
@@ -105,6 +94,5 @@ const sendEmail = async (_, order) => {
   }
 };
 
-cartListener.on(LISTENER.CART.PAYMENT_MADE, removeCartItems);
 cartListener.on(LISTENER.CART.PAYMENT_MADE, pushNotification);
 cartListener.on(LISTENER.CART.PAYMENT_MADE, sendEmail);

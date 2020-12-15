@@ -9,11 +9,13 @@ import {
 } from '@models';
 import * as services from '@services/checkout.service';
 import R from 'ramda';
-import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
+import { PAYMENT_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
 import { cartListener } from '@listeners';
 import { paginate } from '@utils';
+
+import Billplz from '@services/billplz.service';
 
 import LISTENER from '@constants/listener.constant';
 
@@ -157,7 +159,7 @@ export const checkout = async (req, res, next) => {
   try {
     requestValidator(req);
     const { id } = req.user;
-    const { productIds, paymentMethod, courier } = req.body;
+    const { productIds } = req.body;
 
     const payload = await Users.scope({ method: ['cart', productIds] }).findOne();
 
@@ -180,112 +182,71 @@ export const checkout = async (req, res, next) => {
 };
 
 export const pay = async (req, res, next) => {
-  const transaction = await Sequelize.transaction();
   try {
     requestValidator(req);
 
     const { id: userId } = req.user;
-    const { productIds, addressId, courier, paymentMethod } = req.body;
+    const { productIds, addressId } = req.body;
 
     const { subTotal, tax, total, shippingFeeId } = await services.getPriceSummary(productIds);
 
-    const parseOrderItems = ids => async salesOrderId => {
-      try {
-        const products = await Products.findAll({
-          raw: true,
-          attributes: ['id'],
-          where: { id: ids }
-        });
-        const parseObj = R.applySpec({
-          salesOrderId: R.always(salesOrderId),
+    const orderId = await Sequelize.transaction(async transaction => {
+      const product = await Products.findOne({ where: { id: productIds[0] } });
+
+      const saleOrder = await SalesOrders.create(
+        {
+          userId,
+          sellerId: product.userId,
+          addressId,
+          paymentStatus: PAYMENT_STATUS.PENDING,
+          subTotal,
+          shippingFeeId,
+          tax,
+          total
+        },
+        { transaction }
+      );
+
+      const orderItems = R.map(
+        R.applySpec({
+          salesOrderId: R.always(saleOrder.id),
           productId: R.prop('id')
-        });
-        const arr = R.map(parseObj)(products);
-        return Promise.resolve(arr);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+        })
+      )(
+        await Products.findAll({
+          where: { id: productIds }
+        })
+      );
 
-    const storeSaleOrder = async () => {
-      try {
-        const product = await Products.findOne({ where: { id: productIds[0] } });
-        const saleOrder = await SalesOrders.create(
-          {
-            userId,
-            sellerId: product.userId,
-            addressId,
-            paymentMethod,
-            courier,
-            paymentStatus: PAYMENT_STATUS.SUCCESS,
-            deliveryStatus: DELIVERY_STATUS.TO_SHIP,
-            subTotal,
-            shippingFeeId,
-            tax,
-            total
-          },
-          { transaction }
-        );
-        return Promise.resolve(saleOrder.id);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+      await OrderItems.bulkCreate(orderItems, { transaction });
 
-    const storeOrderItems = async storeArrObj => {
-      try {
-        await OrderItems.bulkCreate(storeArrObj, { transaction });
-        await transaction.commit();
-        return Promise.resolve(storeArrObj[0].salesOrderId);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+      return saleOrder.id;
+    });
 
-    const storeExtraFields = async salesOrderId => {
-      try {
-        const sale = await SalesOrders.findOne({ where: { id: salesOrderId } });
-        await sale.update({
-          commission: await sale.getCommission(),
-          parcelType: await sale.getParcelType()
-        });
-        return Promise.resolve(salesOrderId);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+    const order = await SalesOrders.scope({
+      method: ['orderDetails', orderId]
+    }).findOne();
 
-    const getPayload = async salesOrderId => {
-      try {
-        const order = await SalesOrders.scope({
-          method: ['orderDetails', salesOrderId]
-        }).findOne();
-        await order.getItemQuantity();
-        await order.checkHasReviewed();
-        const { seller } = order.orderItems[0].product;
-        const payload = R.assoc('seller', seller)(order.dataValues);
-        return Promise.resolve(payload);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+    const { seller } = order.orderItems[0].product;
+    const payload = R.assoc('seller', seller)(order.dataValues);
 
-    const payload = await R.pipeP(
-      storeSaleOrder,
-      parseOrderItems(productIds),
-      storeOrderItems,
-      storeExtraFields,
-      getPayload
-    )();
+    const user = await Users.findOne({ where: { id: userId } });
+    const billplz = new Billplz();
+
+    const response = await billplz.createBill({
+      amount: order.total * 100,
+      email: user.email,
+      mobile: user.completePhoneNumber,
+      name: user.fullName,
+      orderRef: order.orderRef,
+      redirectUrl: 'www.google.com',
+      callbackUrl: `${process.env.NGROK_URL}/api/publics/billplz/callback?orderId=${order.id}`
+    });
 
     cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
 
-    return res.status(200).json({
-      message: 'success',
-      payload
-    });
+    return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
-    await transaction.rollback();
     return next(e);
   }
 };

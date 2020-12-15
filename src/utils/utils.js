@@ -7,6 +7,18 @@ import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
+export const base64 = {
+  encode: string => {
+    const encoder = Buffer.from(string);
+    return encoder.toString('base64');
+  },
+
+  decode: encodedString => {
+    const decoder = Buffer.from(encodedString, 'base64');
+    return decoder.toString();
+  }
+};
+
 export const mapObjectsToArray = objects => {
   const result = [];
   R.map(obj => result.push(obj))(objects);

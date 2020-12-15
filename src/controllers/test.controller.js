@@ -1,33 +1,22 @@
-import { Users, NotificationSettings, Subscriptions } from '@models';
+import Billplz from '@services/billplz.service';
 
 import R from 'ramda';
 
-const userWithAllowedNotification = R.reject(
-  instance => !instance.user.notificationSetting.isReminderAllowed
-);
+import { Notifications } from '@models';
+
+import crypto from 'crypto';
 
 export const test = async (req, res, next) => {
   try {
-    const subscription = await Subscriptions.findAll({
-      include: [
-        {
-          model: Users,
-          as: 'user',
-          include: [
-            {
-              model: NotificationSettings,
-              as: 'notificationSetting'
-            }
-          ]
-        }
-      ]
-    });
-    return res.status(404).json({
+    const { q } = req.query;
+    const billplz = new Billplz();
+    const isValid = billplz.verifyXSignature(req.body.x_signature, req.body);
+    console.log('isValid', isValid);
+    return res.status(200).json({
       message: 'not found',
-      payload: userWithAllowedNotification(subscription)
+      payload: isValid
     });
   } catch (e) {
-    console.log('e', e);
     return next(e);
   }
 };

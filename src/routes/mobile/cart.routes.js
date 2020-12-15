@@ -9,7 +9,9 @@ router.post('/', controllers.add);
 router.delete('/:productId', controllers.deleteOne);
 
 router.post('/checkout', checkoutValidator, controllers.checkout);
+
 router.post('/pay', payValidator, controllers.pay);
+
 router.post('/save-for-later', saveForLaterValidator, controllers.saveForLater);
 
 export default router;

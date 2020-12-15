@@ -2,7 +2,8 @@ import { Preferences } from '@models';
 
 Preferences.addHook('afterFind', async findResult => {
   try {
-    if (!Array.isArray(findResult)) findResult = [findResult];
+    if (findResult && !Array.isArray(findResult)) findResult = [findResult];
+    if (!findResult && !Array.isArray(findResult)) findResult = [];
     findResult.forEach(instance => {
       if (instance.preferableType === 'brand' && instance.brand) {
         delete instance.condition;

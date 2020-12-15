@@ -9,3 +9,21 @@ SalesOrders.addHook('afterCreate', async (order, options) => {
     throw e;
   }
 });
+
+SalesOrders.addHook('afterFind', async results => {
+  try {
+    if (results && !Array.isArray(results)) {
+      results = [results];
+    } else if (!results && !Array.isArray(results)) {
+      results = [];
+    }
+    await Promise.all(
+      results.map(async instance => {
+        await instance.checkHasReviewed();
+        await instance.getItemQuantity();
+      })
+    );
+  } catch (e) {
+    throw e;
+  }
+});

@@ -9,21 +9,18 @@ import {
 } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
-import PARCEL_TYPES from '@constants/parcel_types.constant';
 import {
   OrderItems,
   Users,
   Products,
   Addresses,
   Brands,
-  Commissions,
   ShippingFees,
   Reviews,
   Sizes
 } from '@models';
 import R from 'ramda';
 import { Op } from 'sequelize';
-import { getProductCommission } from '@services/product.service';
 import Conditions from './conditions.model';
 import Categories from './categories.model';
 
@@ -38,6 +35,7 @@ const SalesOrders = SequelizeConnector.define(
   'SalesOrders',
   {
     id: primaryKey,
+    shippingFeeId: foreignKey('shipping_fee_id', 'shipping_fees', false),
     userId: foreignKey('user_id', 'users', false),
     sellerId: foreignKey('seller_id', 'users', false),
     addressId: foreignKey('address_id', 'addresses', false),
@@ -73,7 +71,6 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.DECIMAL(10, 2),
       field: 'sub_total'
     },
-    shippingFeeId: foreignKey('shipping_fee_id', 'shipping_fees', false),
     tax: {
       type: Sequelize.DECIMAL(10, 2)
     },
@@ -301,31 +298,6 @@ SalesOrders.prototype.getItemQuantity = async function() {
   }
 };
 
-SalesOrders.prototype.getCommission = async function() {
-  try {
-    const items = await OrderItems.findAll({
-      where: { salesOrderId: this.id },
-      include: [
-        {
-          model: Products,
-          as: 'product'
-        }
-      ]
-    });
-
-    const rates = await Commissions.findAll({ raw: true });
-
-    const commission = R.pipe(
-      R.map(R.path(['product', 'originalPrice'])),
-      R.map(getProductCommission(rates)),
-      R.sum
-    )(items);
-    return commission;
-  } catch (e) {
-    throw e;
-  }
-};
-
 SalesOrders.prototype.checkHasReviewed = async function() {
   try {
     const review = await Reviews.findOne({ where: { orderId: this.id } });
@@ -335,34 +307,9 @@ SalesOrders.prototype.checkHasReviewed = async function() {
   }
 };
 
-SalesOrders.prototype.getParcelType = async function() {
-  try {
-    const items = await OrderItems.findAll({ where: { salesOrderId: this.id } });
-
-    switch (items.length) {
-      case 1: {
-        const shippingFee = await ShippingFees.findOne({ where: { id: this.shippingFeeId } });
-        return shippingFee.type;
-      }
-
-      case 2: {
-        return PARCEL_TYPES.LARGE_PARCEL;
-      }
-
-      case 3:
-        return PARCEL_TYPES.LARGE_PARCEL;
-
-      default:
-    }
-  } catch (e) {
-    throw e;
-  }
-};
-
 SalesOrders.prototype.getExtraFields = async function() {
   try {
     await this.checkHasReviewed();
-    await this.getCommission();
     await this.getItemQuantity();
   } catch (e) {
     throw e;
