@@ -234,11 +234,11 @@ export const pay = async (req, res, next) => {
     const billplz = new Billplz();
 
     const response = await billplz.createBill({
-      amount: order.total * 100,
+      amount: order.total,
       email: user.email,
       mobile: user.completePhoneNumber,
       name: user.fullName,
-      orderRef: order.orderRef,
+      itemName: `order ${order.orderRef}`,
       redirectUrl: 'www.google.com',
       callbackUrl: `${process.env.NGROK_URL}/api/publics/billplz/callback?orderId=${order.id}`
     });

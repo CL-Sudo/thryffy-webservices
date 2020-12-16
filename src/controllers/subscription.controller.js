@@ -1,11 +1,6 @@
 import { Subscriptions, Packages, Users } from '@models';
 import { requestValidator } from '@validators';
-
-import { subscriptionListner } from '@listeners/subscription.listener';
-
-import LISTENER from '@constants/listener.constant';
-
-import moment from 'moment';
+import Billplz from '@services/billplz.service';
 
 export const subscribe = async (req, res, next) => {
   try {
@@ -14,48 +9,21 @@ export const subscribe = async (req, res, next) => {
     const { id } = req.user;
     const { packageId } = req.body;
 
-    const currentSubscription = await Subscriptions.findOne({ where: { userId: id } });
+    const pkg = await Packages.findOne({ where: { id: packageId } });
+    const user = await Users.findOne({ where: { id } });
 
-    if (currentSubscription) {
-      await currentSubscription.update({
-        packageId,
-        expiryDate: moment()
-          .add(1, 'months')
-          .format('YYYY-MM-DD HH:mm:ss')
-      });
-    } else {
-      await Subscriptions.create({
-        packageId,
-        userId: id,
-        expiryDate: moment()
-          .add(1, 'months')
-          .format('YYYY-MM-DD HH:mm:ss')
-      });
-    }
-
-    const payload = await Subscriptions.findOne({
-      where: { userId: id },
-      include: [
-        {
-          model: Packages,
-          as: 'package'
-        },
-        {
-          model: Users,
-          as: 'user'
-        }
-      ]
+    const billplz = new Billplz();
+    const response = await billplz.createBill({
+      amount: pkg.price,
+      callbackUrl: `${process.env.NGROK_URL}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
+      email: user.email,
+      mobile: user.completePhoneNumber,
+      name: user.fullName,
+      itemName: `Package ${pkg.title}`,
+      redirectUrl: 'www.google.com'
     });
 
-    const hasValidSubscription = await payload.checkHasValidSubscription();
-    await payload.update({ hasValidSubscription });
-
-    subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, payload);
-
-    delete payload.user;
-    delete payload.dataValues.user;
-
-    return res.status(200).json({ message: 'success', payload });
+    return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
     return next(e);
   }

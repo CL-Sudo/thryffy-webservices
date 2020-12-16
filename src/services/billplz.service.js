@@ -27,6 +27,11 @@ class Billplz {
     return parsedString;
   }
 
+  /**
+   *
+   * @param {String} xSignature
+   * @param {Object} body
+   */
   verifyXSignature(xSignature, body) {
     const hmac = crypto.createHmac('sha256', this.signatureKey);
     hmac.update(this.parseObjectToString(body));
@@ -58,7 +63,7 @@ class Billplz {
     name,
     amount,
     callbackUrl,
-    orderRef,
+    itemName,
     redirectUrl
   }) {
     try {
@@ -72,8 +77,8 @@ class Billplz {
           email,
           mobile,
           name,
-          amount,
-          description: `Payment for order ${orderRef}`,
+          amount: amount * 100,
+          description: `Payment for ${itemName}`,
           callback_url: callbackUrl,
           redirect_url: redirectUrl
         },
