@@ -26,7 +26,9 @@ export const addProductValidator = async (req, fields) =>
         include: [{ model: Packages, as: 'package' }]
       });
       if (!subscription) {
-        throw new Error('You need to subscribe to a package before you can list item');
+        const listingCount = await Products.count({ where: { userId: req.user.id } });
+        if (listingCount >= 30)
+          throw new Error('You cannot list more than 30 items as a free user.');
       }
 
       if (subscription.listingCount >= parsePackageMaxListing(subscription.package.listing)) {

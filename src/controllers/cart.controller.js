@@ -238,8 +238,8 @@ export const pay = async (req, res, next) => {
       email: user.email,
       mobile: user.completePhoneNumber,
       name: user.fullName,
-      itemName: `order ${order.orderRef}`,
-      redirectUrl: 'www.google.com',
+      itemName: `Order ${order.orderRef}`,
+      redirectUrl: `${process.env.NGROK_URL}/api/publics/billplz/redirect?orderId=${order.id}`,
       callbackUrl: `${process.env.NGROK_URL}/api/publics/billplz/callback?orderId=${order.id}`
     });
 

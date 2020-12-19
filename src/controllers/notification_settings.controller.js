@@ -8,7 +8,10 @@ export const getOne = async (req, res, next) => {
   try {
     const { id } = req.user;
     const payload = await NotificationSettings.findOne({ where: { userId: id } });
-    return res.status(200).json({ message: 'success', payload });
+    return res.status(200).json({
+      message: 'success',
+      payload
+    });
   } catch (e) {
     return next(e);
   }

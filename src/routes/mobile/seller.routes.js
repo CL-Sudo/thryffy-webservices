@@ -4,7 +4,8 @@ import {
   getProductShippingFee,
   markAsShipped,
   getProducts,
-  getSellerDetail
+  getSellerDetail,
+  getSellerReviews
 } from '@controllers';
 import { markAsShippedValidator, getShippingFeeValidator } from '@validators/seller.validator';
 
@@ -14,8 +15,10 @@ router.post('/product', addProduct);
 router.get('/shipping-fee', getShippingFeeValidator, getProductShippingFee);
 router.patch('/mark-as-shipped', markAsShippedValidator, markAsShipped);
 
-router.get('/products', getProducts);
+router.get('/:sellerId/products', getProducts);
 
-router.get('/', getSellerDetail);
+router.get('/:sellerId/details', getSellerDetail);
+
+router.get('/:sellerId/reviews', getSellerReviews);
 
 export default router;

@@ -9,6 +9,8 @@ import LISTENER from '@constants/listener.constant';
 
 import { subscriptionListner } from '@listeners/subscription.listener';
 
+import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
+
 export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -16,16 +18,57 @@ export const billplzCallback = async (req, res, next) => {
     const billplz = new Billplz();
 
     if (billplz.verifyXSignature(xSignature, req.body)) {
-      const order = await SalesOrders.findOne({ where: { id: orderId } });
-      await order.update({
-        paymentStatus: paid === 'true' ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.PENDING,
-        deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null
+      await sequelize.transaction(async transaction => {
+        const order = await SalesOrders.findOne({ where: { id: orderId }, transaction });
+        await order.update(
+          {
+            paymentStatus: paid === 'true' ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
+            deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null
+          },
+          { transaction }
+        );
       });
     }
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
+  }
+};
+
+export const billplzRedirect = async (req, res) => {
+  try {
+    const { orderId } = req.query;
+
+    const wait = () =>
+      new Promise(async resolve => {
+        setTimeout(resolve, 4000);
+      });
+
+    await wait();
+
+    const order = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
+
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(
+            JSON.stringify({
+              status: true,
+              payload: order
+            })
+          )}
+        );
+      </script>
+    `);
+  } catch (e) {
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(JSON.stringify({ status: false, message: e.message }))}
+        );
+      </script>
+    `);
   }
 };
 

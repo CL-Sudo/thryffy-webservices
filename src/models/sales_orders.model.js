@@ -116,7 +116,6 @@ const SalesOrders = SequelizeConnector.define(
   },
   {
     tableName: 'sales_orders',
-    underscored: false,
     scopes: {
       search: params => search(SalesOrders, params, []),
       orderDetails(orderId) {

@@ -8,7 +8,15 @@ import {
   getOneProductShippingFee
 } from '@services';
 import { isJSON, paginate } from '@utils';
-import { Products, ProductColors, SalesOrders, Sizes, Users, Subscriptions } from '@models';
+import {
+  Products,
+  ProductColors,
+  SalesOrders,
+  Sizes,
+  Users,
+  Subscriptions,
+  Reviews
+} from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
 import { addProductValidator } from '@validators/seller.validator';
@@ -258,10 +266,10 @@ export const updateProduct = async (req, res, next) => {
 
 export const getProducts = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { sellerId } = req.params;
     const { limit, offset } = req.query;
 
-    const products = await Products.scope('default').findAll({ where: { userId: id } });
+    const products = await Products.scope('default').findAll({ where: { userId: sellerId } });
 
     return res.status(200).json({
       message: 'success',
@@ -277,11 +285,36 @@ export const getProducts = async (req, res, next) => {
 
 export const getSellerDetail = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { sellerId } = req.params;
 
-    const seller = await Users.scope('sellerDetail').findOne({ where: { id } });
+    const seller = await Users.scope('sellerDetail').findOne({ where: { id: sellerId } });
 
     return res.status(200).json({ message: 'success', payload: seller });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getSellerReviews = async (req, res, next) => {
+  try {
+    const { sellerId } = req.params;
+    const { limit, offset } = req.query;
+    const orders = await SalesOrders.findAll({
+      where: { sellerId },
+      include: [{ model: Reviews, as: 'review' }]
+    });
+
+    const reviews = orders
+      .filter(instance => !R.isNil(instance.review))
+      .map(instance => instance.review);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: reviews.length,
+        rows: paginate(limit)(offset)(reviews)
+      }
+    });
   } catch (e) {
     return next(e);
   }

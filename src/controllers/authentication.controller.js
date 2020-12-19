@@ -8,8 +8,7 @@ import {
   generateRefreshToken,
   generateJWT,
   generateOTP,
-  generateResetToken,
-  generateUsername
+  generateResetToken
 } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
@@ -18,7 +17,6 @@ import { hashPassword } from '@tools/bcrypt';
 import moment from 'moment';
 import { sendSMS } from '@services/sms.service';
 import { SMSVerifcation } from '@templates/sms.template';
-// import { sendMail } from '@tools/sendgrid';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -26,13 +24,13 @@ const createFacebookUserAccount = provider =>
   new Promise(async (resolve, reject) => {
     const { id: facebookId, displayName } = provider;
     const email = _.get(provider, 'emails[0].value', null);
-    const username = await generateUsername(displayName, null);
+    // const username = await generateUsername(displayName, null);
     const transaction = await sequelize.transaction();
     // const { firstName, lastName } = parseFirstNameLastName(displayName);
     try {
       await Users.create(
         {
-          username,
+          // username,
           facebookId,
           email,
           fullName: displayName,
@@ -54,11 +52,11 @@ const createGoogleUserAccount = async provider =>
     try {
       const { id: googleId, displayName } = provider;
       const email = _.get(provider, 'emails[0].value');
-      const username = await generateUsername(displayName, null);
+      // const username = await generateUsername(displayName, null);
       // const { firstName, lastName } = parseFirstNameLastName(displayName);
       await Users.create(
         {
-          username,
+          // username,
           googleId,
           email,
           fullName: displayName,
@@ -394,7 +392,7 @@ export const verifyOTP = async (req, res, next) => {
       try {
         if (tacFromRequest !== user.otp || user.otpValidity < new Date()) {
           throw new Error(
-            `Sorry, we couldn't verify your phone number (+${user.phoneCountryCode} ${user.phoneNumber}.)`
+            `Sorry, we couldn't verify your phone number (${user.phoneCountryCode} ${user.phoneNumber}.)`
           );
         }
 
@@ -520,7 +518,16 @@ export const userRegistration = async (req, res, next) => {
         const user = await Users.findOne({
           where: { phoneNumber: requestBody.phoneNumber }
         });
-        if (R.not(R.isNil(user))) {
+        if (!R.isNil(user)) {
+          if (!user.isVerified) {
+            const otp = generateOTP();
+            await user.update({
+              otp,
+              otpValidity: moment().add(10, 'minutes')
+            });
+            await user.reload();
+            authListener.emit('userSignUp', user);
+          }
           throw new Error('Phone number is not available');
         }
         return Promise.resolve(requestBody);

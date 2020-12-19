@@ -38,7 +38,7 @@ export const getMostRelevantCategories = async keyword =>
  * @param {Array} prevAcc
  * @returns {Array} Array
  */
-export const getChildIds = async (parentId, prevAcc = []) =>
+export const getChildIds = (parentId, prevAcc = []) =>
   new Promise(async (resolve, reject) => {
     try {
       const categories = await Categories.findAll({

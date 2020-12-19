@@ -60,7 +60,7 @@ class Billplz {
     collectionId,
     email,
     mobile,
-    name,
+    name = '',
     amount,
     callbackUrl,
     itemName,
