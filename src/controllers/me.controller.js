@@ -649,7 +649,7 @@ export const getOneSubscription = async (req, res, next) => {
 export const generateOtp = async (req, res, next) => {
   try {
     const { id } = req.user;
-    const { countryCode, phoneNumber } = req.body;
+    const { phoneCountryCode, phoneNumber } = req.body;
 
     const otp = getOtp();
     const otpValidity = moment().add(10, 'minutes');
@@ -657,7 +657,7 @@ export const generateOtp = async (req, res, next) => {
     const user = await Users.findOne({ where: { id } });
     await user.update({ otp, otpValidity });
 
-    await sendSMS(`${countryCode}${phoneNumber}`, SMSVerifcation(otp));
+    await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {
