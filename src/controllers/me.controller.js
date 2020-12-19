@@ -1,4 +1,6 @@
 import R from 'ramda';
+import moment from 'moment';
+
 import { requestValidator } from '@validators';
 import {
   Addresses,
@@ -22,6 +24,7 @@ import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
 import { subscribeTokenToTopic } from '@services/notification.service';
 
 import { paginate } from '@utils';
+import { generateOTP as getOtp } from '@utils/auth.util';
 
 import { DELIVERY_STATUS } from '@constants';
 import NOTIFCATION_CONSTANT from '@constants/notification.constant';
@@ -29,6 +32,9 @@ import NOTIFCATION_CONSTANT from '@constants/notification.constant';
 import { Op } from 'sequelize';
 
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
+import { sendSMS } from '@services/sms.service';
+
+import { SMSVerifcation } from '@templates/sms.template';
 
 export const addAddress = async (req, res, next) => {
   try {
@@ -635,6 +641,23 @@ export const getOneSubscription = async (req, res, next) => {
       message: 'success',
       payload
     });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const generateOtp = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const otp = getOtp();
+    const otpValidity = moment().add(1, 'minutes');
+
+    const user = await Users.findOne({ where: { id } });
+    await user.update({ otp, otpValidity });
+
+    await sendSMS(user.completePhoneNumber, SMSVerifcation(otp));
+
+    return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
   }

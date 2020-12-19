@@ -2,11 +2,6 @@ import Router from 'express';
 import * as controllers from '@controllers/me.controller';
 import * as validators from '@validators/me.validator';
 
-import { crud } from '@utils/controller-crud.util';
-import { Preferences } from '@models';
-
-const crudController = crud(Preferences);
-
 const router = new Router();
 
 router.get('/', controllers.getMyProfile);
@@ -43,5 +38,7 @@ router
   .get(controllers.getPreferences);
 
 router.get('/subscriptions', controllers.getOneSubscription);
+
+router.post('/generate-otp', controllers.generateOtp);
 
 export default router;

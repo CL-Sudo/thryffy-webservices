@@ -7,7 +7,7 @@ const NotificationSettings = SequelizeConnector.define(
   'NotificationSettings',
   {
     id: primaryKey,
-    userId: foreignKey('user_id', 'users', false),
+    userId: foreignKey('user_id', 'users', { allowNull: false, onDelete: 'CASCADE' }),
     isOrderAllowed: {
       type: Sequelize.BOOLEAN,
       field: 'is_order_allowed',
@@ -28,7 +28,6 @@ const NotificationSettings = SequelizeConnector.define(
   },
   {
     tableName: 'notification_settings',
-    underscored: false,
     scopes: {
       search: params => search(NotificationSettings, params, [])
     },
