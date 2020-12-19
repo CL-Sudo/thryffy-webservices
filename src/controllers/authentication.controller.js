@@ -528,7 +528,7 @@ export const userRegistration = async (req, res, next) => {
             await user.reload();
             authListener.emit('userSignUp', user);
           }
-          throw new Error('Phone number is not available');
+          return res.status(202).json({ message: 'Phone number is not available' });
         }
         return Promise.resolve(requestBody);
       } catch (e) {
