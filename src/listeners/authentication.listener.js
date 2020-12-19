@@ -7,6 +7,7 @@ export const authListener = new EventEmitter();
 const sendOTPViaSMS = async user => {
   try {
     const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
+    console.log('phoneNumber', phoneNumber);
     await sendSMS(phoneNumber, SMSVerifcation(user.otp));
   } catch (e) {
     console.error(e);

@@ -499,6 +499,23 @@ export const userRegistration = async (req, res, next) => {
   try {
     requestValidator(req);
 
+    const u = await Users.findOne({
+      where: { username: req.body.username }
+    });
+    if (!R.isNil(u)) {
+      if (!u.isVerified) {
+        const otp = generateOTP();
+        await u.update({
+          otp,
+          otpValidity: moment().add(10, 'minutes')
+        });
+        await u.reload();
+        authListener.emit('userSignUp', u);
+        return res.status(202).json({ message: 'User not verified' });
+      }
+      throw new Error('Username is not available');
+    }
+
     const checkUserByEmail = async requestBody => {
       try {
         const user = await Users.findOne({
@@ -519,30 +536,7 @@ export const userRegistration = async (req, res, next) => {
           where: { phoneNumber: requestBody.phoneNumber }
         });
         if (!R.isNil(user)) {
-          if (!user.isVerified) {
-            const otp = generateOTP();
-            await user.update({
-              otp,
-              otpValidity: moment().add(10, 'minutes')
-            });
-            await user.reload();
-            authListener.emit('userSignUp', user);
-          }
-          return res.status(202).json({ message: 'Phone number is not available' });
-        }
-        return Promise.resolve(requestBody);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
-
-    const checkUsername = async requestBody => {
-      try {
-        const user = await Users.findOne({
-          where: { username: requestBody.username }
-        });
-        if (R.not(R.isNil(user))) {
-          throw new Error('Username is not available');
+          throw new Error('Phone number is not available');
         }
         return Promise.resolve(requestBody);
       } catch (e) {
@@ -580,7 +574,7 @@ export const userRegistration = async (req, res, next) => {
     };
 
     const payload = await R.pipeP(
-      checkUsername,
+      // checkUsername,
       checkUserByEmail,
       checkUserByPhoneNumber,
       createNewUser,
