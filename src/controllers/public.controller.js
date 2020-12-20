@@ -1,6 +1,6 @@
 import moment from 'moment';
 
-import { Packages, SalesOrders, Subscriptions, Users } from '@models';
+import { Packages, SalesOrders, Subscriptions, Users, OrderItems, Products } from '@models';
 
 import Billplz from '@services/billplz.service';
 
@@ -26,6 +26,21 @@ export const billplzCallback = async (req, res, next) => {
             deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null
           },
           { transaction }
+        );
+        const orderItems = await OrderItems.findAll({
+          where: { salesOrderId: orderId },
+          include: [
+            {
+              model: Products,
+              as: 'product'
+            }
+          ],
+          transaction
+        });
+        await Promise.all(
+          orderItems.map(async instance => {
+            await instance.product.update({ isPurchased: true }, transaction);
+          })
         );
       });
     }

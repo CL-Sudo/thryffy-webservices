@@ -78,7 +78,14 @@ export const getCuratedList = async (req, res, next) => {
       ? R.identity
       : R.assoc('brandId', preferenceIds.brand);
 
-    const where = R.pipe(assignBrand, assignCategory, assignCondition)({});
+    const where = R.pipe(
+      assignBrand,
+      assignCategory,
+      assignCondition
+    )({
+      isPublished: true,
+      isPurchased: false
+    });
 
     const products = await Products.scope('default').findAll({
       where
