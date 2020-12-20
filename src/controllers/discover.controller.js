@@ -2,7 +2,6 @@ import { Conditions, Categories, Products, Brands, Sizes, Users, Subscriptions }
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
-import { parseKeywordForNLP } from '@utils/query.util';
 import R from 'ramda';
 import { getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
@@ -166,7 +165,12 @@ export const discoverList = async (req, res, next) => {
     );
 
     const filteredProducts = R.pipe(
-      R.filter(product => product.seller.subscription.expiryDate > new Date()),
+      R.filter(
+        product =>
+          product.seller.subscription.expiryDate > new Date() &&
+          product.isPublished &&
+          product.isPurchased
+      ),
       filterByPrice
     )(products);
 

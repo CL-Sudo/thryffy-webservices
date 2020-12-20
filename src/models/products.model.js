@@ -28,6 +28,7 @@ const Products = SequelizeConnector.define(
     categoryId: foreignKey('category_id', 'categories', false),
     brandId: foreignKey('brand_id', 'brands', false),
     sizeId: foreignKey('size_id', 'sizes', false),
+    conditionId: foreignKey('condition_id', 'conditions', false),
     title: {
       type: Sequelize.STRING(100)
     },
@@ -51,7 +52,16 @@ const Products = SequelizeConnector.define(
         return this.getDataValue('originalPrice') + this.getDataValue('markupPrice');
       }
     },
-    conditionId: foreignKey('condition_id', 'conditions', false),
+    isPublished: {
+      type: Sequelize.BOOLEAN,
+      field: 'is_published',
+      defaultValue: true
+    },
+    isPurchased: {
+      type: Sequelize.BOOLEAN,
+      field: 'is_purchased',
+      defaultValue: false
+    },
     viewCount: {
       type: Sequelize.INTEGER,
       defaultValue: 0,

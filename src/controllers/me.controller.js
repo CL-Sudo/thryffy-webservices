@@ -239,8 +239,15 @@ export const updateProfile = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
-      const { profilePicture } = files;
+      const { profilePicture, username } = files;
       const { id } = req.user;
+
+      const userByUsername = await Users.findOne({ where: { username } });
+      if (userByUsername && id !== userByUsername.id) {
+        throw new Error(
+          'Username requested is not available anymore, please try again with another username.'
+        );
+      }
 
       const user = await Users.scope({ method: ['editProfile', id] }).findOne();
 

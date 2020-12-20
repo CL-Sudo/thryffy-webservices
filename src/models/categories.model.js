@@ -122,7 +122,9 @@ Categories.prototype.getListingCount = async function() {
     const childCategories = await Categories.findAll({ where: { parentId: this.id } });
     const childIds = R.map(R.prop('id'))(childCategories);
 
-    const productsCount = await Products.count({ where: { categoryId: childIds } });
+    const productsCount = await Products.count({
+      where: { categoryId: childIds, isPublished: true, isPurchased: false }
+    });
 
     this.setDataValue('listingCount', productsCount);
   } catch (e) {

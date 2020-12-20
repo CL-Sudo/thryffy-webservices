@@ -2,19 +2,20 @@ import Billplz from '@services/billplz.service';
 
 import R from 'ramda';
 
-import { Notifications } from '@models';
+import { Notifications, Products } from '@models';
 
 import crypto from 'crypto';
 
 export const test = async (req, res, next) => {
   try {
     const { q } = req.query;
-    const billplz = new Billplz();
-    const isValid = billplz.verifyXSignature(req.body.x_signature, req.body);
-    console.log('isValid', isValid);
+    const count = await Products.count({
+      where: { id: [8, 9, 10, 18], isPurchased: false, isPublished: true }
+    });
+    console.log('count', count);
     return res.status(200).json({
       message: 'not found',
-      payload: isValid
+      payload: count
     });
   } catch (e) {
     return next(e);
