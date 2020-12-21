@@ -6,6 +6,7 @@ import {
   Addresses,
   SalesOrders,
   Users,
+  OrderItems,
   Reviews,
   Products,
   Preferences,
@@ -28,6 +29,7 @@ import { generateOTP as getOtp } from '@utils/auth.util';
 
 import { DELIVERY_STATUS } from '@constants';
 import NOTIFCATION_CONSTANT from '@constants/notification.constant';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 import { Op } from 'sequelize';
 
@@ -286,10 +288,37 @@ export const getReview = async (req, res, next) => {
       return average;
     };
 
-    const payload = await Reviews.scope('reviews').findAll({
+    const payload = await Reviews.findAll({
       where: {
         sellerId: id
-      }
+      },
+      attributes: { exclude: ['updatedAt', 'deletedAt', 'updatedBy', 'deletedBy'] },
+      include: [
+        {
+          model: SalesOrders,
+          as: 'order',
+          attributes: { exclude: defaultExcludeFields },
+          include: [
+            {
+              model: OrderItems,
+              as: 'orderItems',
+              attributes: { exclude: defaultExcludeFields },
+              include: [
+                {
+                  model: Products,
+                  as: 'product',
+                  attributes: { exclude: defaultExcludeFields }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          model: Users,
+          as: 'buyer',
+          attributes: ['id', 'fullName', 'username', 'profilePicture']
+        }
+      ]
     });
 
     const averageRating = getAverageRating(payload);
@@ -303,6 +332,7 @@ export const getReview = async (req, res, next) => {
       }
     });
   } catch (e) {
+    console.log('e', e);
     return next(e);
   }
 };

@@ -1,14 +1,7 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import {
-  AT_RECORDER,
-  BY_RECORDER,
-  foreignKey,
-  primaryKey,
-  defaultExcludeFields
-} from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, foreignKey, primaryKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
-import { OrderItems, Products, Users, SalesOrders } from '@models';
 
 const Reviews = SequelizeConnector.define(
   'Reviews',
@@ -34,36 +27,7 @@ const Reviews = SequelizeConnector.define(
     tableName: 'reviews',
     underscored: false,
     scopes: {
-      search: params => search(Reviews, params, []),
-      reviews: {
-        attributes: { exclude: ['updatedAt', 'deletedAt', 'updatedBy', 'deletedBy'] },
-        include: [
-          {
-            model: SalesOrders,
-            as: 'order',
-            attributes: { exclude: defaultExcludeFields },
-            include: [
-              {
-                model: OrderItems,
-                as: 'orderItems',
-                attributes: ['id'],
-                include: [
-                  {
-                    model: Products,
-                    as: 'product',
-                    attributes: ['id', 'title']
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            model: Users,
-            as: 'buyer',
-            attributes: ['id', 'fullName', 'username', 'profilePicture']
-          }
-        ]
-      }
+      search: params => search(Reviews, params, [])
     },
     hooks: {
       beforeFind: query => {
