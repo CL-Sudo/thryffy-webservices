@@ -233,14 +233,17 @@ export const pay = async (req, res, next) => {
     const user = await Users.findOne({ where: { id: userId } });
     const billplz = new Billplz();
 
+    const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
+    const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
+
     const response = await billplz.createBill({
       amount: order.total,
       email: user.email,
       mobile: user.completePhoneNumber,
       name: user.fullName,
       itemName: `Order ${order.orderRef}`,
-      redirectUrl: `${process.env.NGROK_URL}/api/publics/billplz/redirect?orderId=${order.id}`,
-      callbackUrl: `${process.env.NGROK_URL}/api/publics/billplz/callback?orderId=${order.id}`
+      redirectUrl: `${serverUrl}/api/publics/billplz/redirect?orderId=${order.id}`,
+      callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
     });
 
     cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);

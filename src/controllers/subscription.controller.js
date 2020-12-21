@@ -12,15 +12,18 @@ export const subscribe = async (req, res, next) => {
     const pkg = await Packages.findOne({ where: { id: packageId } });
     const user = await Users.findOne({ where: { id } });
 
+    const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
+    const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
+
     const billplz = new Billplz();
     const response = await billplz.createBill({
       amount: pkg.price,
-      callbackUrl: `${process.env.NGROK_URL}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
+      callbackUrl: `${serverUrl}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
       email: user.email,
       mobile: user.completePhoneNumber,
       name: user.fullName,
       itemName: `Package ${pkg.title}`,
-      redirectUrl: `${process.env.NGROK_URL}/api/publics/subscriptions/redirect?userId=${id}`
+      redirectUrl: `${serverUrl}/api/publics/subscriptions/redirect?userId=${id}`
     });
 
     return res.status(200).json({ message: 'success', payload: response.data });
