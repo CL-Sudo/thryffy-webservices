@@ -87,6 +87,45 @@ export const billplzRedirect = async (req, res) => {
   }
 };
 
+export const subscriptionRedirect = async (req, res) => {
+  try {
+    const { userId } = req.query;
+
+    const wait = () =>
+      new Promise(async resolve => {
+        setTimeout(resolve, 4000);
+      });
+
+    await wait();
+
+    const subscription = await Subscriptions.findOne({
+      where: { userId },
+      include: [{ model: Packages, as: 'package' }]
+    });
+
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(
+            JSON.stringify({
+              status: true,
+              payload: subscription
+            })
+          )}
+        );
+      </script>
+    `);
+  } catch (e) {
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(JSON.stringify({ status: false, message: e.message }))}
+        );
+      </script>
+    `);
+  }
+};
+
 export const subscribeCallback = async (req, res, next) => {
   try {
     const { userId, packageId } = req.query;
