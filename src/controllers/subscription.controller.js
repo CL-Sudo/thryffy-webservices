@@ -20,7 +20,7 @@ export const subscribe = async (req, res, next) => {
       mobile: user.completePhoneNumber,
       name: user.fullName,
       itemName: `Package ${pkg.title}`,
-      redirectUrl: 'www.google.com'
+      redirectUrl: `${process.env.NGROK_URL}/api/publics/subscriptions/redirect?userId=${id}`
     });
 
     return res.status(200).json({ message: 'success', payload: response.data });
