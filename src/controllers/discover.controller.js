@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Conditions, Categories, Products, Brands, Sizes, Users, Subscriptions } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
@@ -167,7 +168,7 @@ export const discoverList = async (req, res, next) => {
     const filteredProducts = R.pipe(
       R.filter(
         product =>
-          product.seller.subscription.expiryDate > new Date() &&
+          _.get(product, 'seller.subscription.expiryDate') > new Date() &&
           product.isPublished &&
           product.isPurchased
       ),
