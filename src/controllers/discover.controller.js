@@ -168,9 +168,8 @@ export const discoverList = async (req, res, next) => {
     const filteredProducts = R.pipe(
       R.filter(
         product =>
-          _.get(product, 'seller.subscription.expiryDate') > new Date() &&
-          product.isPublished &&
-          product.isPurchased
+          // _.get(product, 'seller.subscription.expiryDate') > new Date() &&
+          product.isPublished && product.isPurchased
       ),
       filterByPrice
     )(products);
