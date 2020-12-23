@@ -277,6 +277,7 @@ module.exports = {
 
       return Promise.resolve();
     } catch (e) {
+      console.log('e', e);
       return Promise.reject(e);
     }
   },

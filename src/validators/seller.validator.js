@@ -31,7 +31,10 @@ export const addProductValidator = async (req, fields) =>
           throw new Error('You cannot list more than 30 items as a free user.');
       }
 
-      if (subscription.listingCount >= parsePackageMaxListing(subscription.package.listing)) {
+      if (
+        subscription &&
+        subscription.listingCount >= parsePackageMaxListing(subscription.package.listing)
+      ) {
         throw new Error(
           `You are allowed to list ${subscription.package.listing} item only, upgrade to list more item.`
         );

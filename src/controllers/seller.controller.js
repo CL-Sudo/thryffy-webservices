@@ -85,10 +85,13 @@ export const addProduct = async (req, res, next) => {
           await setThumbnail(product.id, thumbnailIndex);
 
           const subscription = await Subscriptions.findOne({ where: { userId: id }, transaction });
-          await subscription.update(
-            { listingCount: subscription.listingCount + 1 },
-            { transaction }
-          );
+          if (subscription) {
+            await subscription.update(
+              { listingCount: subscription.listingCount + 1 },
+              { transaction }
+            );
+          }
+
           return Promise.resolve(product.id);
         } catch (e) {
           return Promise.reject(e);

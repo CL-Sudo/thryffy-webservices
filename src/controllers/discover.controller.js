@@ -164,13 +164,15 @@ export const discoverList = async (req, res, next) => {
       R.filter(product => product.displayPrice >= minPrice && product.displayPrice <= maxPrice)
     );
 
+    const filterBySellerSubscription = R.ifElse(
+      product => !R.isNil(R.path(['seller', 'subscription'], product)),
+      R.filter(instance => instance.seller.subscription.expiryDate > new Date()),
+      R.identity
+    );
+
     const filteredProducts = R.pipe(
-      R.filter(
-        product =>
-          product.seller.subscription.expiryDate > new Date() &&
-          product.isPublished &&
-          product.isPurchased
-      ),
+      filterBySellerSubscription,
+      R.filter(product => product.isPublished && !product.isPurchased),
       filterByPrice
     )(products);
 
