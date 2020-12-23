@@ -86,22 +86,12 @@ export const addProduct = async (req, res, next) => {
           await setThumbnail(product.id, thumbnailIndex);
 
           const subscription = await Subscriptions.findOne({ where: { userId: id }, transaction });
-<<<<<<< HEAD
-          if (subscription) {
-            await subscription.update(
-              { listingCount: subscription.listingCount + 1 },
-              { transaction }
-            );
-          }
-
-=======
           if (!_.isEmpty(subscription)) {
             await subscription.update(
               { listingCount: _.toNumber(_.get(subscription, 'listingCount', 0)) + 1 },
               { transaction }
             );
           }
->>>>>>> 3396eca240174c78ecdfcdea6d80a3f88cbfba51
           return Promise.resolve(product.id);
         } catch (e) {
           return Promise.reject(e);

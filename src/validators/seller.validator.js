@@ -33,13 +33,8 @@ export const addProductValidator = async (req, fields) =>
       }
 
       if (
-<<<<<<< HEAD
-        subscription &&
-        subscription.listingCount >= parsePackageMaxListing(subscription.package.listing)
-=======
         _.get(subscription, 'listingCount', 0) >=
         parsePackageMaxListing(_.get(subscription, 'package.listing', 0))
->>>>>>> 3396eca240174c78ecdfcdea6d80a3f88cbfba51
       ) {
         throw new Error(
           `You are allowed to list ${subscription.package.listing} item only, upgrade to list more item.`
