@@ -1,4 +1,5 @@
 import R from 'ramda';
+import _ from 'lodash';
 import formidable from 'formidable';
 import {
   saveProductImages,
@@ -86,7 +87,7 @@ export const addProduct = async (req, res, next) => {
 
           const subscription = await Subscriptions.findOne({ where: { userId: id }, transaction });
           await subscription.update(
-            { listingCount: subscription.listingCount + 1 },
+            { listingCount: _.toNumber(_.get(subscription, 'listingCount', 0)) + 1 },
             { transaction }
           );
           return Promise.resolve(product.id);
