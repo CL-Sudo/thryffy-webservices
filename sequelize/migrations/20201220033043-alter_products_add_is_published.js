@@ -6,5 +6,5 @@ module.exports = {
       defaultValue: true
     }),
 
-  down: async queryInterface => queryInterface.removeColumn('products', 'is_verified')
+  down: () => Promise.resolve()
 };
