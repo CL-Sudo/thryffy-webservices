@@ -241,6 +241,7 @@ export const updateProfile = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
+      console.log('fields', fields);
       const { profilePicture } = files;
       const { username } = fields;
       const { id } = req.user;
