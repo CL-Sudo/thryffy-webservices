@@ -159,6 +159,8 @@ export const discoverList = async (req, res, next) => {
 
     const products = await Products.findAll(filter);
 
+    console.log('#### products', products);
+
     const filterByPrice = R.ifElse(
       R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),
       data => data,
