@@ -1,15 +1,10 @@
+import _ from 'lodash';
 import { EventEmitter } from 'events';
-
 import moment from 'moment';
-
 import LISTENER from '@constants/listener.constant';
-
 import { sendMail } from '@tools/sendgrid';
-
 import { Users, Addresses } from '@models';
-
 import SENDGRID_CONFIG from '@configs/sendgrid.config';
-
 import EMAIL_TEMPLATE from '@templates/email.template';
 
 const subscriptionListner = new EventEmitter();
@@ -21,7 +16,7 @@ const sendEmail = async data => {
 
     const receiverFullName = user.fullName;
     const receiverEmail = user.email;
-    const { addressLine1, addressLine2, city, state, postcode, phoneNumber } = address;
+    // const { addressLine1, addressLine2, city, state, postcode, phoneNumber } = address;
     const dateTime = moment(data.createdAt).format('Do MMMM YYYY HH:mm');
     const expiryDate = moment(data.expiryDate).format('Do MMMM YYYY HH:mm');
     const total = `${data.package.price}`;
@@ -39,12 +34,12 @@ const sendEmail = async data => {
       template: EMAIL_TEMPLATE.SUBSCRIPTION_INVOICE,
       templateData: {
         receiverFullName,
-        addressLine1,
-        addressLine2,
-        city,
-        state,
-        postcode,
-        phoneNumber: `${phoneNumber}`,
+        addressLine1: _.get(address, 'addressLine1', null),
+        addressLine2: _.get(address, 'addressLine2', null),
+        city: _.get(address, 'city', null),
+        state: _.get(address, 'state', null),
+        postcode: _.get(address, 'postcode', null),
+        phoneNumber: _.get(address, 'phoneNumber', null),
         dateTime,
         expiryDate,
         total: `${total}`,
