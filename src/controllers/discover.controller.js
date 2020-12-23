@@ -159,8 +159,6 @@ export const discoverList = async (req, res, next) => {
 
     const products = await Products.findAll(filter);
 
-    console.log('#### products', products);
-
     const filterByPrice = R.ifElse(
       R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),
       data => data,
@@ -170,8 +168,9 @@ export const discoverList = async (req, res, next) => {
     const filteredProducts = R.pipe(
       R.filter(
         product =>
-          // _.get(product, 'seller.subscription.expiryDate') > new Date() &&
-          product.isPublished && product.isPurchased
+          _.get(product, 'seller.subscription.expiryDate') > new Date() &&
+          product.isPublished &&
+          product.isPurchased
       ),
       filterByPrice
     )(products);
