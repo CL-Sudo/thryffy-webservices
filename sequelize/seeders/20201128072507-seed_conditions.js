@@ -11,5 +11,5 @@ const data = Object.keys(CONDITION).map(key => ({
 module.exports = {
   up: async queryInterface => queryInterface.bulkInsert('conditions', data),
 
-  down: async queryInterface => queryInterface.bulkDelete('conditions')
+  down: () => Promise.resolve()
 };

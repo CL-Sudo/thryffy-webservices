@@ -1,0 +1,11 @@
+[
+  {
+  "title": "Bags",
+  "shippingFeeId": 5
+
+  },
+  {
+    "title": "Wallets",
+    "shippingFeeId": 1
+  }
+]
