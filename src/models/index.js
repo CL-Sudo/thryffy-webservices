@@ -35,3 +35,5 @@ export * from './preferences.model';
 export * from './conditions.model';
 export * from './notification_settings.model';
 export * from './marketing_notifications.model';
+export * from './notification_topics.model';
+export * from './notification_topic_users.model';

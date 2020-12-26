@@ -1,6 +1,13 @@
 import formidable from 'formidable';
+import R from 'ramda';
 
-import { Notifications, Users, MarketingNotifications } from '@models';
+import {
+  Notifications,
+  Users,
+  MarketingNotifications,
+  NotificationTopicUsers,
+  NotificationTopics
+} from '@models';
 
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import NOTIFICATION from '@constants/notification.constant';
@@ -44,24 +51,58 @@ export const create = async (req, res, next) => {
 
       const { id } = req.user;
       const { image } = files;
+      const { title, description } = fields;
 
-      const notificationId = await sequelize.transaction(async transaction => {
-        const notification = await MarketingNotifications.create(
+      const marketingNotificationId = await sequelize.transaction(async transaction => {
+        const marketingNotification = await MarketingNotifications.create(
           { ...fields, createdBy: id },
           { transaction }
         );
+
         if (image) {
           const uploadedFile = await uploadFileToS3(image, S3_CONFIG.NOTIFICATION_URL);
-          await notification.update(
+          await marketingNotification.update(
             { image: parsePathForDBStoring(uploadedFile.path) },
             { transaction }
           );
         }
 
-        return notification.id;
+        const userIds = R.pipe(
+          R.filter(instance => instance.user.notificationSetting.isPromotionAllowed),
+          R.map(instance => instance.userId)
+        )(
+          await NotificationTopicUsers.findAll({
+            transaction,
+            include: [
+              {
+                model: Users,
+                as: 'user'
+              },
+              {
+                model: NotificationTopics,
+                as: 'topic',
+                where: { title: NOTIFICATION.TOPIC.MARKETING }
+              }
+            ]
+          })
+        );
+
+        const createObj = R.map(instance => ({
+          title,
+          description,
+          notifierId: instance,
+          image: marketingNotification.image,
+          type: NOTIFICATION.TOPIC.MARKETING
+        }))(userIds);
+
+        await Notifications.bulkCreate(createObj, { transaction });
+
+        return marketingNotification.id;
       });
 
-      const payload = await Notifications.findOne({ where: { id: notificationId } });
+      const payload = await MarketingNotifications.findOne({
+        where: { id: marketingNotificationId }
+      });
 
       await sendCloudMessage({
         title: fields.title,

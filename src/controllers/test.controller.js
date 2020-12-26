@@ -1,21 +1,13 @@
-import { Categories } from '@models';
-
-import axios from 'axios';
+import { Categories, Notifications } from '@models';
+import { subscribeTokenToTopic, unsubscribeTokensFromTopic } from '@services/notification.service';
 
 export const test = async (req, res, next) => {
   try {
     const { q } = req.query;
 
-    // const response = await axios({
-    //   url: 'https://iid.googleapis.com/iid/info/***REMOVED***',
-    //   method: 'GET',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     Authorization: `key=${process.env.FCM_SERVER_KEY}`,
-    //     details: true
-    //   }
-    // });
-    // console.log('response.data', response.data);
+    // await subscribeTokenToTopic(['abc123', 'bcd321'], 'MARKETING');
+    await unsubscribeTokensFromTopic(['abc123', 'bcd321'], 'MARKETING');
+
     return res.status(200).json({
       message: 'not found'
     });
