@@ -1,9 +1,9 @@
 import formidable from 'formidable';
 
-import { Notifications, Users } from '@models';
+import { Notifications, Users, MarketingNotifications } from '@models';
 
 import { defaultExcludeFields } from '@constants/sequelize.constant';
-import NOTIFICATION_TYPE from '@constants/notification.constant';
+import NOTIFICATION from '@constants/notification.constant';
 
 import { createValidator } from '@validators/Admin/notifications.validator';
 
@@ -46,8 +46,8 @@ export const create = async (req, res, next) => {
       const { image } = files;
 
       const notificationId = await sequelize.transaction(async transaction => {
-        const notification = await Notifications.create(
-          { ...fields, createdBy: id, type: NOTIFICATION_TYPE.MARKETING },
+        const notification = await MarketingNotifications.create(
+          { ...fields, createdBy: id },
           { transaction }
         );
         if (image) {
@@ -66,7 +66,7 @@ export const create = async (req, res, next) => {
       await sendCloudMessage({
         title: fields.title,
         message: fields.description,
-        topic: NOTIFICATION_TYPE.TOPIC.MARKETING,
+        topic: NOTIFICATION.TOPIC.MARKETING,
         data: {
           image: payload.image
         }

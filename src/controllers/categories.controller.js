@@ -1,4 +1,4 @@
-import { Categories } from '@models';
+import { Categories, Sizes } from '@models';
 import { Op } from 'sequelize';
 import { requestValidator } from '@validators';
 import R from 'ramda';
@@ -34,6 +34,7 @@ export const list = async (req, res, next) => {
         if (R.isNil(childId)) return Promise.resolve(children);
         const childArr = await Categories.findAndCountAll({
           where: { parentId: childId },
+          include: [{ model: Sizes, as: 'sizes' }],
           limit,
           offset
         });

@@ -34,3 +34,4 @@ export * from './subscriptions.model';
 export * from './preferences.model';
 export * from './conditions.model';
 export * from './notification_settings.model';
+export * from './marketing_notifications.model';

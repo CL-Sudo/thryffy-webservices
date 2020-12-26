@@ -1,12 +1,12 @@
 import Router from 'express';
 
-import { Notifications } from '@models';
+import { MarketingNotifications } from '@models';
 
 import { crud } from '@utils/controller-crud.util';
 
 import { create } from '@controllers/notification.controller';
 
-const controller = crud(Notifications);
+const controller = crud(MarketingNotifications);
 
 const router = new Router();
 

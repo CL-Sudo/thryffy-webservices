@@ -59,8 +59,10 @@ export const addProduct = async (req, res, next) => {
 
       const saveProduct = async images => {
         try {
-          const size = await Sizes.findOne({ where: { id: sizeId } });
-          if (!size) throw new Error('Invalid sizeId given');
+          if (sizeId) {
+            const size = await Sizes.findOne({ where: { id: sizeId } });
+            if (!size) throw new Error('Invalid sizeId given');
+          }
 
           const brandId = await getProductBrandId(brand);
 
