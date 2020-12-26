@@ -12,12 +12,9 @@ import R from 'ramda';
 import { PAYMENT_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
-import { cartListener } from '@listeners';
 import { paginate } from '@utils';
 
 import Billplz from '@services/billplz.service';
-
-import LISTENER from '@constants/listener.constant';
 
 const getLatestCartList = async userId => {
   try {
@@ -227,9 +224,6 @@ export const pay = async (req, res, next) => {
       method: ['orderDetails', orderId]
     }).findOne();
 
-    const { seller } = order.orderItems[0].product;
-    const payload = R.assoc('seller', seller)(order.dataValues);
-
     const user = await Users.findOne({ where: { id: userId } });
     const billplz = new Billplz();
 
@@ -246,10 +240,9 @@ export const pay = async (req, res, next) => {
       callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
     });
 
-    cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
-
     return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
+    console.log('e.response.data', e.response.data);
     return next(e);
   }
 };

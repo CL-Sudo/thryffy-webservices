@@ -1,4 +1,5 @@
 import moment from 'moment';
+import R from 'ramda';
 
 import { Packages, SalesOrders, Subscriptions, Users, OrderItems, Products } from '@models';
 
@@ -11,6 +12,8 @@ import { subscriptionListner } from '@listeners/subscription.listener';
 
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 
+import { cartListener } from '@listeners/cart.listener';
+
 export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -19,7 +22,9 @@ export const billplzCallback = async (req, res, next) => {
 
     if (billplz.verifyXSignature(xSignature, req.body)) {
       await sequelize.transaction(async transaction => {
-        const order = await SalesOrders.findOne({ where: { id: orderId }, transaction });
+        const order = await SalesOrders.scope({
+          method: ['orderDetails', orderId]
+        }).findOne({ where: { id: orderId }, transaction });
         await order.update(
           {
             paymentStatus: paid === 'true' ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
@@ -27,21 +32,32 @@ export const billplzCallback = async (req, res, next) => {
           },
           { transaction }
         );
-        const orderItems = await OrderItems.findAll({
-          where: { salesOrderId: orderId },
-          include: [
-            {
-              model: Products,
-              as: 'product'
-            }
-          ],
-          transaction
-        });
-        await Promise.all(
-          orderItems.map(async instance => {
-            await instance.product.update({ isPurchased: true }, transaction);
-          })
-        );
+
+        if (paid === 'true') {
+          const orderItems = await OrderItems.findAll({
+            where: { salesOrderId: orderId },
+            include: [
+              {
+                model: Products,
+                as: 'product'
+              }
+            ],
+            transaction
+          });
+
+          const productIds = orderItems.map(instance => instance.product.id);
+
+          await Promise.all(
+            orderItems.map(async instance => {
+              await instance.product.update({ isPurchased: true }, transaction);
+            })
+          );
+
+          const { seller } = order.orderItems[0].product;
+          const payload = R.assoc('seller', seller)(order.dataValues);
+
+          cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
+        }
       });
     }
 

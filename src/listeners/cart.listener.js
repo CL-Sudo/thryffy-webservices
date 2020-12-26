@@ -94,5 +94,16 @@ const sendEmail = async (_, order) => {
   }
 };
 
+const removeCartItems = async productIds => {
+  try {
+    await sequelize.transaction(async transaction => {
+      await CartItems.destroy({ where: { productId: productIds }, transaction });
+    });
+  } catch (e) {
+    console.log('e', e);
+  }
+};
+
 cartListener.on(LISTENER.CART.PAYMENT_MADE, pushNotification);
 cartListener.on(LISTENER.CART.PAYMENT_MADE, sendEmail);
+cartListener.on(LISTENER.CART.PAYMENT_MADE, removeCartItems);

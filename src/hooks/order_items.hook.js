@@ -74,15 +74,3 @@ OrderItems.addHook('afterBulkCreate', 'getCommission', async (results, options) 
     throw e;
   }
 });
-
-OrderItems.addHook('afterBulkCreate', 'removeCartItems', async (results, options) => {
-  try {
-    const { transaction } = options;
-
-    const productIds = R.map(R.prop('productId'))(results);
-
-    await CartItems.destroy({ where: { productId: productIds }, transaction });
-  } catch (e) {
-    throw e;
-  }
-});

@@ -11,14 +11,17 @@ import kidsSecondLevelData from '../data/kids_second_level_categories.json';
 import womenThirdLevelClothing from '../data/women_third_level_categories_clothing.json';
 import womenThirdLevelBagWallet from '../data/women_third_level_bag_wallet.json';
 import womenThirdLevelAccessories from '../data/women_third_level_categories_accessories.json';
+import womenThirdLevelShoes from '../data/women_third_level_categories_shoes.json';
 
 import kidsThirdLevelAccessories from '../data/kids_third_level_categories_accessories.json';
 import kidsThirdLevelClothing from '../data/kids_third_level_categories_clothing.json';
 import kidsThirdLevelBagWallet from '../data/kids_third_level_categories_bag_wallet.json';
+import kidsThirdLevelShoes from '../data/kids_third_level_categories_shoes.json';
 
 import menThirdLevelClothing from '../data/men_third_level_categories_clothing.json';
 import menThirdLevelBagWallet from '../data/men_third_level_bag_wallet.json';
 import menThirdLevelAccessories from '../data/men_third_level_categories_accessories.json';
+import menThirdLevelShoes from '../data/men_third_level_categories_shoes.json';
 
 const seedWomenClothing = async parentId => {
   try {
@@ -118,6 +121,39 @@ const seedKidsAccessories = async parentId => {
   }
 };
 
+const seedMenShoes = async parentId => {
+  try {
+    const data = [];
+    menThirdLevelShoes.map(obj => data.push({ ...obj, parentId }));
+    await Categories.bulkCreate(data);
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+const seedWomenShoes = async parentId => {
+  try {
+    const data = [];
+    womenThirdLevelShoes.map(obj => data.push({ ...obj, parentId }));
+    await Categories.bulkCreate(data);
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+const seedKidsShoes = async parentId => {
+  try {
+    const data = [];
+    kidsThirdLevelShoes.map(obj => data.push({ ...obj, parentId }));
+    await Categories.bulkCreate(data);
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
 const seedWomenFirstLevel = async data => {
   try {
     const women = await Categories.create(data);
@@ -158,7 +194,8 @@ const seedWomenSecondLevel = async parentId => {
         }
 
         case 'Shoes': {
-          await Categories.create({ ...data, parentId });
+          const shoes = await Categories.create({ ...data, parentId });
+          await seedWomenShoes(shoes.id);
           break;
         }
 
@@ -196,7 +233,8 @@ const seedMenSecondLevel = async parentId => {
         }
 
         case 'Shoes': {
-          await Categories.create({ ...data, parentId });
+          const shoes = await Categories.create({ ...data, parentId });
+          await seedMenShoes(shoes.id);
           break;
         }
 
@@ -235,7 +273,8 @@ const seedKidsSecondLevel = async parentId => {
         }
 
         case 'Shoes': {
-          await Categories.create({ ...data, parentId });
+          const shoes = await Categories.create({ ...data, parentId });
+          await seedKidsShoes(shoes.id);
           break;
         }
 
