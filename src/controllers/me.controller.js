@@ -241,7 +241,6 @@ export const updateProfile = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
-      console.log('fields', fields);
       const { profilePicture } = files;
       const { username } = fields;
       const { id } = req.user;
@@ -334,7 +333,6 @@ export const getReview = async (req, res, next) => {
       }
     });
   } catch (e) {
-    console.log('e', e);
     return next(e);
   }
 };
@@ -342,7 +340,7 @@ export const getReview = async (req, res, next) => {
 export const listOrders = async (req, res, next) => {
   try {
     const { id } = req.user;
-    const { type, status, limit, offset } = req.query;
+    const { type, status, limit, offset, isPurchased } = req.query;
 
     const me = await Users.scope('order').findOne({ where: { id } });
     await me.getEarnings();
@@ -351,7 +349,9 @@ export const listOrders = async (req, res, next) => {
 
     const getListings = async () => {
       try {
-        const result = await Products.scope('listings').findAll({ where: { userId: id } });
+        const result = await Products.scope('listings').findAll({
+          where: { userId: id, isPurchased }
+        });
         await Promise.all(
           R.map(async product => {
             await product.checkIsAddedToFavourite(id);
