@@ -18,8 +18,7 @@ const Addresses = SequelizeConnector.define(
     },
     phoneNumber: {
       type: Sequelize.STRING(25),
-      field: 'phone_number',
-      allowNull: false
+      field: 'phone_number'
     },
     title: {
       type: Sequelize.STRING(100)

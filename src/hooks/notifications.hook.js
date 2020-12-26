@@ -29,6 +29,7 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.order;
           delete instance.review;
           delete instance.dataValues.review;
+
           break;
         }
 
@@ -40,6 +41,7 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.dispute;
           delete instance.order;
           delete instance.dataValues.order;
+
           break;
         }
 
@@ -51,6 +53,7 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.dispute;
           delete instance.review;
           delete instance.dataValues.review;
+
           break;
         }
         default:

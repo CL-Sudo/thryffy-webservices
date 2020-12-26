@@ -160,8 +160,9 @@ export const subscribeCallback = async (req, res, next) => {
             .format('YYYY-MM-DD HH:mm:ss')
         });
       } else {
+        const productCount = await Products.count({ where: { userId } });
         await Subscriptions.create({
-          packageId,
+          listingCount: productCount,
           userId,
           expiryDate: moment()
             .add(1, 'months')
