@@ -7,6 +7,21 @@ import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
+export const asyncSequentialMap = async (instances, callback) => {
+  try {
+    const array = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const instance of instances) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await callback(instance);
+      array.push(result);
+    }
+    return Promise.resolve(array);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
 export const base64 = {
   encode: string => {
     const encoder = Buffer.from(string);
