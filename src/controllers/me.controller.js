@@ -342,6 +342,8 @@ export const listOrders = async (req, res, next) => {
     const { id } = req.user;
     const { type, status, limit, offset, isPurchased } = req.query;
 
+    const parsedIsPurchased = isPurchased === 'true';
+
     const me = await Users.scope('order').findOne({ where: { id } });
     await me.getEarnings();
     await me.getTotalView();
@@ -350,7 +352,7 @@ export const listOrders = async (req, res, next) => {
     const getListings = async () => {
       try {
         const result = await Products.scope('listings').findAll({
-          where: { userId: id, isPurchased }
+          where: { userId: id, isPurchased: parsedIsPurchased }
         });
         await Promise.all(
           R.map(async product => {
