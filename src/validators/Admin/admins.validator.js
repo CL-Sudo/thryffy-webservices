@@ -27,9 +27,5 @@ export const createValidator = [
   check('password')
     .exists()
     .isLength({ min: 1 })
-    .withMessage('Required'),
-  check('confirmPassword')
-    .exists()
-    .isLength({ min: 1 })
     .withMessage('Required')
 ];

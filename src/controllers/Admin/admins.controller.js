@@ -8,7 +8,7 @@ import R from 'ramda';
 export const create = async (req, res, next) => {
   try {
     requestValidator(req);
-    const { email, password, confirmPassword, username } = req.body;
+    const { email, password, username } = req.body;
 
     const existingAdminByEmail = await Admins.findOne({ where: { email } });
     if (existingAdminByEmail)
@@ -19,8 +19,7 @@ export const create = async (req, res, next) => {
       throw new Error('Username not available. Please register with another username.');
     }
 
-    if (password !== confirmPassword)
-      throw new Error('Confirmation Password is incorrect, please try again.');
+    if (!password) throw new Error('Password is required.');
 
     const admin = await Admins.create({ ...req.body, role: ADMIN_ROLE.OPERATOR });
 
@@ -55,11 +54,19 @@ export const updateAdmin = async (req, res, next) => {
     const admin = await Admins.findOne({ where: { id: adminId } });
     if (!admin) throw new Error('Invalid adminId given');
 
-    const adminByEmail = await Admins.findOne({ where: { email } });
-    if (adminByEmail && adminByEmail.id !== id) throw new Error('Email is not available.');
+    const currentEmail = admin.email;
+    const currentUsername = admin.username;
 
-    const adminByUsername = await Admins.findOne({ where: { username } });
-    if (adminByUsername && adminByUsername.id !== id) throw new Error('Username is not available.');
+    if (email !== currentEmail) {
+      const adminByEmail = await Admins.findOne({ where: { email } });
+      if (adminByEmail && adminByEmail.id !== id) throw new Error('Email is not available.');
+    }
+
+    if (username !== currentUsername) {
+      const adminByUsername = await Admins.findOne({ where: { username } });
+      if (adminByUsername && adminByUsername.id !== id)
+        throw new Error('Username is not available.');
+    }
 
     const updateObj = password
       ? { email, username, password: hashPassword(password), updatedBy: id }
