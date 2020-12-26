@@ -33,6 +33,11 @@ Models.Users.hasOne(Models.NotificationSettings, {
   foreignKey: 'userId',
   as: 'notificationSetting'
 });
+Models.Users.belongsToMany(Models.NotificationTopics, {
+  foreignKey: 'userId',
+  through: Models.NotificationTopicUsers,
+  as: 'notificationTopics'
+});
 
 /**
  * Addresses
@@ -238,3 +243,15 @@ Models.Conditions.hasMany(Models.Preferences, {
  * NotificationSettings
  */
 Models.NotificationSettings.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
+
+Models.NotificationTopics.belongsToMany(Models.Users, {
+  foreignKey: 'topicId',
+  through: Models.NotificationTopicUsers,
+  as: 'subsribers'
+});
+
+Models.NotificationTopicUsers.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
+Models.NotificationTopicUsers.belongsTo(Models.NotificationTopics, {
+  foreignKey: 'topicId',
+  as: 'topic'
+});

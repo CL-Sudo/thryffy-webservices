@@ -3,19 +3,20 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
-const Brands = SequelizeConnector.define(
-  'Brands',
+const NotificationTopics = SequelizeConnector.define(
+  'NotificationTopics',
   {
     id: primaryKey,
-    title: Sequelize.STRING(200),
+    title: {
+      type: Sequelize.STRING(50)
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
   {
-    tableName: 'brands',
-    underscored: false,
+    tableName: 'notification_topics',
     scopes: {
-      search: params => search(Brands, params, [])
+      search: params => search(NotificationTopics, params, [])
     },
     hooks: {
       beforeFind: query => {
@@ -25,7 +26,7 @@ const Brands = SequelizeConnector.define(
   }
 );
 
-addScopesByAllFields(Brands, []);
+addScopesByAllFields(NotificationTopics, []);
 
-export { Brands };
-export default Brands;
+export { NotificationTopics };
+export default NotificationTopics;

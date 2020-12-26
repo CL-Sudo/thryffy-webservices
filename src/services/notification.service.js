@@ -1,6 +1,10 @@
 import R from 'ramda';
 import axios from 'axios';
 
+import { NotificationTopicUsers, NotificationTopics, Users } from '@models';
+
+import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
+
 export const sendCloudMessage = ({ token = null, title, message, data, topic = null }) =>
   new Promise(async (resolve, reject) => {
     try {
@@ -45,6 +49,8 @@ export const sendCloudMessage = ({ token = null, title, message, data, topic = n
 export const subscribeTokenToTopic = (tokens, topic) =>
   new Promise(async (resolve, reject) => {
     try {
+      const tokenArr = R.type(tokens) !== 'Array' ? [tokens] : tokens;
+
       const res = await axios({
         url: `https://iid.googleapis.com/iid/v1:batchAdd`,
         method: 'POST',
@@ -54,9 +60,36 @@ export const subscribeTokenToTopic = (tokens, topic) =>
         },
         data: {
           to: `/topics/${topic}`,
-          registration_tokens: R.type(tokens) !== 'Array' ? [tokens] : tokens
+          registration_tokens: tokenArr
         }
       });
+
+      await sequelize.transaction(async transaction => {
+        const notificationTopic = await NotificationTopics.findOrCreate({
+          where: { title: topic },
+          defaults: { title: topic },
+          transaction
+        });
+
+        await Promise.all(
+          tokenArr.map(async token => {
+            const user = await Users.findOne({ where: { deviceToken: token }, transaction });
+            const notificationTopicUser = await NotificationTopicUsers.findOne({
+              where: { userId: user.id, topicId: notificationTopic[0].id }
+            });
+            if (!notificationTopicUser) {
+              await NotificationTopicUsers.create(
+                {
+                  userId: user.id,
+                  topicId: notificationTopic[0].id
+                },
+                { transaction }
+              );
+            }
+          })
+        );
+      });
+
       return resolve(res);
     } catch (e) {
       return reject(e);
@@ -71,6 +104,7 @@ export const subscribeTokenToTopic = (tokens, topic) =>
 export const unsubscribeTokensFromTopic = (tokens, topic) =>
   new Promise(async (resolve, reject) => {
     try {
+      const tokenArr = R.type(tokens) !== 'Array' ? [tokens] : tokens;
       const res = await axios({
         url: 'https://iid.googleapis.com/iid/v1:batchRemove',
         method: 'POST',
@@ -82,6 +116,24 @@ export const unsubscribeTokensFromTopic = (tokens, topic) =>
           to: `/topics/${topic}`,
           registration_tokens: R.type(tokens) !== 'Array' ? [tokens] : tokens
         }
+      });
+
+      await sequelize.transaction(async transaction => {
+        const notificationTopic = await NotificationTopics.findOne({
+          where: { title: topic },
+          transaction
+        });
+
+        await Promise.all(
+          tokenArr.map(async token => {
+            const user = await Users.findOne({ where: { deviceToken: token }, transaction });
+            await NotificationTopicUsers.destroy({
+              force: true,
+              where: { userId: user.id, topicId: notificationTopic.id },
+              transaction
+            });
+          })
+        );
       });
       return resolve(res);
     } catch (e) {
