@@ -26,8 +26,5 @@ export const createValidator = [
       if (!R.isNil(review)) throw new Error('This order has been rated');
 
       return Promise.resolve();
-    }),
-  check('rating')
-    .exists()
-    .withMessage('Required')
+    })
 ];
