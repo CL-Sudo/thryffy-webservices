@@ -9,11 +9,6 @@ export const addAddressValidator = [
     .isLength({ min: 1 })
     .withMessage('name is required')
     .trim(),
-  check('phoneNumber')
-    .exists()
-    .isLength({ min: 1 })
-    .withMessage('phoneNumber is required')
-    .trim(),
   check('addressLine1')
     .exists()
     .isLength({ min: 1 })
