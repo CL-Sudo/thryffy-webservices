@@ -16,7 +16,7 @@ export const bcrypt = { saltRounds: 10 };
 export const jwt = {
   dashboard: { name: `${process.env.APP_NAME}.${PORT}.at` },
   secret: 'shutupandberich8888',
-  expiresIn: '1h'
+  expiresIn: '5s'
 };
 
 export const passport = {
