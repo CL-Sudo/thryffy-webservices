@@ -162,6 +162,7 @@ export const subscribeCallback = async (req, res, next) => {
       } else {
         const productCount = await Products.count({ where: { userId } });
         await Subscriptions.create({
+          packageId,
           listingCount: productCount,
           userId,
           expiryDate: moment()

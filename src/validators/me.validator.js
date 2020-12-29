@@ -65,7 +65,6 @@ export const confirmOrderReceivedValidator = [
     .custom(async (orderId, { req }) => {
       const { id } = req.user;
       const order = await SalesOrders.findOne({
-        raw: true,
         where: { id: orderId, userId: id }
       });
 
