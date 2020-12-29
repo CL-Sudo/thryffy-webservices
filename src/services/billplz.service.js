@@ -15,6 +15,7 @@ class Billplz {
     this.apiKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_API_KEY : CONFIG.API_KEY;
     this.url = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_URL : CONFIG.URL;
     this.signatureKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_SIGNATURE_KEY : CONFIG.SIGNATURE_KEY;
+    this.collectionId = CONFIG.COLLECTION_ID;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -73,7 +74,7 @@ class Billplz {
       const res = await axios({
         method: 'POST',
         params: {
-          collection_id: getCollectionId(collectionId),
+          collection_id: NODE_ENV === 'DEV' ? testCollectionId : this.collectionId,
           email,
           mobile,
           name,
