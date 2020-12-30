@@ -11,5 +11,5 @@ export default {
 
   SIGNATURE_KEY: process.env.BILLPLZ_SIGNATURE_KEY,
 
-  COLLECTION_ID: process.env.COLLECTION_ID
+  COLLECTION_ID: process.env.BILLPLZ_COLLECTION_ID
 };
