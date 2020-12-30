@@ -73,7 +73,7 @@ export const billplzRedirect = async (req, res) => {
 
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 4000);
+        setTimeout(resolve, 3500);
       });
 
     await wait();
@@ -86,7 +86,10 @@ export const billplzRedirect = async (req, res) => {
           ${JSON.stringify(
             JSON.stringify({
               status: true,
-              payload: order
+              payload: {
+                ...order,
+                paymentStatus: R.isNil(order) ? PAYMENT_STATUS.FAILED : PAYMENT_STATUS.SUCCESS
+              }
             })
           )}
         );
@@ -109,7 +112,7 @@ export const subscriptionRedirect = async (req, res) => {
 
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 4000);
+        setTimeout(resolve, 3500);
       });
 
     await wait();
