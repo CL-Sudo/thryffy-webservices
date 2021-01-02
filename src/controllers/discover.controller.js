@@ -8,6 +8,7 @@ import { getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { paginate } from '@utils/utils';
+import { title } from 'errorhandler';
 
 export const home = async (req, res, next) => {
   try {
@@ -101,9 +102,20 @@ export const discoverList = async (req, res, next) => {
       //   )
       // )(param);
       return R.append({
-        title: {
-          [Op.like]: `%${keyword}%`
-        }
+        [Op.or]: [
+          {
+            title: {
+              [Op.like]: `%${keyword}%`
+            }
+          },
+          {
+            brand_id: [
+              Sequelize.literal(`
+              SELECT id FROM brands WHERE title LIKE '%${keyword}%'
+            `)
+            ]
+          }
+        ]
       })(param);
     };
 

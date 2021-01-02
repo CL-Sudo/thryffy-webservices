@@ -150,22 +150,22 @@ const Products = SequelizeConnector.define(
           { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
           { model: Conditions, as: 'condition', attributes: { exclude: defaultExcludeFields } }
         ],
-        where: {
-          id: {
-            [Op.notIn]: [
-              Sequelize.literal(
-                `SELECT product_id FROM order_items
-                  WHERE sales_order_id IN (
-                    SELECT id FROM sales_orders
-                      WHERE
-                        payment_status = 'SUCCESS'
-                          AND
-                        delivery_status <> 'CANCELLED'
-                  )`
-              )
-            ]
-          }
-        },
+        // where: {
+        //   id: {
+        //     [Op.notIn]: [
+        //       Sequelize.literal(
+        //         `SELECT product_id FROM order_items
+        //           WHERE sales_order_id IN (
+        //             SELECT id FROM sales_orders
+        //               WHERE
+        //                 payment_status = 'SUCCESS'
+        //                   AND
+        //                 delivery_status <> 'CANCELLED'
+        //           )`
+        //       )
+        //     ]
+        //   }
+        // },
         order: [['createdAt', 'DESC']]
       }
     },

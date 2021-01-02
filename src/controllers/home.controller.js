@@ -1,5 +1,5 @@
 import R from 'ramda';
-import { Preferences, Products, Banners, FeatureItems } from '@models';
+import { Preferences, Products, Banners, FeatureItems, Sizes } from '@models';
 import { paginate } from '@utils';
 
 export const getBannersList = async (req, res, next) => {
@@ -23,7 +23,13 @@ export const getFeatureItemsList = async (req, res, next) => {
     const { id } = req.user;
 
     const payload = await FeatureItems.findAll({
-      include: [{ model: Products, as: 'product' }]
+      include: [
+        {
+          model: Products,
+          as: 'product',
+          include: [{ model: Sizes, as: 'size' }]
+        }
+      ]
     });
 
     const rows = await Promise.all(

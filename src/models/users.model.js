@@ -351,14 +351,17 @@ Users.prototype.getEarnings = async function() {
 
     const shippingFees = R.map(R.path(['shippingFee', 'actualPrice']))(sales);
 
-    const commission = R.sum(
-      await Promise.all(
-        sales.map(async sale => {
-          const c = await sale.getCommission();
-          return c;
-        })
-      )
-    );
+    // const commission = R.sum(
+    //   await Promise.all(
+    //     sales.map(async sale => {
+    //       console.log('sale', sale);
+    //       const c = await sale.getCommission();
+    //       return c;
+    //     })
+    //   )
+    // );
+
+    const commission = R.sum(R.map(R.prop('commission'))(sales));
 
     const earning = R.sum(productOriginalPrices) + R.sum(shippingFees) - commission;
     this.setDataValue('earning', Number(earning.toFixed(2)));
