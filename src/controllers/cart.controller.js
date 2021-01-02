@@ -242,9 +242,6 @@ export const pay = async (req, res, next) => {
 
     return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
-    console.log('##########cart on pay error ##########');
-    console.log(e);
-    // console.log('e.response.data', e.response.data);
     return next(e);
   }
 };
