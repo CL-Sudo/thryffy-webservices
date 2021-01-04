@@ -86,10 +86,7 @@ export const billplzRedirect = async (req, res) => {
           ${JSON.stringify(
             JSON.stringify({
               status: true,
-              payload: {
-                ...order,
-                paymentStatus: R.isNil(order) ? PAYMENT_STATUS.FAILED : PAYMENT_STATUS.SUCCESS
-              }
+              payload: order
             })
           )}
         );
@@ -122,13 +119,17 @@ export const subscriptionRedirect = async (req, res) => {
       include: [{ model: Packages, as: 'package' }]
     });
 
+    const payload = R.isNil(subscription)
+      ? { paymentStatus: PAYMENT_STATUS.FAILED }
+      : { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.dataValues };
+
     return res.status(200).send(`
       <script>
         window.ReactNativeWebView.postMessage(
           ${JSON.stringify(
             JSON.stringify({
               status: true,
-              payload: subscription
+              payload
             })
           )}
         );
