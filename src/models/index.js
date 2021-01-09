@@ -37,3 +37,4 @@ export * from './notification_settings.model';
 export * from './marketing_notifications.model';
 export * from './notification_topics.model';
 export * from './notification_topic_users.model';
+export * from './comments.model';
