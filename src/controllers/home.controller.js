@@ -27,6 +27,7 @@ export const getFeatureItemsList = async (req, res, next) => {
         {
           model: Products,
           as: 'product',
+          where: { isPurchased: false },
           include: [{ model: Sizes, as: 'size' }]
         }
       ]

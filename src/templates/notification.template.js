@@ -1,6 +1,9 @@
 export const BUYER_DISPUTE = orderId => `Buyer - ${orderId}`;
 
-export const SALE_MADE_SELLER = 'Cha-Ching! You made a sale!';
+export const SALE_MADE_SELLER = {
+  TITLE: 'Cha-Ching! You made a sale!',
+  DESCRIPTION: 'Please input the tracking number and mark order as shipped.'
+};
 
 export const SALE_REVIEWED = "You've received a review";
 

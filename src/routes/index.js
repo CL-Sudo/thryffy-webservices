@@ -23,6 +23,7 @@ export default app => {
   app.use('/api/feature-items', adminAuth, require('./feature_items.routes').default);
   app.use('/api/notifications', adminAuth, require('./notifications.routes').default);
   app.use('/api/tracking', adminAuth, require('./tracking.routes').default);
+  app.use('/api/comments', adminAuth, require('./comments.routes').default);
 
   /*
    * Private API
@@ -52,6 +53,8 @@ export default app => {
     mobileAuth,
     require('./mobile/notification_settings.routes').default
   );
+  app.use('/api/mobile/comments', mobileAuth, require('./mobile/comments.routes').default);
+  app.use('/api/mobile/users', mobileAuth, require('./mobile/users.routes').default);
 
   /*
    * PUBLIC API

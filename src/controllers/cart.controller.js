@@ -242,7 +242,6 @@ export const pay = async (req, res, next) => {
 
     return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
-    console.log('e', e);
     return next(e);
   }
 };

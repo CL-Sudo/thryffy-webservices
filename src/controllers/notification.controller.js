@@ -119,3 +119,28 @@ export const create = async (req, res, next) => {
     }
   });
 };
+
+export const getUnreadNotification = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const unreadCount = await Notifications.count({ where: { notifierId: id, isRead: false } });
+    return res.status(200).json({ message: 'success', payload: { unreadCount } });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const setToIsRead = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const notifications = await Notifications.findAll({ where: { notifierId: id, isRead: false } });
+    await Promise.all(
+      notifications.map(async instance => {
+        await instance.update({ isRead: true });
+      })
+    );
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};

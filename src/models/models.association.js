@@ -67,6 +67,7 @@ Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'pro
 /**
  * Products
  */
+Models.Products.hasOne(Models.OrderItems, { foreignKey: 'productId', as: 'item' });
 Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });
 Models.Products.belongsToMany(Models.Users, {
   foreignKey: 'productId',
@@ -84,6 +85,7 @@ Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });
 Models.Products.belongsTo(Models.Sizes, { foreignKey: 'sizeId', as: 'size' });
 Models.Products.belongsTo(Models.Conditions, { foreignKey: 'conditionId', as: 'condition' });
+Models.Products.hasMany(Models.Comments, { foreignKey: 'productId', as: 'comments' });
 
 /**
  * Categories
@@ -255,3 +257,6 @@ Models.NotificationTopicUsers.belongsTo(Models.NotificationTopics, {
   foreignKey: 'topicId',
   as: 'topic'
 });
+
+Models.Comments.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
+Models.Comments.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
