@@ -9,15 +9,15 @@ export const dateRangeQuery = (dataIndex, { fromIndex = 'from', toIndex = 'to' }
   const andQuery = [];
   if (from) {
     const d = new Date(from);
-    d.setDate(2);
+    // d.setDate(2);
     andQuery.push({ [dataIndex]: { [Op.gte]: d } });
   }
 
   if (to) {
     const date = new Date(to);
-    const d = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    d.setDate(d.getDate() + 1);
-    andQuery.push({ [dataIndex]: { [Op.lte]: d } });
+    // const d = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    // d.setDate(d.getDate() + 1);
+    andQuery.push({ [dataIndex]: { [Op.lte]: date } });
   }
 
   if (_.isEmpty(andQuery)) return {};
