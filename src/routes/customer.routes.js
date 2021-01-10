@@ -1,12 +1,13 @@
 import Router from 'express';
 import { crud } from '@utils/controller-crud.util';
 import { Users } from '@models';
+import { list } from '@controllers/Admin/customers.controller';
 
 const controller = crud(Users);
 
 const router = new Router();
 
-router.route('/').get(controller.read);
+router.route('/').get(list);
 
 router
   .route('/:id')
