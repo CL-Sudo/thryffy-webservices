@@ -25,7 +25,8 @@ export const search = async (req, res, next) => {
               [Op.like]: `%${keyword}%`
             }
           }
-        ]
+        ],
+        isVerified: true
       }
     });
 

@@ -1,5 +1,5 @@
 import Router from 'express';
-import { orderListing, exportOrderToExcel } from '@controllers/Admin/reports.controller';
+import { exportOrderToExcel } from '@controllers/Admin/reports.controller';
 
 const router = new Router();
 

@@ -1,5 +1,5 @@
 import R from 'ramda';
-import { Preferences, Products, Banners, FeatureItems, Sizes } from '@models';
+import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
 import { paginate } from '@utils';
 
 export const getBannersList = async (req, res, next) => {
@@ -28,7 +28,10 @@ export const getFeatureItemsList = async (req, res, next) => {
           model: Products,
           as: 'product',
           where: { isPurchased: false },
-          include: [{ model: Sizes, as: 'size' }]
+          include: [
+            { model: Sizes, as: 'size' },
+            { model: Categories, as: 'category' }
+          ]
         }
       ]
     });
