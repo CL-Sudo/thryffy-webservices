@@ -143,6 +143,11 @@ const Products = SequelizeConnector.define(
         attributes: { exclude: ['deletedBy', 'deletedAt', 'updatedBy', 'updatedAt'] },
         include: [
           {
+            model: Categories,
+            as: 'category',
+            attributes: { exclude: defaultExcludeFields }
+          },
+          {
             model: Brands,
             as: 'brand',
             attributes: ['id', 'title']
