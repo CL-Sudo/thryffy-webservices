@@ -1,7 +1,7 @@
 import Router from 'express';
 import { crud } from '@utils/controller-crud.util';
 import { Users } from '@models';
-import { list } from '@controllers/Admin/customers.controller';
+import { list, getCustomerProductRequest } from '@controllers/Admin/customers.controller';
 
 const controller = crud(Users);
 
@@ -13,6 +13,8 @@ router
   .route('/:id')
   .get(controller.readOne)
   .delete(controller.destroy);
+
+router.route('/:id/products').get(getCustomerProductRequest);
 
 router.route('/activate/:id').patch(controller.activate);
 router.route('/deactivate/:id').patch(controller.deactivate);
