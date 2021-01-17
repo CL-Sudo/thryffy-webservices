@@ -190,6 +190,7 @@ Products.prototype.getFavouriteCount = async function() {
       where: { productId: this.id }
     });
     this.setDataValue('favouriteCount', favouriteCount);
+    return favouriteCount;
   } catch (e) {
     throw e;
   }

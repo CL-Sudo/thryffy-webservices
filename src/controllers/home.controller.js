@@ -38,7 +38,7 @@ export const getFeatureItemsList = async (req, res, next) => {
 
     const rows = await Promise.all(
       paginate(limit)(offset)(payload).map(async row => {
-        await row.product.checkIsAddedToFavourite(id);
+        await row.product.getExtraFields(id);
         return row;
       })
     );
@@ -103,7 +103,7 @@ export const getCuratedList = async (req, res, next) => {
 
     const rows = await Promise.all(
       paginate(limit)(offset)(products).map(async row => {
-        await row.checkIsAddedToFavourite(id);
+        await row.getExtraFields(id);
         return row;
       })
     );

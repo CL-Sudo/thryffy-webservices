@@ -10,5 +10,9 @@ export default {
 
   SUBSCRIPTION: {
     CREATED: 'SUBSCRIPTION MADE'
+  },
+
+  PUBLICATION: {
+    UNPUBLISHED: 'UNPUBLISHED'
   }
 };

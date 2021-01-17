@@ -1,6 +1,4 @@
 import { Users, Products } from '@models';
-import { Op } from 'sequelize';
-import { paginate } from '@utils';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 
 export const list = async (req, res, next) => {

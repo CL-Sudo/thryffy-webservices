@@ -81,7 +81,7 @@ export const youMayAlsoLike = async (req, res, next) => {
 
     await Promise.all(
       payload.map(async data => {
-        await data.checkIsAddedToFavourite(id);
+        await data.getExtraFields(id);
       })
     );
 

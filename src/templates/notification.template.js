@@ -20,3 +20,8 @@ export const SUBSCRIPTION_REMINDER = {
 
   EXPIRED: 'Your subscription has expired'
 };
+
+export const PUBLICATION = {
+  UNPUBLISHED:
+    'Oh no! Your item got taken down. Check our listing terms & conditions to see what went wrong.'
+};
