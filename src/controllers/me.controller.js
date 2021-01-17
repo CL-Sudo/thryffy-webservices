@@ -245,11 +245,13 @@ export const updateProfile = async (req, res, next) => {
       const { username } = fields;
       const { id } = req.user;
 
-      const userByUsername = await Users.findOne({ where: { username } });
-      if (userByUsername && id !== userByUsername.id) {
-        throw new Error(
-          'Username requested is not available anymore, please try again with another username.'
-        );
+      if (username) {
+        const userByUsername = await Users.findOne({ where: { username } });
+        if (userByUsername && id !== userByUsername.id) {
+          throw new Error(
+            'Username requested is not available anymore, please try again with another username.'
+          );
+        }
       }
 
       const user = await Users.findOne({ where: { id } });
@@ -698,6 +700,21 @@ export const generateOtp = async (req, res, next) => {
     await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
 
     return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const updateBankDetails = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+
+    const user = await Users.findOne({ where: { id } });
+    await user.update(req.body);
+
+    await user.reload();
+
+    return res.status(200).json({ message: 'success', payload: user });
   } catch (e) {
     return next(e);
   }
