@@ -144,6 +144,22 @@ const Users = SequelizeConnector.define(
       field: 'has_valid_subscription',
       defaultValue: false
     },
+    beneficiaryName: {
+      type: Sequelize.STRING(100),
+      field: 'beneficiary_name'
+    },
+    beneficiaryBank: {
+      type: Sequelize.STRING(50),
+      field: 'beneficiary_bank'
+    },
+    beneficiaryPhoneNo: {
+      type: Sequelize.STRING(30),
+      field: 'beneficiary_phone_no'
+    },
+    bankAccountNo: {
+      type: Sequelize.STRING(50),
+      field: 'bank_account_no'
+    },
     reviewCount: {
       type: Sequelize.VIRTUAL,
       get() {

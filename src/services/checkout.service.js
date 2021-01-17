@@ -1,4 +1,4 @@
-import { Products } from '@models';
+import { Products, ShippingFees } from '@models';
 import R from 'ramda';
 import { getShippingFee } from '@services';
 import CHARGE from '@constants/shipping.constant';
@@ -52,16 +52,20 @@ export const getPriceSummary = async productIds =>
           const setTotal = R.set(totalLens);
           const setShippingFeeId = R.set(shippingFeeLens);
 
+          const assignShippingFeeObj = R.assoc('shippingFee');
+
           const total = R.view(totalLens)(summaryObj);
 
           const { price, id } = await getShippingFee(productIds);
+          const shippingFeeObj = await ShippingFees.findOne({ where: { id } });
 
           const newTotal = R.add(total, price);
 
           const newSummary = R.pipe(
             setShipping(price),
             setTotal(newTotal),
-            setShippingFeeId(id)
+            setShippingFeeId(id),
+            assignShippingFeeObj(shippingFeeObj)
           )(summaryObj);
 
           return Promise.resolve(newSummary);
@@ -80,7 +84,8 @@ export const getPriceSummary = async productIds =>
 
           const total = R.view(totalLens, summaryObj);
 
-          const { subTotal, shippingFee } = summaryObj;
+          const { subTotal } = summaryObj;
+          const shippingFee = summaryObj.shippingFee.price;
 
           const newTax = (subTotal + shippingFee) * CHARGE.TAX_PERCENTAGE + CHARGE.TRANSACTION_FEE;
 
@@ -96,20 +101,19 @@ export const getPriceSummary = async productIds =>
 
       const convertToTwoDecimalPlace = summaryObj => {
         const subTotalLens = R.lens(R.prop('subTotal'), R.assoc('subTotal'));
-        const shippingLens = R.lens(R.prop('shippingFee'), R.assoc('shippingFee'));
+        // const shippingLens = R.lens(R.prop('shippingFee'), R.assoc('shippingFee'));
         const taxLens = R.lens(R.prop('tax'), R.assoc('tax'));
         const totalLens = R.lens(R.prop('total'), R.assoc('total'));
 
         const setTax = R.set(taxLens);
         const setTotal = R.set(totalLens);
-        const setShipping = R.set(shippingLens);
+        // const setShipping = R.set(shippingLens);
         const setSubTotal = R.set(subTotalLens);
 
-        const { tax, subTotal, shippingFee, total } = summaryObj;
+        const { tax, subTotal, total } = summaryObj;
 
         const newSummary = R.pipe(
           setTax(tax.toFixed(2)),
-          setShipping(shippingFee.toFixed(2)),
           setSubTotal(subTotal.toFixed(2)),
           setTotal(total.toFixed(2))
         )(summaryObj);

@@ -19,6 +19,6 @@ router
   .delete(controller.destroy)
   .put(updateProduct);
 
-router.route('/:id/publications').patch(managePublication);
+router.route('/:productId/publications').patch(managePublication);
 
 export default router;

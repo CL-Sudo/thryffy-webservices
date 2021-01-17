@@ -13,5 +13,9 @@ export default {
 
   TOPIC: {
     MARKETING: 'MARKETING'
+  },
+
+  PUBLICATION: {
+    UNPUBLISHED: 'PRODUCT UNPUBLISHED'
   }
 };

@@ -245,7 +245,8 @@ const SalesOrders = SequelizeConnector.define(
         ])(R.toUpper(deliveryStatus));
 
         const initialWhereObj = {
-          userId
+          userId,
+          paymentStatus: PAYMENT_STATUS.SUCCESS
         };
 
         const where = assignDeliveryStatus(processedDeliveryStatus)(initialWhereObj);

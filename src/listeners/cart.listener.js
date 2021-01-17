@@ -58,7 +58,7 @@ const sendEmail = async (_, order) => {
     const receiver = await Users.findOne({ where: { id: order.userId } });
     const address = await Addresses.findOne({ where: { id: order.addressId } });
 
-    const receiverFullName = receiver.fullName;
+    const receiverFullName = receiver.fullName || receiver.username;
     const receiverEmail = receiver.email;
     const { addressLine1, addressLine2, postcode, city, state, phoneNumber } = address;
     const { orderRef } = order;
@@ -71,15 +71,15 @@ const sendEmail = async (_, order) => {
       title: item.product.title,
       condition: item.product.condition.title,
       size: item.product.size[item.product.category.default],
-      price: `${item.product.displayPrice}`
+      price: `${item.product.displayPrice.toFixed(2)}`
     }))(order.orderItems);
 
     await sendMail({
-      receiverFullName,
       receiverEmail,
       template: EMAIL_TEMPLATE.INVOICE_TEMPLATE,
       type: SENDGRID_CONFIG.TYPE.BILLING,
       templateData: {
+        receiverFullName,
         addressLine1,
         addressLine2,
         postcode,
@@ -88,9 +88,9 @@ const sendEmail = async (_, order) => {
         phoneNumber,
         orderRef,
         dateTime,
-        subTotal: `${subTotal}`,
-        tax: `${tax}`,
-        shippingFee: `${shippingFee}`,
+        subTotal: `${subTotal.toFixed(2)}`,
+        tax: `${tax.toFixed(2)}`,
+        shippingFee: `${shippingFee.toFixed(2)}`,
         total: `${total}`,
         items
       }

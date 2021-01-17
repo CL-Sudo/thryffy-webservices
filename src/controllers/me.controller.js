@@ -252,7 +252,7 @@ export const updateProfile = async (req, res, next) => {
         );
       }
 
-      const user = await Users.scope({ method: ['editProfile', id] }).findOne();
+      const user = await Users.findOne({ where: { id } });
 
       await user.update(fields);
 
@@ -353,7 +353,7 @@ export const listOrders = async (req, res, next) => {
         const result = await Products.scope('listings').findAll({ where });
         await Promise.all(
           R.map(async product => {
-            await product.checkIsAddedToFavourite(id);
+            await product.getExtraFields(id);
           })(result)
         );
         return Promise.resolve(result);

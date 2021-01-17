@@ -73,7 +73,7 @@ export const billplzRedirect = async (req, res) => {
 
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 3500);
+        setTimeout(resolve, 4500);
       });
 
     await wait();
@@ -109,7 +109,7 @@ export const subscriptionRedirect = async (req, res) => {
 
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 3500);
+        setTimeout(resolve, 4500);
       });
 
     await wait();
