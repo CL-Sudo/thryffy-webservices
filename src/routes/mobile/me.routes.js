@@ -20,6 +20,8 @@ router.patch('/password', validators.changePasswordValidator, controllers.change
 
 router.put('/profile', controllers.updateProfile);
 
+router.put('/recepient-details', controllers.updateBankDetails);
+
 router.get('/reviews', controllers.getReview);
 
 router.patch(
