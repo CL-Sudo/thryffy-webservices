@@ -56,6 +56,7 @@ export default app => {
   );
   app.use('/api/mobile/comments', mobileAuth, require('./mobile/comments.routes').default);
   app.use('/api/mobile/users', mobileAuth, require('./mobile/users.routes').default);
+  app.use('/api/mobile/followings', mobileAuth, require('./mobile/followings.routes').default);
 
   /*
    * PUBLIC API

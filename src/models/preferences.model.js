@@ -7,7 +7,7 @@ const Preferences = SequelizeConnector.define(
   'Preferences',
   {
     userId: {
-      ...foreignKey('user_id', 'users', false),
+      ...foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
       primaryKey: true
     },
     preferableId: {

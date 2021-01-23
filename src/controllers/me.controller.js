@@ -719,3 +719,18 @@ export const updateBankDetails = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const updateIdentityNo = async (req, res, next) => {
+  try {
+    requestValidator(req);
+    const { id } = req.user;
+    const { identityNo } = req.body;
+
+    const user = await Users.findOne({ where: { id } });
+    await user.update({ identityNo });
+    await user.reload();
+    return res.status(200).json({ message: 'success', payload: user });
+  } catch (e) {
+    return next(e);
+  }
+};

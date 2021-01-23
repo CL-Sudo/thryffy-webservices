@@ -6,8 +6,8 @@ import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 const CartItems = SequelizeConnector.define(
   'CartItems',
   {
-    userId: foreignKey('user_id', 'users', false),
-    productId: foreignKey('product_id', 'products', false),
+    userId: foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
+    productId: foreignKey('product_id', 'products', { onDelete: 'CASCADE' }),
     ...AT_RECORDER,
     ...BY_RECORDER
   },

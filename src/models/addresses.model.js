@@ -7,7 +7,7 @@ const Addresses = SequelizeConnector.define(
   'Addresses',
   {
     id: primaryKey,
-    userId: foreignKey('user_id', 'users', false),
+    userId: foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
     name: {
       type: Sequelize.STRING(100),
       allowNull: false

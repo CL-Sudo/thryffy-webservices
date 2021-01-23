@@ -234,7 +234,7 @@ export const pay = async (req, res, next) => {
       amount: order.total,
       email: user.email,
       mobile: user.completePhoneNumber,
-      name: user.fullName,
+      name: user.fullName || user.username || user.email,
       itemName: `Order ${order.orderRef}`,
       redirectUrl: `${serverUrl}/api/publics/billplz/redirect?orderId=${order.id}`,
       callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`

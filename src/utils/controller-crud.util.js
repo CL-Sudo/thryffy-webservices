@@ -150,6 +150,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
       const result = await Model.findOne({
         where: { ...query, ..._.get(req, 'query.where', {}), id }
       });
+
       if (!result) return next(new Error('Data not exists'));
       await sequelize.transaction(async transaction => {
         await result.destroy({ transaction });

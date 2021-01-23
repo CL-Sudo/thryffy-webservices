@@ -3,13 +3,37 @@ import * as Models from '@models';
 /**
  * Users
  */
-Models.Users.hasMany(Models.Addresses, { foreignKey: 'userId', as: 'addresses' });
-Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'userId', as: 'orders' });
+Models.Users.hasMany(Models.Addresses, {
+  foreignKey: 'userId',
+  as: 'addresses',
+  onDelete: 'CASCADE'
+});
+Models.Users.hasMany(Models.SalesOrders, {
+  foreignKey: 'userId',
+  as: 'orders'
+});
 Models.Users.hasMany(Models.Products, { foreignKey: 'userId', as: 'products' });
 Models.Users.belongsToMany(Models.Products, {
   foreignKey: 'userId',
   through: Models.CartItems,
   as: 'cartItems'
+});
+Models.Users.hasMany(Models.CartItems, {
+  foreignKey: 'userId',
+  as: 'items',
+  onDelete: 'CASCADE',
+  hooks: true
+});
+Models.Users.hasMany(Models.Comments, {
+  foreignKey: 'userId',
+  as: 'comments',
+  onDelete: 'CASCADE'
+});
+Models.Users.hasMany(Models.FavouriteProducts, {
+  foreignKey: 'userId',
+  as: 'favourites',
+  onDelete: 'CASCADE',
+  hooks: true
 });
 Models.Users.belongsToMany(Models.Products, {
   foreignKey: 'userId',
@@ -22,8 +46,18 @@ Models.Users.belongsToMany(Models.Products, {
   as: 'viewedProducts'
 });
 Models.Users.hasMany(Models.SalesOrders, { foreignKey: 'sellerId', as: 'seller' });
-Models.Users.hasMany(Models.Notifications, { foreignKey: 'notifierId', as: 'notifications' });
-Models.Users.hasOne(Models.Subscriptions, { foreignKey: 'userId', as: 'subscription' });
+Models.Users.hasMany(Models.Notifications, {
+  foreignKey: 'notifierId',
+  as: 'notifications',
+  onDelete: 'CASCADE',
+  hooks: true
+});
+Models.Users.hasOne(Models.Subscriptions, {
+  foreignKey: 'userId',
+  as: 'subscription',
+  onDelete: 'CASCADE',
+  hooks: true
+});
 Models.Users.hasMany(Models.Preferences, {
   foreignKey: 'userId',
   as: 'preferences'
@@ -31,12 +65,25 @@ Models.Users.hasMany(Models.Preferences, {
 Models.Users.hasMany(Models.Reviews, { foreignKey: 'sellerId', as: 'buyerReviews' });
 Models.Users.hasOne(Models.NotificationSettings, {
   foreignKey: 'userId',
-  as: 'notificationSetting'
+  as: 'notificationSetting',
+  onDelete: 'CASCADE',
+  hooks: true
 });
 Models.Users.belongsToMany(Models.NotificationTopics, {
   foreignKey: 'userId',
   through: Models.NotificationTopicUsers,
   as: 'notificationTopics'
+});
+
+Models.Users.belongsToMany(Models.Users, {
+  foreignKey: 'followerId',
+  as: 'sellers',
+  through: Models.Followings
+});
+Models.Users.belongsToMany(Models.Users, {
+  foreignKey: 'sellerId',
+  as: 'followers',
+  through: Models.Followings
 });
 
 /**
