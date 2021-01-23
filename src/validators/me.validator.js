@@ -158,3 +158,10 @@ export const updatePreferencesValidator = [
     })
     .customSanitizer(conditionId => R.uniq(conditionId))
 ];
+
+export const updateIdentityNoValidators = [
+  check('identityNo')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required')
+];

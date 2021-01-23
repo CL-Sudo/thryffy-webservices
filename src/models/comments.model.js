@@ -7,7 +7,7 @@ const Comments = SequelizeConnector.define(
   'Comments',
   {
     id: primaryKey,
-    userId: foreignKey('user_id', 'users', false),
+    userId: foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
     productId: foreignKey('product_id', 'products', false),
     comment: {
       type: Sequelize.TEXT,

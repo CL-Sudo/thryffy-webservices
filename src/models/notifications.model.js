@@ -10,7 +10,7 @@ const Notifications = SequelizeConnector.define(
   'Notifications',
   {
     id: primaryKey,
-    notifierId: foreignKey('notifier_id', 'users', false),
+    notifierId: foreignKey('notifier_id', 'users', { onDelete: 'CASCADE' }),
     actorId: foreignKey('actor_id', 'users', false),
     notifiableId: {
       type: Sequelize.INTEGER.UNSIGNED,

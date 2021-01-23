@@ -29,6 +29,10 @@ const Users = SequelizeConnector.define(
   'Users',
   {
     id: primaryKey,
+    identityNo: {
+      type: Sequelize.STRING(50),
+      field: 'identity_no'
+    },
     username: {
       type: Sequelize.STRING(100)
     },
@@ -197,8 +201,8 @@ const Users = SequelizeConnector.define(
     tableName: 'users',
     underscored: false,
     defaultScope: {
-      attributes: { exclude: ['password'] },
-      include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+      attributes: { exclude: ['password'] }
+      // include: [{ model: NotificationSettings, as: 'notificationSetting' }]
     },
     scopes: {
       search: params => search(Users, params, []),

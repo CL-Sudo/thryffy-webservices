@@ -43,4 +43,6 @@ router.get('/subscriptions', controllers.getOneSubscription);
 
 router.post('/generate-otp', controllers.generateOtp);
 
+router.patch('/identity', validators.updateIdentityNoValidators, controllers.updateIdentityNo);
+
 export default router;

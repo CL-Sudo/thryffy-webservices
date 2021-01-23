@@ -1,7 +1,11 @@
 import Router from 'express';
 import { crud } from '@utils/controller-crud.util';
 import { Users } from '@models';
-import { list, getCustomerProductRequest } from '@controllers/Admin/customers.controller';
+import {
+  list,
+  getCustomerProductRequest,
+  deleteCustomer
+} from '@controllers/Admin/customers.controller';
 
 const controller = crud(Users);
 
@@ -12,7 +16,7 @@ router.route('/').get(list);
 router
   .route('/:id')
   .get(controller.readOne)
-  .delete(controller.destroy);
+  .delete(deleteCustomer);
 
 router.route('/:id/products').get(getCustomerProductRequest);
 

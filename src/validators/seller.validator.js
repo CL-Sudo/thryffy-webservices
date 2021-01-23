@@ -8,7 +8,8 @@ import {
   Sizes,
   Packages,
   Subscriptions,
-  Conditions
+  Conditions,
+  Users
 } from '@models';
 import R from 'ramda';
 import { DELIVERY_STATUS } from '@constants';
@@ -21,6 +22,11 @@ export const addProductValidator = async (req, fields) =>
   new Promise(async (resolve, reject) => {
     try {
       const { id } = req.user;
+
+      const user = await Users.findOne({ where: { id } });
+      if (!user.identityNo) {
+        throw new Error('Identity No is required for your account before posting products');
+      }
 
       const subscription = await Subscriptions.findOne({
         where: { userId: id },

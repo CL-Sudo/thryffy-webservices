@@ -6,8 +6,8 @@ import { SequelizeConnector } from '@configs/sequelize-connector.config';
 const FavouriteProducts = SequelizeConnector.define(
   'FavouriteProducts',
   {
-    productId: foreignKey('product_id', 'products', false),
-    userId: foreignKey('user_id', 'users', false),
+    productId: foreignKey('product_id', 'products', { onDelete: 'CASCADE' }),
+    userId: foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
     ...AT_RECORDER,
     ...BY_RECORDER
   },

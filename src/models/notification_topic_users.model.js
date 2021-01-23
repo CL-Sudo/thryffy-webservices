@@ -7,7 +7,7 @@ const NotificationTopicUsers = SequelizeConnector.define(
   'NotificationTopics',
   {
     topicId: foreignKey('topic_id', 'notification_topics', false),
-    userId: foreignKey('user_id', 'users', false),
+    userId: foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
     ...AT_RECORDER,
     ...BY_RECORDER
   },
