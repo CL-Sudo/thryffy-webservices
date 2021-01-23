@@ -30,13 +30,13 @@ export const unfollow = async (req, res, next) => {
 
 export const list = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { id } = req.params;
     const users = await Users.findOne({
       where: { id },
       include: [
         {
           model: Users,
-          as: 'sellers',
+          as: 'followers',
           through: { attributes: [] },
           attributes: {
             exclude: [
@@ -60,7 +60,7 @@ export const list = async (req, res, next) => {
         }
       ]
     });
-    return res.status(200).json({ message: 'success', payload: users.sellers });
+    return res.status(200).json({ message: 'success', payload: users.followers });
   } catch (e) {
     return next(e);
   }

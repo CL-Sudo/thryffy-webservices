@@ -3,11 +3,11 @@ import { follow, unfollow, list } from '@controllers/followings.controller';
 
 const router = new Router();
 
-router
-  .route('/')
-  .post(follow)
-  .get(list);
+router.route('/').post(follow);
 
-router.route('/:sellerId').delete(unfollow);
+router
+  .route('/:id')
+  .delete(unfollow)
+  .get(list);
 
 export default router;
