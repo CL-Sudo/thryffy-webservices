@@ -33,6 +33,10 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING(50),
       field: 'identity_no'
     },
+    identityType: {
+      type: Sequelize.STRING(30),
+      field: 'identity_type'
+    },
     username: {
       type: Sequelize.STRING(100)
     },
