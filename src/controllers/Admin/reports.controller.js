@@ -14,14 +14,42 @@ import { dateRangeQuery } from '@utils/query.util';
 export const exportOrderToExcel = async (req, res, next) => {
   try {
     const { from = '2000-01-01', to = moment().format('YYYY-MM-DD') } = req.query;
-    const id = _.get(req, 'user.id', 2);
-
-    const admin = await Admins.findOne({ where: { id } });
-
     const workbook = new Excel.Workbook();
     const worksheet = workbook.addWorksheet('Orders');
 
     worksheet.columns = [
+      {
+        key: 'beneficiaryName',
+        header: 'Beneficiary Name'
+      },
+      {
+        key: 'beneficiaryBank',
+        header: 'Beneficiary Bank'
+      },
+      {
+        key: 'beneficiaryAccountNo',
+        header: 'Beneficiary Account No'
+      },
+      {
+        key: 'identityType',
+        header: 'Identity Type'
+      },
+      {
+        key: 'identityNo',
+        header: 'Identity Number'
+      },
+      {
+        key: 'paymentAmount',
+        header: 'Payment Amount'
+      },
+      {
+        key: 'paymentRef',
+        header: 'Payment Reference'
+      },
+      {
+        key: 'paymentDescription',
+        header: 'Payment Description'
+      },
       {
         key: 'orderRef',
         header: 'Order Reference'
@@ -76,25 +104,35 @@ export const exportOrderToExcel = async (req, res, next) => {
       }
     ];
 
+    worksheet.insertRow(1, ['From:', parseDate(new Date(from))]);
+    worksheet.insertRow(2, ['To:', parseDate(new Date(to))]);
+    worksheet.insertRow(3, []);
+    worksheet.insertRow(4, ['Employer Info:']);
+    worksheet.insertRow(5, ['Crediting Date:', parseDate(new Date())]);
+    worksheet.insertRow(6, ['Payment Reference:', 'E-Commerce']);
+    worksheet.insertRow(7, ['Payment Description:', 'Sale on Thryffy']);
+    worksheet.insertRow(8, ['Bulk Payment Type:', 'Online Banking']);
+    worksheet.insertRow(9, []);
+
+    worksheet.getCell('A1').font = { bold: true };
+    worksheet.getCell('A2').font = { bold: true };
+    worksheet.getCell('A3').font = { bold: true };
+    worksheet.getCell('A4').font = { bold: true };
+
+    worksheet.mergeCells('D3', 'H3');
+    worksheet.getCell('D3').value =
+      'Please save this template to .csv (comma delimited) file before uploading the file via M2U Biz';
+    worksheet.getCell('D3').border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+
     worksheet.columns.forEach(column => {
       column.width = column.header.length < 12 ? 12 : column.header.length;
     });
     worksheet.getRow(1).font = { bold: true };
-
-    worksheet.insertRow(1, ['Order Report']);
-    worksheet.insertRow(2, []);
-    worksheet.insertRow(3, ['From:', parseDate(new Date(from))]);
-    worksheet.insertRow(4, ['To:', parseDate(new Date(to))]);
-    worksheet.insertRow(5, []);
-    worksheet.insertRow(6, ['Report Requester:', admin.username]);
-    worksheet.insertRow(7, ['Report Release Date:', parseDate(new Date())]);
-    worksheet.insertRow(8, []);
-
-    worksheet.getCell('A1').font = { bold: true, size: 20 };
-    worksheet.getCell('A3').font = { bold: true };
-    worksheet.getCell('A4').font = { bold: true };
-    worksheet.getCell('A6').font = { bold: true };
-    worksheet.getCell('A7').font = { bold: true };
 
     const dateRange = dateRangeQuery('createdAt')({ from, to });
     const order = await SalesOrders.findAll({
@@ -114,6 +152,15 @@ export const exportOrderToExcel = async (req, res, next) => {
 
       const obj = {
         ...instance.dataValues,
+        beneficiaryName: instance.seller.beneficiaryName,
+        beneficiaryBank: instance.seller.beneficiaryBank,
+        beneficiaryAccountNo: instance.seller.beneficiaryAccountNo,
+        identityType: instance.seller.identityType,
+        identityNo: instance.seller.identityNo,
+        paymentAmount: instance.total - instance.commission,
+        paymentRef: 'E-Commerce',
+        paymentDescription: 'Sale on Thryffy',
+        parcelType: instance.shippingFee.parcelName,
         shippingFee: _.get(instance, 'shippingFee.price', 0).toFixed(2)
       };
       return obj;
@@ -125,31 +172,61 @@ export const exportOrderToExcel = async (req, res, next) => {
       });
     });
 
-    // worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
-    //   worksheet.getCell(`A${rowNumber}`).border = {
-    //     top: { style: 'thin' },
-    //     left: { style: 'thin' },
-    //     bottom: { style: 'thin' },
-    //     right: { style: 'none' }
-    //   };
+    worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (rowNumber > 3 && rowNumber < 9) {
+        worksheet.getCell(`A${rowNumber}`).border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
 
-    //   const insideColumns = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
-    //   insideColumns.forEach(v => {
-    //     worksheet.getCell(`${v}${rowNumber}`).border = {
-    //       top: { style: 'thin' },
-    //       bottom: { style: 'thin' },
-    //       left: { style: 'none' },
-    //       right: { style: 'none' }
-    //     };
-    //   });
+        worksheet.getCell(`B${rowNumber}`).border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      }
 
-    //   worksheet.getCell(`F${rowNumber}`).border = {
-    //     top: { style: 'thin' },
-    //     left: { style: 'none' },
-    //     bottom: { style: 'thin' },
-    //     right: { style: 'thin' }
-    //   };
-    // });
+      if (rowNumber > 9) {
+        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+
+          if (colNumber === 4) {
+            cell.dataValidation = {
+              type: 'list',
+              allowBlank: true,
+              formulae: ['"NRIC,Old IC, Passport,BRN Police ID,Army ID"']
+            };
+          }
+        });
+      }
+
+      worksheet.getRow(10).font = { bold: true };
+
+      // const insideColumns = ['B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M'];
+      // insideColumns.forEach(v => {
+      //   worksheet.getCell(`${v}${rowNumber}`).border = {
+      //     top: { style: 'thin' },
+      //     bottom: { style: 'thin' },
+      //     left: { style: 'none' },
+      //     right: { style: 'none' }
+      //   };
+      // });
+
+      // worksheet.getCell(`F${rowNumber}`).border = {
+      //   top: { style: 'thin' },
+      //   left: { style: 'none' },
+      //   bottom: { style: 'thin' },
+      //   right: { style: 'thin' }
+      // };
+    });
 
     const fileName = `order_list_${moment().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`;
 
@@ -159,9 +236,12 @@ export const exportOrderToExcel = async (req, res, next) => {
     );
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
 
-    return workbook.xlsx.write(res).then(() => {
-      res.status(200).end();
-    });
+    await workbook.xlsx.write(res);
+
+    // return res.download(fileName);
+    // return workbook.csv.write(res).then(() => {
+    //   res.status(200).end();
+    // });
   } catch (e) {
     return next(e);
   }

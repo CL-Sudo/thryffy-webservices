@@ -17,6 +17,9 @@ import { hashPassword } from '@tools/bcrypt';
 import moment from 'moment';
 import { sendSMS } from '@services/sms.service';
 import { SMSVerifcation } from '@templates/sms.template';
+import { sendMail } from '@tools/sendgrid';
+import LISTENER_EVENT from '@constants/listener.constant';
+import EMAIL_TEMPLATE from '@templates/email.template';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -282,6 +285,14 @@ export const facebookCallback = async (req, res) => {
 
     // res.cookie(Configs.authTokenName, token, { httpOnly: false });
 
+    await sendMail({
+      receiverEmail: user.email,
+      template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+      templateData: {
+        username: user.username
+      }
+    });
+
     return res.status(200).send(`
       <script>
         window.ReactNativeWebView.postMessage(
@@ -338,6 +349,15 @@ export const googleCallback = async (req, res) => {
     await user.reload();
 
     const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
+
+    await sendMail({
+      receiverEmail: user.email,
+      template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+      templateData: {
+        username: user.username
+      }
+    });
+
     return res.status(200).send(`
         <script>
           window.ReactNativeWebView.postMessage(
@@ -510,7 +530,6 @@ export const userRegistration = async (req, res, next) => {
           otpValidity: moment().add(10, 'minutes')
         });
         await u.reload();
-        authListener.emit('userSignUp', u);
         return res.status(202).json({ message: 'User not verified' });
       }
       throw new Error('Username is not available');
@@ -551,7 +570,14 @@ export const userRegistration = async (req, res, next) => {
         const otpValidity = moment().add(10, 'minutes');
         const user = await Users.create({ ...requestBody, refreshToken, otp, otpValidity });
         await user.reload();
-        authListener.emit('userSignUp', user);
+        await sendMail({
+          receiverEmail: user.email,
+          template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+          templateData: {
+            username: user.username
+          }
+        });
+        authListener.emit(LISTENER_EVENT.AUTHENTICATION.SIGNUP, user);
         return Promise.resolve(user);
       } catch (e) {
         return Promise.reject(e);
@@ -588,6 +614,7 @@ export const userRegistration = async (req, res, next) => {
       token: `Bearer ${payload.jwt}`
     });
   } catch (e) {
+    console.log('e', e.response.data.errors);
     return next(e);
   }
 };

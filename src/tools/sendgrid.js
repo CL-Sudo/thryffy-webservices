@@ -8,7 +8,7 @@ export const sendMail = ({
   templateData = {},
   template,
   attachments = null,
-  type
+  type = null
 }) =>
   new Promise(async (resolve, reject) => {
     try {
@@ -31,7 +31,7 @@ export const sendMail = ({
             }
           ],
           from: {
-            email: CONFIG[`SENDGRID_${type}_SENDER`],
+            email: type ? CONFIG[`SENDGRID_${type}_SENDER`] : process.env.NO_REPLY_EMAIL,
             name: process.env.EMAIL_SENDER_NAME
           },
           template_id: template,

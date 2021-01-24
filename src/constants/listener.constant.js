@@ -14,5 +14,9 @@ export default {
 
   PUBLICATION: {
     UNPUBLISHED: 'UNPUBLISHED'
+  },
+
+  AUTHENTICATION: {
+    SIGNUP: 'USER SIGNUP'
   }
 };
