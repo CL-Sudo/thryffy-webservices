@@ -431,8 +431,7 @@ export const getMyProfile = async (req, res, next) => {
     const { id } = req.user;
 
     const profile = await Users.scope('order').findOne({ where: { id } });
-    await profile.getReviewCount();
-    await profile.getAverageRating();
+    await profile.getExtraFields();
 
     return res.status(200).json({
       message: 'success',
