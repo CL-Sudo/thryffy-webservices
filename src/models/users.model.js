@@ -16,7 +16,8 @@ import {
   SalesOrders,
   OrderItems,
   ShippingFees,
-  Sizes
+  Sizes,
+  Followings
 } from '@models';
 
 import { Reviews } from '@models/reviews.model';
@@ -32,10 +33,6 @@ const Users = SequelizeConnector.define(
     identityNo: {
       type: Sequelize.STRING(50),
       field: 'identity_no'
-    },
-    identityType: {
-      type: Sequelize.STRING(30),
-      field: 'identity_type'
     },
     username: {
       type: Sequelize.STRING(100)
@@ -196,6 +193,24 @@ const Users = SequelizeConnector.define(
       type: Sequelize.VIRTUAL,
       get() {
         return this.getDataValue('totalLike');
+      }
+    },
+    followerCount: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('followerCount');
+      }
+    },
+    followingCount: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('followingCount');
+      }
+    },
+    isFollowed: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('isFollowed');
       }
     },
     ...AT_RECORDER,
@@ -429,12 +444,44 @@ Users.prototype.getTotalLike = async function() {
   }
 };
 
+Users.prototype.getFollowerCount = async function() {
+  try {
+    const followerCount = await Followings.count({ where: { sellerId: this.id } });
+    this.setDataValue('followerCount', followerCount);
+    return followerCount;
+  } catch (e) {
+    throw e;
+  }
+};
+
+Users.prototype.getFollowingCount = async function() {
+  try {
+    const followingCount = await Followings.count({ where: { followerId: this.id } });
+    this.setDataValue('followingCount', followingCount);
+    return followingCount;
+  } catch (e) {
+    throw e;
+  }
+};
+
+Users.prototype.checkIsFollowed = async function(myId) {
+  try {
+    const follow = await Followings.findOne({ where: { sellerId: this.id, followerId: myId } });
+    this.setDataValue('isFollowed', !R.isNil(follow));
+    return !R.isNil(follow);
+  } catch (e) {
+    throw e;
+  }
+};
+
 Users.prototype.getExtraFields = async function() {
   await this.getReviewCount();
   await this.getAverageRating();
   await this.getEarnings();
   await this.getTotalView();
   await this.getTotalLike();
+  await this.getFollowerCount();
+  await this.getFollowingCount();
 };
 
 export { Users };

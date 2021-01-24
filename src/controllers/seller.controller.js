@@ -290,9 +290,12 @@ export const getProducts = async (req, res, next) => {
 
 export const getSellerDetail = async (req, res, next) => {
   try {
+    const { id } = req.user;
     const { sellerId } = req.params;
 
     const seller = await Users.scope('sellerDetail').findOne({ where: { id: sellerId } });
+    await seller.getExtraFields();
+    await seller.checkIsFollowed(id);
 
     return res.status(200).json({ message: 'success', payload: seller });
   } catch (e) {

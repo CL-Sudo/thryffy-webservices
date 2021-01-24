@@ -30,6 +30,7 @@ export const unfollow = async (req, res, next) => {
 
 export const list = async (req, res, next) => {
   try {
+    const { id: userId } = req.user;
     const { id } = req.params;
     const users = await Users.findOne({
       where: { id },
@@ -60,6 +61,13 @@ export const list = async (req, res, next) => {
         }
       ]
     });
+
+    await Promise.all(
+      users.followers.map(async instance => {
+        await instance.getExtraFields();
+        await instance.checkIsFollowed(userId);
+      })
+    );
     return res.status(200).json({ message: 'success', payload: users.followers });
   } catch (e) {
     return next(e);
