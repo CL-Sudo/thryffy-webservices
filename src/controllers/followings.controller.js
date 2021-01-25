@@ -17,7 +17,7 @@ export const follow = async (req, res, next) => {
 
 export const unfollow = async (req, res, next) => {
   try {
-    const { sellerId } = req.params;
+    const { id: sellerId } = req.params;
     const { id } = req.user;
     const followings = await Followings.findOne({ where: { sellerId, followerId: id } });
     if (!followings) throw new Error('Data not found');
