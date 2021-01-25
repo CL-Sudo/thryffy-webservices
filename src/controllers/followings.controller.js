@@ -28,7 +28,7 @@ export const unfollow = async (req, res, next) => {
   }
 };
 
-export const list = async (req, res, next) => {
+export const listFollower = async (req, res, next) => {
   try {
     const { id: userId } = req.user;
     const { id } = req.params;
@@ -43,6 +43,7 @@ export const list = async (req, res, next) => {
             exclude: [
               ...defaultExcludeFields,
               'location',
+              'password',
               'facebookId',
               'googleId',
               'deviceToken',
@@ -69,6 +70,53 @@ export const list = async (req, res, next) => {
       })
     );
     return res.status(200).json({ message: 'success', payload: users.followers });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const listFollowing = async (req, res, next) => {
+  try {
+    const { id: userId } = req.user;
+    const { id } = req.params;
+    const users = await Users.findOne({
+      where: { id },
+      include: [
+        {
+          model: Users,
+          as: 'sellers',
+          through: { attributes: [] },
+          attributes: {
+            exclude: [
+              ...defaultExcludeFields,
+              'password',
+              'location',
+              'facebookId',
+              'googleId',
+              'deviceToken',
+              'otp',
+              'otpValidity',
+              'refreshToken',
+              'resetToken',
+              'loginFrequency',
+              'lastLogin',
+              'beneficiaryName',
+              'beneficiaryBank',
+              'beneficiaryPhoneNo',
+              'bankAccountNo'
+            ]
+          }
+        }
+      ]
+    });
+
+    await Promise.all(
+      users.sellers.map(async instance => {
+        await instance.getExtraFields();
+        await instance.checkIsFollowed(userId);
+      })
+    );
+    return res.status(200).json({ message: 'success', payload: users.sellers });
   } catch (e) {
     return next(e);
   }
