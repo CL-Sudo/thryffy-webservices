@@ -1,5 +1,6 @@
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { Followings, Users } from '@models';
+import { paginate } from '@utils';
 
 export const follow = async (req, res, next) => {
   try {
@@ -32,6 +33,7 @@ export const listFollower = async (req, res, next) => {
   try {
     const { id: userId } = req.user;
     const { id } = req.params;
+    const { limit, offset } = req.query;
     const users = await Users.findOne({
       where: { id },
       include: [
@@ -69,7 +71,13 @@ export const listFollower = async (req, res, next) => {
         await instance.checkIsFollowed(userId);
       })
     );
-    return res.status(200).json({ message: 'success', payload: users.followers });
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: users.followers.length,
+        rows: paginate(limit)(offset)(users.followers)
+      }
+    });
   } catch (e) {
     return next(e);
   }
@@ -79,6 +87,7 @@ export const listFollowing = async (req, res, next) => {
   try {
     const { id: userId } = req.user;
     const { id } = req.params;
+    const { limit, offset } = req.query;
     const users = await Users.findOne({
       where: { id },
       include: [
@@ -116,7 +125,13 @@ export const listFollowing = async (req, res, next) => {
         await instance.checkIsFollowed(userId);
       })
     );
-    return res.status(200).json({ message: 'success', payload: users.sellers });
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: users.sellers.length,
+        rows: paginate(limit)(offset)(users.sellers)
+      }
+    });
   } catch (e) {
     return next(e);
   }
