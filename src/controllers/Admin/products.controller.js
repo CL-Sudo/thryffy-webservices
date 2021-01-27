@@ -1,4 +1,7 @@
-import { Products } from '@models';
+import { Products, Brands, Sizes, Categories, ProductColors, Galleries, Users } from '@models';
+import { getLimitOffset, getScopes } from '@utils/express.util';
+import { Op } from 'sequelize';
+import _ from 'lodash';
 
 import PublicationListener from '@listeners/publication.listener';
 
@@ -24,6 +27,77 @@ export const managePublication = async (req, res, next) => {
     }
 
     return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const verifyProductRequest = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const product = await Products.findOne({ where: { id: productId } });
+    if (!product) throw new Error('Product has not found.');
+
+    await product.update({ isVerify: true });
+
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const unVerifyProductRequest = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+    const product = await Products.findOne({ where: { id: productId } });
+    if (!product) throw new Error('Product has not found.');
+
+    await product.update({ isVerify: false });
+
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getProductListRequest = async (req, res, next) => {
+  try {
+    const { brandName } = req.query;
+    const { limit, offset } = getLimitOffset(req);
+    const scopes = getScopes(Products)(req);
+
+    const products = await Products.scope(scopes).findAndCountAll({
+      include: [
+        {
+          model: Brands,
+          as: 'brands',
+          required: brandName ? true : false,
+          where: {
+            title: {
+              [Op.like]: `%${brandName}%`
+            }
+          }
+        },
+        {
+          model: Brands,
+          as: 'brand',
+          required: false
+        },
+        { model: Sizes, as: 'size', required: false },
+        { model: Categories, as: 'category', required: false },
+        { model: Users, as: 'seller', required: false },
+        { model: Galleries, as: 'photos', required: false },
+        { model: ProductColors, as: 'colors', required: false }
+      ],
+      limit,
+      offset,
+      distinct: true,
+      order: [['createdAt', 'DESC']]
+    });
+
+    return res
+      .status(200)
+      .json({ message: 'Success', payload: { rows: products.rows, count: products.count } });
   } catch (e) {
     return next(e);
   }
