@@ -17,7 +17,18 @@ export const subscriptionRenewReminder = () =>
         where: {
           reminderCount: 0
         },
-        include: [{ model: Users, as: 'user' }]
+        include: [
+          {
+            model: Users,
+            as: 'user',
+            include: [
+              {
+                model: NotificationSettings,
+                as: 'notificationSetting'
+              }
+            ]
+          }
+        ]
       });
       const oneCount = await Subscriptions.findAll({
         where: {
@@ -40,7 +51,18 @@ export const subscriptionRenewReminder = () =>
         where: {
           reminderCount: 2
         },
-        include: [{ model: Users, as: 'user' }]
+        include: [
+          {
+            model: Users,
+            as: 'user',
+            include: [
+              {
+                model: NotificationSettings,
+                as: 'notificationSetting'
+              }
+            ]
+          }
+        ]
       });
 
       const sevenDayReminder = R.filter(sub => {
