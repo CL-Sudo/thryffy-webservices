@@ -11,6 +11,8 @@ import { downloadStream } from '@utils/utils';
 import { parseDate } from '@utils';
 import { dateRangeQuery } from '@utils/query.util';
 
+import { DELIVERY_STATUS } from '@constants';
+
 export const exportOrderToExcel = async (req, res, next) => {
   try {
     const { from = '2000-01-01', to = moment().format('YYYY-MM-DD HH:mm:ss') } = req.query;
@@ -136,7 +138,7 @@ export const exportOrderToExcel = async (req, res, next) => {
 
     const dateRange = dateRangeQuery('createdAt')({ from, to });
     const order = await SalesOrders.findAll({
-      where: { ...dateRange },
+      where: { ...dateRange, deliveryStatus: DELIVERY_STATUS.COMPLETED },
       include: [
         { model: Users, as: 'seller' },
         { model: ShippingFees, as: 'shippingFee' },
