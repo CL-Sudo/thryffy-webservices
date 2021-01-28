@@ -128,6 +128,7 @@ Models.Products.belongsToMany(Models.Users, {
 });
 Models.Products.belongsTo(Models.Users, { foreignKey: 'userId', as: 'seller' });
 Models.Products.belongsTo(Models.Brands, { foreignKey: 'brandId', as: 'brand' });
+Models.Products.hasMany(Models.Brands, { foreignKey: 'id', as: 'brands' });
 Models.Products.hasMany(Models.Galleries, { foreignKey: 'productId', as: 'photos' });
 Models.Products.hasMany(Models.ProductColors, { foreignKey: 'productId', as: 'colors' });
 Models.Products.belongsTo(Models.Sizes, { foreignKey: 'sizeId', as: 'size' });
