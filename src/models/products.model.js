@@ -67,6 +67,10 @@ const Products = SequelizeConnector.define(
       defaultValue: 0,
       field: 'view_count'
     },
+    soldAt: {
+      type: Sequelize.DATE,
+      field: 'sold_at'
+    },
     favouriteCount: {
       type: Sequelize.VIRTUAL,
       get() {

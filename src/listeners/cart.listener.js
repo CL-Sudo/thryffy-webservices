@@ -70,7 +70,7 @@ const sendEmail = async (_, order) => {
     const items = R.map(item => ({
       title: item.product.title,
       condition: item.product.condition.title,
-      size: item.product.size[item.product.category.default],
+      size: R.pathOr('N/A', ['product', 'size', `${item.product.category.default}`])(item),
       price: `${item.product.displayPrice.toFixed(2)}`
     }))(order.orderItems);
 
