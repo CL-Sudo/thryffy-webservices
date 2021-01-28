@@ -18,6 +18,7 @@ export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
     const { x_signature: xSignature, paid } = req.body;
+    const now = new Date();
     const billplz = new Billplz();
 
     if (billplz.verifyXSignature(xSignature, req.body)) {
@@ -49,7 +50,7 @@ export const billplzCallback = async (req, res, next) => {
 
           await Promise.all(
             orderItems.map(async instance => {
-              await instance.product.update({ isPurchased: true }, transaction);
+              await instance.product.update({ isPurchased: true, soldAt: now }, transaction);
             })
           );
 

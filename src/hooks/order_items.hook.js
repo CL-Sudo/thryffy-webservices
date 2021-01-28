@@ -61,7 +61,7 @@ OrderItems.addHook('afterBulkCreate', 'getCommission', async (results, options) 
       ]
     });
 
-    const rates = await Commissions.findAll({ raw: true });
+    const rates = await Commissions.findAll({});
 
     const commission = R.pipe(
       R.map(R.path(['product', 'originalPrice'])),

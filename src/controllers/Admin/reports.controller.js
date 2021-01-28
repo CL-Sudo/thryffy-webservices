@@ -2,7 +2,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import Excel from 'exceljs';
 
-import { Users, SalesOrders, ShippingFees, Admins } from '@models';
+import { Users, SalesOrders, ShippingFees, Products, OrderItems } from '@models';
 
 import { generateHtmlString, registerTablePartial } from '@tools/handlebars';
 import { generatePDF } from '@tools/wkhtmltopdf';
@@ -13,7 +13,7 @@ import { dateRangeQuery } from '@utils/query.util';
 
 export const exportOrderToExcel = async (req, res, next) => {
   try {
-    const { from = '2000-01-01', to = moment().format('YYYY-MM-DD') } = req.query;
+    const { from = '2000-01-01', to = moment().format('YYYY-MM-DD HH:mm:ss') } = req.query;
     const workbook = new Excel.Workbook();
     const worksheet = workbook.addWorksheet('Orders');
 
@@ -139,12 +139,15 @@ export const exportOrderToExcel = async (req, res, next) => {
       where: { ...dateRange },
       include: [
         { model: Users, as: 'seller' },
-        { model: ShippingFees, as: 'shippingFee' }
+        { model: ShippingFees, as: 'shippingFee' },
+        { model: OrderItems, as: 'orderItems', include: [{ model: Products, as: 'product' }] }
       ],
       order: [['createdAt', 'ASC']]
     });
 
     const data = _.map(order, instance => {
+      const productPrice = _.sum(instance.orderItems.map(item => item.product.originalPrice));
+
       instance.dataValues.createdAt = parseDate(instance.dataValues.createdAt);
       instance.dataValues.deliveryTrackingNo = instance.deliveryTrackingNo || 'NA';
       instance.dataValues.commissionPaidAt = instance.commissionPaidAt || 'NA';
@@ -157,7 +160,7 @@ export const exportOrderToExcel = async (req, res, next) => {
         beneficiaryAccountNo: instance.seller.beneficiaryAccountNo,
         identityType: instance.seller.identityType,
         identityNo: instance.seller.identityNo,
-        paymentAmount: instance.total - instance.commission,
+        paymentAmount: productPrice - instance.commission + instance.shippingFee.actualPrice,
         paymentRef: 'E-Commerce',
         paymentDescription: 'Sale on Thryffy',
         parcelType: instance.shippingFee.parcelName,

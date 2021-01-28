@@ -71,17 +71,6 @@ class Billplz {
       if (R.isNil(email) && R.isNil(mobile)) {
         throw new Error('mobile or email must be provided');
       }
-      console.log('************');
-      console.log({
-        collection_id: NODE_ENV === 'DEV' ? testCollectionId : this.collectionId,
-        email,
-        mobile,
-        name,
-        amount: amount * 100,
-        description: `Payment for ${itemName}`,
-        callback_url: callbackUrl,
-        redirect_url: redirectUrl
-      });
       const res = await axios({
         method: 'POST',
         params: {
