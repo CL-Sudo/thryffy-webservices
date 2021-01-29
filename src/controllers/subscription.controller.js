@@ -21,7 +21,7 @@ export const subscribe = async (req, res, next) => {
       callbackUrl: `${serverUrl}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
       email: user.email,
       mobile: user.completePhoneNumber,
-      name: user.fullName,
+      name: user.fullName || user.username || user.email,
       itemName: `Package ${pkg.title}`,
       redirectUrl: `${serverUrl}/api/publics/subscriptions/redirect?userId=${id}`
     });
