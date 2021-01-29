@@ -1,4 +1,13 @@
-import { Users, Products, SalesOrders, Addresses, Comments, Notifications } from '@models';
+import {
+  Users,
+  Products,
+  SalesOrders,
+  Addresses,
+  Comments,
+  Notifications,
+  Subscriptions,
+  Packages
+} from '@models';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -102,6 +111,31 @@ export const deleteCustomer = async (req, res, next) => {
     });
 
     return res.status(200).json({ message: 'Delete success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getOneCustomer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await Users.findOne({
+      where: { id },
+      include: [
+        {
+          model: Subscriptions,
+          as: 'subscription',
+          include: [
+            {
+              model: Packages,
+              as: 'package'
+            }
+          ]
+        },
+        { model: Addresses, as: 'addresses' }
+      ]
+    });
+    return res.status(200).json({ message: 'success', payload: user });
   } catch (e) {
     return next(e);
   }

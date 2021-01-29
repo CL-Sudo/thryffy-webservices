@@ -4,7 +4,8 @@ import { Users } from '@models';
 import {
   list,
   getCustomerProductRequest,
-  deleteCustomer
+  deleteCustomer,
+  getOneCustomer
 } from '@controllers/Admin/customers.controller';
 
 const controller = crud(Users);
@@ -15,7 +16,7 @@ router.route('/').get(list);
 
 router
   .route('/:id')
-  .get(controller.readOne)
+  .get(getOneCustomer)
   .delete(deleteCustomer);
 
 router.route('/:id/products').get(getCustomerProductRequest);
