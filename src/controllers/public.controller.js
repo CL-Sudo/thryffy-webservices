@@ -14,6 +14,52 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 
 import { cartListener } from '@listeners/cart.listener';
 
+/**
+ *
+ * @param {Number} packageId packageId to be subscribed
+ * @param {Number} userId subscriber userId
+ */
+const decideExpiryDate = async (packageId, userId) => {
+  try {
+    const sub = await Subscriptions.findOne({
+      where: { userId }
+    });
+
+    const subExpiryDate = moment(sub.expiryDate);
+    const now = moment();
+    const diff = now.diff(subExpiryDate, 'days');
+
+    switch (true) {
+      case packageId === sub.packageId && diff <= 0: {
+        const exp = moment(subExpiryDate)
+          .add(1, 'months')
+          .format('YYYY-MM-DD');
+
+        return Promise.resolve(exp);
+      }
+
+      case packageId === sub.packageId && diff > 0: {
+        const exp = moment()
+          .add(1, 'months')
+          .format('YYYY-MM-DD');
+        return Promise.resolve(exp);
+      }
+
+      case packageId !== sub.packageId: {
+        const exp = moment()
+          .add(1, 'months')
+          .format('YYYY-MM-DD');
+        return Promise.resolve(exp);
+      }
+
+      default:
+        throw new Error('Oops, something is wrong!');
+    }
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
 export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -158,11 +204,10 @@ export const subscribeCallback = async (req, res, next) => {
       const currentSubscription = await Subscriptions.findOne({ where: { userId } });
 
       if (currentSubscription) {
+        const expiryDate = await decideExpiryDate(packageId, userId);
         await currentSubscription.update({
           packageId,
-          expiryDate: moment()
-            .add(1, 'months')
-            .format('YYYY-MM-DD HH:mm:ss')
+          expiryDate
         });
       } else {
         const productCount = await Products.count({ where: { userId } });
@@ -172,7 +217,7 @@ export const subscribeCallback = async (req, res, next) => {
           userId,
           expiryDate: moment()
             .add(1, 'months')
-            .format('YYYY-MM-DD HH:mm:ss')
+            .format('YYYY-MM-DD')
         });
       }
 
