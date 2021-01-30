@@ -32,7 +32,7 @@ const decideExpiryDate = async (packageId, userId) => {
     switch (true) {
       case packageId === sub.packageId && diff <= 0: {
         const exp = moment(subExpiryDate)
-          .add(1, 'months')
+          .add(30, 'days')
           .format('YYYY-MM-DD');
 
         return Promise.resolve(exp);
@@ -40,14 +40,14 @@ const decideExpiryDate = async (packageId, userId) => {
 
       case packageId === sub.packageId && diff > 0: {
         const exp = moment()
-          .add(1, 'months')
+          .add(30, 'days')
           .format('YYYY-MM-DD');
         return Promise.resolve(exp);
       }
 
       case packageId !== sub.packageId: {
         const exp = moment()
-          .add(1, 'months')
+          .add(30, 'days')
           .format('YYYY-MM-DD');
         return Promise.resolve(exp);
       }
