@@ -96,6 +96,9 @@ const Users = SequelizeConnector.define(
     completePhoneNumber: {
       type: Sequelize.VIRTUAL,
       get() {
+        if (R.isNil(this.phoneCountryCode) || R.isNil(this.phoneNumber)) {
+          return null;
+        }
         return `${this.phoneCountryCode}${this.phoneNumber}`;
       }
     },
@@ -103,17 +106,25 @@ const Users = SequelizeConnector.define(
       type: Sequelize.DATEONLY(),
       field: 'date_of_birth'
     },
+    appleId: {
+      type: Sequelize.STRING,
+      field: 'apple_id',
+      unique: true
+    },
     facebookId: {
       type: Sequelize.STRING,
-      field: 'facebook_id'
+      field: 'facebook_id',
+      unique: true
     },
     googleId: {
       type: Sequelize.STRING,
-      field: 'google_id'
+      field: 'google_id',
+      unique: true
     },
     deviceToken: {
       type: Sequelize.STRING,
-      field: 'device_token'
+      field: 'device_token',
+      unique: true
     },
     profilePicture: {
       type: Sequelize.STRING,
@@ -347,8 +358,8 @@ Users.prototype.getAverageRating = async function() {
   const getRating = R.map(R.prop('rating'));
   const averageRating = R.pipe(getRating, R.mean)(reviews);
 
-  this.setDataValue('averageRating', averageRating);
-  return averageRating;
+  this.setDataValue('averageRating', averageRating || 0);
+  return averageRating || 0;
 };
 
 Users.prototype.getEarnings = async function() {
