@@ -1,7 +1,8 @@
 import R from 'ramda';
 import _ from 'lodash';
 import passport from 'passport';
-import { Users, Admins } from '@models';
+import AppleAuth from 'apple-signin-auth';
+import { Users, Admins, NotificationSettings } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import {
@@ -20,6 +21,7 @@ import { SMSVerifcation } from '@templates/sms.template';
 import { sendMail } from '@tools/sendgrid';
 import LISTENER_EVENT from '@constants/listener.constant';
 import EMAIL_TEMPLATE from '@templates/email.template';
+import AUTH_CONFIG from '@configs/auth.config';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -27,13 +29,10 @@ const createFacebookUserAccount = provider =>
   new Promise(async (resolve, reject) => {
     const { id: facebookId, displayName } = provider;
     const email = _.get(provider, 'emails[0].value', null);
-    // const username = await generateUsername(displayName, null);
     const transaction = await sequelize.transaction();
-    // const { firstName, lastName } = parseFirstNameLastName(displayName);
     try {
       await Users.create(
         {
-          // username,
           facebookId,
           email,
           fullName: displayName,
@@ -55,11 +54,8 @@ const createGoogleUserAccount = async provider =>
     try {
       const { id: googleId, displayName } = provider;
       const email = _.get(provider, 'emails[0].value');
-      // const username = await generateUsername(displayName, null);
-      // const { firstName, lastName } = parseFirstNameLastName(displayName);
       await Users.create(
         {
-          // username,
           googleId,
           email,
           fullName: displayName,
@@ -69,6 +65,64 @@ const createGoogleUserAccount = async provider =>
       );
       await transaction.commit();
       return resolve();
+    } catch (e) {
+      await transaction.rollback();
+      return reject(e);
+    }
+  });
+
+const createAppleUserAccount = async provider =>
+  new Promise(async (resolve, reject) => {
+    const transaction = await sequelize.transaction();
+    try {
+      const { email, userAppleId: appleId, fullName } = provider;
+
+      const userByEmail = await Users.findOne({ where: { email }, transaction });
+
+      const user = await R.ifElse(
+        R.isNil,
+        async () => {
+          await Users.create(
+            {
+              appleId,
+              email,
+              fullName,
+              isVerified: true
+            },
+            { transaction }
+          );
+
+          await transaction.commit();
+
+          const data = await Users.findOne({
+            where: { appleId },
+            include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+          });
+
+          await sendMail({
+            receiverEmail: data.email,
+            template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+            templateData: {
+              username: data.username || data.fullName
+            }
+          });
+
+          return Promise.resolve(data);
+        },
+        async instance => {
+          await instance.update({ appleId, isVerified: true }, { transaction });
+          await transaction.commit();
+
+          const data = await Users.findOne({
+            where: { appleId },
+            include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+          });
+
+          return Promise.resolve(data);
+        }
+      )(userByEmail);
+
+      return resolve(user);
     } catch (e) {
       await transaction.rollback();
       return reject(e);
@@ -195,7 +249,8 @@ export const mobileRevoke = async (req, res, next) => {
             return next(new Error('User Logged out'));
           }
           const payload = await Users.findOne({
-            where: { id: loggedInUser.id }
+            where: { id: loggedInUser.id },
+            include: [{ model: NotificationSettings, as: 'notificationSetting' }]
           });
 
           if (!payload.active) {
@@ -219,7 +274,8 @@ export const mobileRevoke = async (req, res, next) => {
 
         if (user) {
           const payload = await Users.findOne({
-            where: { id: user.id }
+            where: { id: user.id },
+            include: [{ model: NotificationSettings, as: 'notificationSetting' }]
           });
           if (!payload.active) {
             throw new Error('This account is not active');
@@ -677,6 +733,52 @@ export const resendOTP = async (req, res, next) => {
 
     return res.status(200).json({
       message: 'success'
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const appleSignIn = async (req, res, next) => {
+  try {
+    const { email, fullName, identityToken } = req.body;
+    // const { userAppleId } = req.body;
+
+    const { sub: userAppleId } = await AppleAuth.verifyIdToken(identityToken, {
+      audience: AUTH_CONFIG.APPLE.CLIENT_ID,
+      ignoreExpiration: true
+    });
+
+    if (!userAppleId) {
+      throw new Error('Invalid identityToken given');
+    }
+
+    const existingUser = await Users.findOne({
+      where: { appleId: userAppleId },
+      include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+    });
+
+    const user = await R.ifElse(
+      R.isNil,
+      async () => {
+        const data = await createAppleUserAccount({ email, fullName, userAppleId });
+        return Promise.resolve(data);
+      },
+      R.identity
+    )(existingUser);
+
+    const refreshToken = generateRefreshToken();
+    await user.update({ refreshToken, lastLogin: new Date() });
+    await user.increment('loginFrequency');
+    await user.reload();
+
+    const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
+
+    return res.status(200).json({
+      message: 'success',
+      payload: user,
+      token,
+      refreshToken
     });
   } catch (e) {
     return next(e);

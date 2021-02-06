@@ -100,6 +100,10 @@ const SalesOrders = SequelizeConnector.define(
       field: 'has_seller_dispute',
       defaultValue: false
     },
+    shippedAt: {
+      type: Sequelize.DATE,
+      field: 'shipped_at'
+    },
     itemQuantity: {
       type: Sequelize.VIRTUAL,
       get() {

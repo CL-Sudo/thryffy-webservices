@@ -163,7 +163,11 @@ export const markAsShipped = async (req, res, next) => {
       where: { id: orderId }
     });
 
-    await order.update({ deliveryStatus: DELIVERY_STATUS.SHIPPED, deliveryTrackingNo });
+    await order.update({
+      deliveryStatus: DELIVERY_STATUS.SHIPPED,
+      deliveryTrackingNo,
+      shippedAt: new Date()
+    });
 
     const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
     await payload.getExtraFields();

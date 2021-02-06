@@ -58,4 +58,6 @@ router.get(
   Controllers.googleCallback
 );
 
+router.post('/apple', Controllers.appleSignIn);
+
 export default router;
