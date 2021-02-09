@@ -75,7 +75,7 @@ const createAppleUserAccount = async provider =>
   new Promise(async (resolve, reject) => {
     const transaction = await sequelize.transaction();
     try {
-      const { email, userAppleId: appleId, fullName } = provider;
+      const { email = null, userAppleId: appleId, fullName } = provider;
 
       const userByEmail = await Users.findOne({ where: { email }, transaction });
 
@@ -99,13 +99,15 @@ const createAppleUserAccount = async provider =>
             include: [{ model: NotificationSettings, as: 'notificationSetting' }]
           });
 
-          await sendMail({
-            receiverEmail: data.email,
-            template: EMAIL_TEMPLATE.WELCOME_EMAIL,
-            templateData: {
-              username: data.username || data.fullName
-            }
-          });
+          if (data.email) {
+            await sendMail({
+              receiverEmail: data.email,
+              template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+              templateData: {
+                username: data.username || data.fullName
+              }
+            });
+          }
 
           return Promise.resolve(data);
         },
@@ -124,6 +126,7 @@ const createAppleUserAccount = async provider =>
 
       return resolve(user);
     } catch (e) {
+      console.log('e', e);
       await transaction.rollback();
       return reject(e);
     }
@@ -742,12 +745,12 @@ export const resendOTP = async (req, res, next) => {
 export const appleSignIn = async (req, res, next) => {
   try {
     const { email, fullName, identityToken } = req.body;
-    // const { userAppleId } = req.body;
+    const { userAppleId } = req.body;
 
-    const { sub: userAppleId } = await AppleAuth.verifyIdToken(identityToken, {
-      audience: AUTH_CONFIG.APPLE.CLIENT_ID,
-      ignoreExpiration: true
-    });
+    // const { sub: userAppleId } = await AppleAuth.verifyIdToken(identityToken, {
+    //   audience: AUTH_CONFIG.APPLE.CLIENT_ID,
+    //   ignoreExpiration: true
+    // });
 
     if (!userAppleId) {
       throw new Error('Invalid identityToken given');

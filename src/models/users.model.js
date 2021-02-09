@@ -44,7 +44,6 @@ const Users = SequelizeConnector.define(
     email: {
       type: Sequelize.STRING,
       unique: true,
-      allowNull: false,
       validate: {
         isEmail: true
       }
