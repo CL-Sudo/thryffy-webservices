@@ -5,7 +5,7 @@ import { setAsDeliveredAfterShipping } from '@services/sale_orders.service';
 
 const runJobEveryMorning = () => {
   subscriptionRenewReminder();
-  setAsDeliveredAftethrShipping();
+  setAsDeliveredAfterShipping();
 };
 
 new CronJob('00 09 * * *', runJobEveryMorning, null, true, null, null, true);
