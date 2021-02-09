@@ -1,6 +1,6 @@
-# Pay N Earn (webservices)
+# Thryffy (webservices)
 ## About
-Repository for Pay n Earn (webservices) project
+Repository for Thryffy (webservices) project
 
 ### Prerequisites
 Software to install before running this project:
