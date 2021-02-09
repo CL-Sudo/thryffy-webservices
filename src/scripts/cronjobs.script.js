@@ -1,15 +1,11 @@
-// /* eslint-disable no-new */
-// import { CronJob } from 'cron';
-// import { remindCardOnDue } from '@services/cards.services';
-// import { remindReceivableOnDue } from '@services/receivable-reminders.service';
+/* eslint-disable no-new */
+import { CronJob } from 'cron';
+import { subscriptionRenewReminder } from '@services/subscription.service';
+import { setAsDeliveredAfterShipping } from '@services/sale_orders.service';
 
-// const runJobEveryMinute = () => {
-//   remindCardOnDue();
-// };
+const runJobEveryMorning = () => {
+  subscriptionRenewReminder();
+  setAsDeliveredAfterShipping();
+};
 
-// const runJobEveryDay = () => {
-//   remindReceivableOnDue();
-// };
-
-// new CronJob('* * * * *', runJobEveryMinute, null, true, null, null, true);
-// new CronJob('0 0 * * *', runJobEveryDay, null, true, null, null, true);
+new CronJob('00 09 * * *', runJobEveryMorning, null, true, null, null, true);

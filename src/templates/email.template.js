@@ -1,0 +1,9 @@
+export default {
+  DISPUTE_EMAIL: 'd-7ad74d14c0ba4b8dbc14c0648e35a9cc',
+
+  INVOICE_TEMPLATE: 'd-c42a5876dc6449dcb130e9afdf5941dc',
+
+  SUBSCRIPTION_INVOICE: 'd-eae4662b8605449ab8e1e2196df187f3',
+
+  WELCOME_EMAIL: 'd-3aa32b9d01f247bfb25f9b5f66419bd7'
+};

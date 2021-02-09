@@ -1,0 +1,86 @@
+[
+  {
+    "title": "Lingerie",
+    "shippingFeeId": 1
+  },
+  {
+    "title": "Underwears",
+    "shippingFeeId": 1
+  },
+  {
+    "title": "Socks",
+    "shippingFeeId": 1
+  },
+  {
+    "title": "Tops & T-Shirts",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Shirts",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Upper Active Wears",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Night Wears",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Tights & Pantyhoses",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Dresses",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Skirts",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Pants",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Leggings",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Shorts & Capri Pants",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Jumpsuits & Rompers",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Lower Active Wears",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Swim Suits",
+    "shippingFeeId": 1
+  },
+  {
+    "title": "Sweaters",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Winter Jackets",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Jackets",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Coats",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Blazers",
+    "shippingFeeId": 3
+  }
+]

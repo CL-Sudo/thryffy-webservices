@@ -1,12 +1,32 @@
 /* eslint-disable no-param-reassign */
 import _ from 'lodash';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
-import { getInclude, getAttributes, getOrder, getScopes, getLimitOffset, getParanoid, getClientTimezone } from '@utils/express.util';
+import {
+  getInclude,
+  getAttributes,
+  getOrder,
+  getScopes,
+  getLimitOffset,
+  getParanoid,
+  getClientTimezone
+} from '@utils/express.util';
 
 export const read = (
   Model,
   req,
-  { limit, offset, include, scopes, attributes, order, paranoid = true, distinct = true, extra = {}, where, customInclude } = {}
+  {
+    limit,
+    offset,
+    include,
+    scopes,
+    attributes,
+    order,
+    paranoid = true,
+    distinct = true,
+    extra = {},
+    where,
+    customInclude
+  } = {}
 ) =>
   new Promise(async (resolve, reject) => {
     try {
@@ -76,7 +96,13 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   read: async (req, res, next) => {
     try {
       const { extra, where, customInclude, defaultScope } = req.query;
-      const payload = await read(Model, req, { paranoid: paranoid ? getParanoid(req) : paranoid, extra, where, customInclude, defaultScope });
+      const payload = await read(Model, req, {
+        paranoid: paranoid ? getParanoid(req) : paranoid,
+        extra,
+        where,
+        customInclude,
+        defaultScope
+      });
       return res.status(200).json({ message: 'Success', payload });
     } catch (e) {
       return next(e);
@@ -95,13 +121,19 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
     try {
       const { id, query = {} } = req.params;
       const scopes = getScopes(Model)(req);
-      const col = await Model.scope(scopes).findOne({ where: { ...query, ..._.get(req, 'query.where', {}), id, deletedAt: null } });
+      const col = await Model.scope(scopes).findOne({
+        where: { ...query, ..._.get(req, 'query.where', {}), id, deletedAt: null }
+      });
       if (!col) return next(new Error('Record not found'));
 
-      if (_.isEmpty(_.omit(req.body, ['updatedBy']))) return res.status(202).json({ message: 'Request body is empty' });
+      if (_.isEmpty(_.omit(req.body, ['updatedBy'])))
+        return res.status(202).json({ message: 'Request body is empty' });
 
       await sequelize.transaction(async transaction => {
-        await Model.update({ ...req.body, updatedBy: req.authData.id }, { where: { id }, individualHooks: true, transaction, req });
+        await Model.update(
+          { ...req.body, updatedBy: req.authData.id },
+          { where: { id }, individualHooks: true, transaction, req }
+        );
       });
 
       const include = getInclude(Model)(req);
@@ -115,7 +147,10 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   destroy: async (req, res, next) => {
     try {
       const { id, query = {} } = req.params;
-      const result = await Model.findOne({ where: { ...query, ..._.get(req, 'query.where', {}), id } });
+      const result = await Model.findOne({
+        where: { ...query, ..._.get(req, 'query.where', {}), id }
+      });
+
       if (!result) return next(new Error('Data not exists'));
       await sequelize.transaction(async transaction => {
         await result.destroy({ transaction });
@@ -187,7 +222,12 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   },
   selfRead: async (req, res, next) => {
     try {
-      const payload = await read(Model, req, { paranoid: paranoid ? getParanoid(req) : paranoid }, true);
+      const payload = await read(
+        Model,
+        req,
+        { paranoid: paranoid ? getParanoid(req) : paranoid },
+        true
+      );
       return res.status(200).json({ message: 'Success', payload });
     } catch (e) {
       return next(e);
@@ -220,7 +260,10 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
       });
       if (!col) return next(new Error('Record not found'));
       await sequelize.transaction(async transaction => {
-        await Model.update({ ...req.body, updatedBy: req.authData.id }, { where: { id }, individualHooks: true, transaction });
+        await Model.update(
+          { ...req.body, updatedBy: req.authData.id },
+          { where: { id }, individualHooks: true, transaction }
+        );
       });
 
       const include = getInclude(Model)(req);
