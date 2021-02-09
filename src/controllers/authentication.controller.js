@@ -446,10 +446,12 @@ export const verifyOTP = async (req, res, next) => {
   req.check('otp').exists();
   try {
     await req.asyncValidationErrors();
-    const { otp, email } = req.body;
+    const { otp, email = null, id = null } = req.body;
 
     const getUser = async () => {
       try {
+        const userById = await Users.findOne({ where: { id } });
+
         const userByEmail = await Users.findOne({
           where: { email }
         });
@@ -458,10 +460,11 @@ export const verifyOTP = async (req, res, next) => {
           where: { username: email }
         });
 
-        if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
+        if (R.isNil(userByEmail) && R.isNil(userByUsername) && R.isNil(userById)) {
           throw new Error('User not found');
         }
-        return Promise.resolve(R.isNil(userByEmail) ? userByUsername : userByEmail);
+
+        return Promise.resolve(userById || userByEmail || userByUsername);
       } catch (e) {
         return Promise.reject(e);
       }
