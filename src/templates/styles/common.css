@@ -1,0 +1,56 @@
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+body {
+  font-family: Arial;
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.label::after {
+  content: ':';
+  position: relative;
+  top: -0.5px;
+  margin: 0 8px 0 2px;
+}
+
+.title {
+  font-weight: 700;
+}
+
+.sub-text {
+  font-size: 11px;
+}
+
+.bold {
+  font-weight: 700 !important;
+}
+
+.page-break {
+  page-break-after: always;
+}
+
+.total-row {
+  font-weight: bold;
+  border-top: 2px solid !important;
+  border-bottom: 2px solid !important;
+}
+
+.b-left {
+  border-left: 1px solid !important;
+}
+
+.b-right {
+  border-right: 1px solid !important;
+}
+
+.b-top-none {
+  border-top: none !important;
+}
