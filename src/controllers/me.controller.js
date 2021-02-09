@@ -242,7 +242,7 @@ export const updateProfile = async (req, res, next) => {
     if (err) return next(err);
     try {
       const { profilePicture } = files;
-      const { username } = fields;
+      const { username, email } = fields;
       const { id } = req.user;
 
       if (username) {
@@ -252,6 +252,15 @@ export const updateProfile = async (req, res, next) => {
             'Username requested is not available anymore, please try again with another username.'
           );
         }
+      }
+
+      if (!email || (email && email.length < 1)) {
+        throw new Error('Email cannot be empty');
+      }
+
+      const userByEmail = await Users.findOne({ where: { email } });
+      if (!R.isNil(userByEmail) && userByEmail.id !== id) {
+        throw new Error('This email is not available.');
       }
 
       const user = await Users.findOne({ where: { id } });
