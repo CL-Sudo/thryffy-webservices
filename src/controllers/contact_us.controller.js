@@ -5,6 +5,8 @@ import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.co
 import { uploadFileToS3 } from '@tools/s3';
 import { parsePathForDBStoring } from '@utils/s3.util';
 import S3 from '@configs/s3.config';
+import LISTENER from '@listeners/contact_us.listener';
+import EVENT from '@constants/listener.constant';
 
 export const sendEnquiry = async (req, res, next) => {
   const { id } = req.user;
@@ -45,6 +47,8 @@ export const sendEnquiry = async (req, res, next) => {
           }
         ]
       });
+
+      LISTENER.emit(EVENT.CONTACT_US.ENQUIY_SENT, payload);
 
       return res.status(200).json({ message: 'success', payload });
     } catch (e) {

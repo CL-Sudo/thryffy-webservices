@@ -22,7 +22,7 @@ export const constactUsValidator = (fields, files) => {
     }
 
     fields.subject = removeRepeatedWhiteSpace(subject.trim());
-    fields.type = subject.trim();
+    fields.type = type.trim();
 
     if (fields.description) {
       fields.description = removeRepeatedWhiteSpace(description.trim());
