@@ -5,6 +5,8 @@ export default {
 
   SENDGRID_DISPUTE_SENDER: process.env.SENDGRID_DISPUTE_SENDER,
 
+  SENDGRID_SUPPORT_SENDER: process.env.SENDGRID_SUPPORT_SENDER,
+
   EMAIL_SENDER_NAME: process.env.EMAIL_SENDER_NAME,
 
   ADMIN_EMAIL: process.env.ADMIN_EMAIL,
@@ -14,6 +16,8 @@ export default {
 
     BILLING: 'BILLING',
 
-    ENQUIRY: 'ENQUIRY'
+    ENQUIRY: 'ENQUIRY',
+
+    SUPPORT: 'SUPPORT'
   }
 };

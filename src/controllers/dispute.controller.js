@@ -65,7 +65,7 @@ export const create = async (req, res, next) => {
         ]
       });
 
-      disputeListener.emit(LISTENER.DISPUTE.CREATED, order.dataValues);
+      disputeListener.emit(LISTENER.DISPUTE.CREATED, order.dataValues, payload);
 
       return res.status(200).json({
         message: 'success',

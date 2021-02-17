@@ -2,6 +2,7 @@ import Axios from 'axios';
 import CONFIG from '@configs/sendgrid.config';
 
 export const sendMail = ({
+  senderEmail,
   receiverEmail,
   receiverFirstName,
   receiverLastName,
@@ -31,7 +32,8 @@ export const sendMail = ({
             }
           ],
           from: {
-            email: type ? CONFIG[`SENDGRID_${type}_SENDER`] : process.env.NO_REPLY_EMAIL,
+            email:
+              senderEmail || type ? CONFIG[`SENDGRID_${type}_SENDER`] : process.env.NO_REPLY_EMAIL,
             name: process.env.EMAIL_SENDER_NAME
           },
           template_id: template,

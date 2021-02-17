@@ -3,6 +3,7 @@ import moment from 'moment';
 
 import { EventEmitter } from 'events';
 import {
+  SalesOrders,
   Notifications,
   Users,
   Disputes,
@@ -72,6 +73,12 @@ const pushNotification = async order => {
 
 const sendEmailToAdmin = async response => {
   try {
+    const order = await SalesOrders.findOne({
+      id: response.dispute.orderId
+    });
+
+    const seller = await Users.findeOne({ where: { id: order.sellerId } });
+
     const disputeTitle = response.dispute.title;
     const disputeDescription = response.dispute.description;
     const disputeDateTime = moment(response.dispute.createdAt).format('DD-MM-YY HH:mm');
@@ -86,10 +93,12 @@ const sendEmailToAdmin = async response => {
     );
 
     await sendMail({
-      template: EMAIL_TEMPLATE.DISPUTE_EMAIL,
-      type: SENDGRID_CONFIG.TYPE.DISPUTE,
-      receiverEmail: SENDGRID_CONFIG.ADMIN_EMAIL,
+      template: EMAIL_TEMPLATE.DISPUTE_RESPONDED_EMAIL,
+      // type: SENDGRID_CONFIG.TYPE.SUPPORT,
+      receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
       templateData: {
+        sellerName: seller.fullName || seller.username || seller.email,
+        transactionId: order.transactionId,
         disputeTitle,
         disputeDescription,
         disputeDateTime,
@@ -104,5 +113,35 @@ const sendEmailToAdmin = async response => {
   }
 };
 
+const sendEmailWhenBuyerDispute = async (order, dispute) => {
+  try {
+    const buyer = await Users.findOne({ where: { id: order.userId } });
+
+    const disputeTitle = dispute.title;
+    const disputeDescription = dispute.description;
+    const disputeDateTime = moment(dispute.createdAt).format('DD-MM-YY HH:mm');
+    const disputeImages = R.map(images => ({ path: images.path }))(
+      await DisputesImages.findAll({ where: { disputeId: dispute.id } })
+    );
+
+    await sendMail({
+      template: EMAIL_TEMPLATE.DISPUTE_CREATED_EMAIL,
+      receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
+      templateData: {
+        buyerName: buyer.fullName || buyer.username || buyer.email,
+        transactionId: order.transactionId,
+        disputeTitle,
+        disputeDescription,
+        disputeDateTime,
+        disputeImages
+      }
+    });
+  } catch (e) {
+    console.log('e', e);
+  }
+};
+
 disputeListener.on(LISTENER.DISPUTE.CREATED, pushNotification);
+disputeListener.on(LISTENER.DISPUTE.CREATED, sendEmailWhenBuyerDispute);
+
 disputeListener.on(LISTENER.DISPUTE.RESPONSE_CREATED, sendEmailToAdmin);

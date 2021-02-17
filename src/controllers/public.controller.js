@@ -63,7 +63,7 @@ const decideExpiryDate = async (packageId, userId) => {
 export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
-    const { x_signature: xSignature, paid } = req.body;
+    const { x_signature: xSignature, paid, transaction_id: transactionId } = req.body;
     const now = new Date();
     const billplz = new Billplz();
 
@@ -75,7 +75,8 @@ export const billplzCallback = async (req, res, next) => {
         await order.update(
           {
             paymentStatus: paid === 'true' ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
-            deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null
+            deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null,
+            transactionId: paid === 'true' ? transactionId : null
           },
           { transaction }
         );

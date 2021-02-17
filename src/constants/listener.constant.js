@@ -18,5 +18,9 @@ export default {
 
   AUTHENTICATION: {
     SIGNUP: 'USER SIGNUP'
+  },
+
+  CONTACT_US: {
+    ENQUIY_SENT: 'ENQUIRY_SENT'
   }
 };
