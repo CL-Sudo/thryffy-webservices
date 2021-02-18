@@ -62,11 +62,11 @@ const Products = SequelizeConnector.define(
       field: 'is_purchased',
       defaultValue: false
     },
-    // isVerify: {
-    //   field: 'is_verify',
-    //   type: Sequelize.BOOLEAN,
-    //   defaultValue: false
-    // },
+    isVerify: {
+      field: 'is_verify',
+      type: Sequelize.BOOLEAN,
+      defaultValue: false
+    },
     viewCount: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
