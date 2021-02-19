@@ -7,6 +7,8 @@ export default {
 
   SENDGRID_SUPPORT_SENDER: process.env.SENDGRID_SUPPORT_SENDER,
 
+  SENDGRID_SHIPPING_SENDER: process.env.SENDGRID_SHIPPING_SENDER,
+
   EMAIL_SENDER_NAME: process.env.EMAIL_SENDER_NAME,
 
   ADMIN_EMAIL: process.env.ADMIN_EMAIL,
@@ -18,6 +20,8 @@ export default {
 
     ENQUIRY: 'ENQUIRY',
 
-    SUPPORT: 'SUPPORT'
+    SUPPORT: 'SUPPORT',
+
+    SHIPPING: 'SHIPPING'
   }
 };

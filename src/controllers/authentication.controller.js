@@ -31,7 +31,7 @@ const createFacebookUserAccount = provider =>
     const email = _.get(provider, 'emails[0].value', null);
     const transaction = await sequelize.transaction();
     try {
-      await Users.create(
+      const user = await Users.create(
         {
           facebookId,
           email,
@@ -40,6 +40,15 @@ const createFacebookUserAccount = provider =>
         },
         { transaction }
       );
+
+      await sendMail({
+        receiverEmail: user.email,
+        template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+        templateData: {
+          username: user.fullName || user.username
+        }
+      });
+
       await transaction.commit();
       return resolve();
     } catch (e) {
@@ -54,7 +63,7 @@ const createGoogleUserAccount = async provider =>
     try {
       const { id: googleId, displayName } = provider;
       const email = _.get(provider, 'emails[0].value');
-      await Users.create(
+      const user = await Users.create(
         {
           googleId,
           email,
@@ -63,6 +72,13 @@ const createGoogleUserAccount = async provider =>
         },
         { transaction }
       );
+      await sendMail({
+        receiverEmail: user.email,
+        template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+        templateData: {
+          username: user.fullName || user.username
+        }
+      });
       await transaction.commit();
       return resolve();
     } catch (e) {
@@ -104,7 +120,7 @@ const createAppleUserAccount = async provider =>
               receiverEmail: data.email,
               template: EMAIL_TEMPLATE.WELCOME_EMAIL,
               templateData: {
-                username: data.username || data.fullName
+                username: data.fullName || data.username
               }
             });
           }
@@ -126,7 +142,6 @@ const createAppleUserAccount = async provider =>
 
       return resolve(user);
     } catch (e) {
-      console.log('e', e);
       await transaction.rollback();
       return reject(e);
     }
@@ -342,16 +357,6 @@ export const facebookCallback = async (req, res) => {
 
     const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
 
-    // res.cookie(Configs.authTokenName, token, { httpOnly: false });
-
-    await sendMail({
-      receiverEmail: user.email,
-      template: EMAIL_TEMPLATE.WELCOME_EMAIL,
-      templateData: {
-        username: user.username
-      }
-    });
-
     return res.status(200).send(`
       <script>
         window.ReactNativeWebView.postMessage(
@@ -408,14 +413,6 @@ export const googleCallback = async (req, res) => {
     await user.reload();
 
     const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
-
-    await sendMail({
-      receiverEmail: user.email,
-      template: EMAIL_TEMPLATE.WELCOME_EMAIL,
-      templateData: {
-        username: user.username
-      }
-    });
 
     return res.status(200).send(`
         <script>
@@ -636,7 +633,7 @@ export const userRegistration = async (req, res, next) => {
           receiverEmail: user.email,
           template: EMAIL_TEMPLATE.WELCOME_EMAIL,
           templateData: {
-            username: user.username
+            username: user.fullName || user.username
           }
         });
         authListener.emit(LISTENER_EVENT.AUTHENTICATION.SIGNUP, user);
@@ -676,7 +673,6 @@ export const userRegistration = async (req, res, next) => {
       token: `Bearer ${payload.jwt}`
     });
   } catch (e) {
-    console.log('e', e.response.data.errors);
     return next(e);
   }
 };
@@ -748,12 +744,12 @@ export const resendOTP = async (req, res, next) => {
 export const appleSignIn = async (req, res, next) => {
   try {
     const { email, fullName, identityToken } = req.body;
-    const { userAppleId } = req.body;
+    // const { userAppleId } = req.body;
 
-    // const { sub: userAppleId } = await AppleAuth.verifyIdToken(identityToken, {
-    //   audience: AUTH_CONFIG.APPLE.CLIENT_ID,
-    //   ignoreExpiration: true
-    // });
+    const { sub: userAppleId } = await AppleAuth.verifyIdToken(identityToken, {
+      audience: AUTH_CONFIG.APPLE.CLIENT_ID,
+      ignoreExpiration: true
+    });
 
     if (!userAppleId) {
       throw new Error('Invalid identityToken given');

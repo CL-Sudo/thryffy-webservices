@@ -1,10 +1,10 @@
 import { EventEmitter } from 'events';
 import { sendMail } from '@tools/sendgrid';
+import ENQUIRY_TYPE from '@constants/enquiry.constant';
 import Moment from 'moment';
 import EMAIL_TEMPLATE from '@templates/email.template';
 import CONFIG from '@configs/sendgrid.config';
 import EVENT from '@constants/listener.constant';
-import R from 'ramda';
 
 const contactUsListener = new EventEmitter();
 
@@ -12,8 +12,24 @@ const sendEmail = async data => {
   try {
     const { userId, type, subject, description = '-' } = data;
 
+    const decideReceiverEmail = enquiryType => {
+      switch (enquiryType) {
+        case ENQUIRY_TYPE.BILLING:
+          return CONFIG.SENDGRID_BILLING_SENDER;
+
+        case ENQUIRY_TYPE.ENQUIRIES:
+          return CONFIG.SENDGRID_ENQUIRY_SENDER;
+
+        case ENQUIRY_TYPE.SUPPORT:
+          return CONFIG.SENDGRID_SUPPORT_SENDER;
+
+        default:
+          throw new Error('Invalid type given');
+      }
+    };
+
     await sendMail({
-      receiverEmail: CONFIG.SENDGRID_SUPPORT_SENDER,
+      receiverEmail: decideReceiverEmail(type),
       template: EMAIL_TEMPLATE.CONTACT_US,
       templateData: {
         userId,
