@@ -2,7 +2,7 @@ import R from 'ramda';
 import { isEmpty } from '@validators';
 import { isJSON } from '@utils';
 
-export const updateProductValidator = addProductValidator => (fields, files) =>
+export const updateProductValidator = addProductValidator => (req, fields, files) =>
   new Promise(async (resolve, reject) => {
     try {
       const { thumbnailIndex } = fields;
@@ -19,7 +19,7 @@ export const updateProductValidator = addProductValidator => (fields, files) =>
       )
         throw new Error('Invalid thumbnailIndex given.');
 
-      await addProductValidator(fields);
+      await addProductValidator(req, fields);
 
       if (isEmpty(imagesToPersist) && R.isEmpty(files)) {
         throw new Error('Must contain at least one photo');

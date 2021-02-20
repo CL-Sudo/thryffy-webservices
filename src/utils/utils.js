@@ -7,6 +7,24 @@ import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
+/**
+ *
+ * @param {Array} existingList
+ * @param {Array} newList
+ * @returns {Object} {intersectedItems, additionalItems, removedItems}
+ */
+export const listDiff = (existingList, newList) => {
+  try {
+    const intersectedItems = R.intersection(existingList, newList);
+    const additionalItems = R.without(existingList, newList);
+    const removedItems = R.difference(existingList, newList);
+
+    return { intersectedItems, additionalItems, removedItems };
+  } catch (e) {
+    throw new Error(e);
+  }
+};
+
 export const asyncSequentialMap = async (instances, callback) => {
   try {
     const array = [];

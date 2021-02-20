@@ -1,12 +1,11 @@
 import { Products, FavouriteProducts } from '@models';
-import { logView } from '@services/view_history.service';
 import R from 'ramda';
 import _ from 'lodash';
 import { paginate } from '@utils';
 
 export const getOne = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const id = R.pathOr('N/A', ['user', 'id'])(req);
     const { productId } = req.params;
     const product = await Products.scope({ method: ['productPage', productId] }).findOne();
 
@@ -16,8 +15,6 @@ export const getOne = async (req, res, next) => {
     }
 
     await product.getExtraFields(id);
-
-    await logView(productId, id);
 
     return res.status(200).json({
       message: 'success',
@@ -65,11 +62,13 @@ export const addFavouriteProduct = async (req, res, next) => {
 
 export const youMayAlsoLike = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const id = R.pathOr('N/A', ['user', 'id'])(req);
     const { productId } = req.params;
     const { limit, offset } = req.query;
 
     const product = await Products.findOne({ where: { id: productId } });
+
+    if (!product) throw new Error('Invalid productId given.');
 
     const recommedations = await Products.scope('default').findAll({
       where: {

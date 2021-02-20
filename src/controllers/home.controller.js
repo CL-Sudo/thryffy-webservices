@@ -1,4 +1,5 @@
 import R from 'ramda';
+import { shuffle } from 'lodash';
 import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
 import { paginate } from '@utils';
 
@@ -20,7 +21,7 @@ export const getBannersList = async (req, res, next) => {
 export const getFeatureItemsList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const { id } = req.user;
+    const id = R.pathOr('N/A', ['user', 'id'])(req);
 
     const payload = await FeatureItems.findAll({
       include: [
@@ -113,6 +114,25 @@ export const getCuratedList = async (req, res, next) => {
       payload: {
         count: products.length,
         rows
+      }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const publicCuratedList = async (req, res, next) => {
+  try {
+    const { limit, offset } = req.query;
+    const products = await Products.findAll({
+      limit: 1000,
+      order: [['createdAt', 'DESC']]
+    });
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: products.length,
+        rows: paginate(limit)(offset)(shuffle(products))
       }
     });
   } catch (e) {
