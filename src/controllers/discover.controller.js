@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { Conditions, Categories, Products, Brands, Sizes, Users, Subscriptions } from '@models';
 import { requestValidator } from '@validators';
 import { Op } from 'sequelize';
@@ -8,7 +7,6 @@ import { getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { paginate } from '@utils/utils';
-import { title } from 'errorhandler';
 
 export const home = async (req, res, next) => {
   try {
@@ -49,7 +47,7 @@ export const discoverList = async (req, res, next) => {
       offset = 0
     } = req.query;
 
-    const { id } = req.user;
+    const id = R.pathOr('N/A', ['user', 'id'])(req);
 
     const initWhere = [
       {},

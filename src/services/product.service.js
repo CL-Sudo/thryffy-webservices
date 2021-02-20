@@ -131,7 +131,7 @@ export const updateProductImages = (productId, imagesToPersist) =>
   new Promise(async (resolve, reject) => {
     try {
       const ids = R.map(R.prop('id'))(
-        await Galleries.findAll({ raw: true, attributes: ['id'], where: { productId } })
+        await Galleries.findAll({ attributes: ['id'], where: { productId } })
       );
 
       const idsToPersist = R.map(R.prop('id'))(imagesToPersist);

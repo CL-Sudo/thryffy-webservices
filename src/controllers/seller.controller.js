@@ -8,7 +8,7 @@ import {
   updateProductImages,
   getOneProductShippingFee
 } from '@services';
-import { isJSON, paginate } from '@utils';
+import { isJSON, paginate, listDiff } from '@utils';
 import {
   Products,
   ProductColors,
@@ -16,7 +16,8 @@ import {
   Sizes,
   Users,
   Subscriptions,
-  Reviews
+  Reviews,
+  Galleries
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -190,10 +191,10 @@ export const updateProduct = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
-      await updateProductValidator(addProductValidator)(fields, files);
+      await updateProductValidator(addProductValidator)(req, fields, files);
 
       const { id, type } = req.user;
-      const { id: productId } = req.params;
+      const { productId } = req.params;
       const isAdmin = type === USER_TYPE.ADMIN;
 
       const existingProduct = await Products.findOne({ where: { id: productId } });
@@ -220,50 +221,97 @@ export const updateProduct = async (req, res, next) => {
 
       const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
 
+      const existingColors = R.map(R.prop('color'))(
+        await ProductColors.findAll({ where: { productId } })
+      );
+
+      const { additionalItems: colorsToBeAdded, removedItems: colorsToBeRemoved } = listDiff(
+        existingColors,
+        colors
+      );
+
       const brandId = await getProductBrandId(brand);
 
-      const updateProductAndImages = async () => {
-        try {
-          const product = await Products.findOne({ where: { id: productId } });
-          await product.update(
-            {
-              title,
-              description,
-              brandId,
-              categoryId,
-              sizeId,
-              conditionId,
-              originalPrice,
-              markupPrice: extraCharges.markupPrice,
-              thumbnailIndex,
-              updatedBy: isAdmin ? id : product.userId
-            },
-            { where: { id: productId } }
-          );
-          await updateProductImages(productId, imagesToPersist);
-          await saveProductImages(product.id, files);
-          await setThumbnail(productId, thumbnailIndex);
-          return Promise.resolve();
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      };
-
-      const updateColors = async () => {
-        try {
-          await ProductColors.destroy({ where: { productId }, force: true });
-          const arr = colors.map(color => ({
+      await Sequelize.transaction(async transaction => {
+        if (colorsToBeAdded.length > 0) {
+          const data = colorsToBeAdded.map(color => ({
             productId,
             color
           }));
-          await ProductColors.bulkCreate(arr);
-          return Promise.resolve();
-        } catch (e) {
-          return Promise.reject(e);
+          await ProductColors.bulkCreate(data, transaction);
         }
-      };
 
-      await R.pipeP(updateProductAndImages, updateColors)();
+        if (colorsToBeRemoved.length > 0) {
+          await ProductColors.destroy({
+            where: { productId, color: colorsToBeRemoved },
+            force: true,
+            transaction
+          });
+        }
+
+        const product = await Products.findOne({ where: { id: productId } });
+        await product.update(
+          {
+            title,
+            description,
+            brandId,
+            categoryId,
+            sizeId,
+            conditionId,
+            originalPrice,
+            markupPrice: extraCharges.markupPrice,
+            updatedBy: isAdmin ? id : product.userId
+          },
+          { where: { id: productId } }
+        );
+
+        await updateProductImages(productId, imagesToPersist);
+        await saveProductImages(product.id, files);
+        await setThumbnail(productId, thumbnailIndex);
+      });
+
+      // const updateProductAndImages = async () => {
+      //   try {
+      //     const product = await Products.findOne({ where: { id: productId } });
+      //     await product.update(
+      //       {
+      //         title,
+      //         description,
+      //         brandId,
+      //         categoryId,
+      //         sizeId,
+      //         conditionId,
+      //         originalPrice,
+      //         markupPrice: extraCharges.markupPrice,
+      //         thumbnailIndex,
+      //         updatedBy: isAdmin ? id : product.userId
+      //       },
+      //       { where: { id: productId } }
+      //     );
+      //     await updateProductImages(productId, imagesToPersist);
+      //     await saveProductImages(product.id, files);
+      //     await setThumbnail(productId, thumbnailIndex);
+      //     return Promise.resolve();
+      //   } catch (e) {
+      //     return Promise.reject(e);
+      //   }
+      // };
+
+      // const updateColors = async () => {
+      //   try {
+      //     await ProductColors.destroy({ where: { productId }, force: true });
+      //     const arr = colors.map(color => ({
+      //       productId,
+      //       color
+      //     }));
+      //     await ProductColors.bulkCreate(arr);
+      //     return Promise.resolve();
+      //   } catch (e) {
+      //     return Promise.reject(e);
+      //   }
+      // };
+
+      // await R.pipeP(updateProductAndImages, updateColors)();
 
       const payload = await Products.scope({ method: ['productPage', productId] }).findOne();
       return res.status(200).json({ message: 'success', payload });
