@@ -32,6 +32,7 @@ export const get = async (req, res, next) => {
     const notifications = await Notifications.findAndCountAll({
       where: { notifierId: id },
       include: [{ model: Users, as: 'actor', attributes: { exclude: [...defaultExcludeFields] } }],
+      order: [['createdAt', 'DESC']],
       limit: Number(limit) || null,
       offset: Number(offset) || null
     });
