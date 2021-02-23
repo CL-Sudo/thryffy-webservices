@@ -134,7 +134,13 @@ const Products = SequelizeConnector.define(
               model: Categories,
               as: 'category',
               attributes: { exclude: defaultExcludeFields },
-              include: [{ model: Categories, as: 'parentCategory' }]
+              include: [
+                {
+                  model: Categories,
+                  as: 'parentCategory',
+                  include: [{ model: Categories, as: 'parentCategory' }]
+                }
+              ]
               // through: { attributes: [] }
               // include: [{ model: Categories, as: 'parentCategory' }]
             },
