@@ -16,8 +16,7 @@ import {
   Sizes,
   Users,
   Subscriptions,
-  Reviews,
-  Galleries
+  Reviews
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -28,6 +27,24 @@ import { requestValidator } from '@validators/index';
 import { DELIVERY_STATUS, USER_TYPE } from '@constants';
 import { postTrackingNumber } from '@services/trackingmore.service';
 import { sellerListener } from '@listeners/seller.listener';
+
+const parseImagesToPersist = fields => {
+  const parseFromJSON = arr => R.map(R.ifElse(isJSON, param => JSON.parse(param), R.identity))(arr);
+
+  const result = R.pipe(
+    R.without([1]),
+    parseFromJSON
+  )(
+    Object.keys(fields).map(key => {
+      if (key.substr(0, 5) === 'image') {
+        return fields[key];
+      }
+      return 1;
+    })
+  );
+
+  return result;
+};
 
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
@@ -193,6 +210,11 @@ export const updateProduct = async (req, res, next) => {
     try {
       await updateProductValidator(addProductValidator)(req, fields, files);
 
+      // const result = parseImagesToPersist(fields);
+      // console.log('result', result);
+
+      // throw new Error('');
+
       const { id, type } = req.user;
       const { productId } = req.params;
       const isAdmin = type === USER_TYPE.ADMIN;
@@ -200,11 +222,11 @@ export const updateProduct = async (req, res, next) => {
       const existingProduct = await Products.findOne({ where: { id: productId } });
       if (!existingProduct) throw new Error('Invalid productId given.');
 
-      const imagesToPersist = R.ifElse(
-        isJSON,
-        param => JSON.parse(param),
-        R.identity
-      )(fields.imagesToPersist);
+      // const imagesToPersist = R.ifElse(
+      //   isJSON,
+      //   param => JSON.parse(param),
+      //   R.identity
+      // )(fields.imagesToPersist);
 
       const {
         title,
@@ -265,7 +287,7 @@ export const updateProduct = async (req, res, next) => {
           { where: { id: productId } }
         );
 
-        await updateProductImages(productId, imagesToPersist);
+        await updateProductImages(productId, parseImagesToPersist(fields));
         await saveProductImages(product.id, files);
         await setThumbnail(productId, thumbnailIndex);
       });
