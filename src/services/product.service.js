@@ -104,7 +104,11 @@ export const saveProductImages = async (productId, images = {}) =>
         }
       };
 
-      await Promise.all(R.map(await upload)(parseImageWithIndex(images)));
+      await Promise.all(
+        R.map(async instance => {
+          await upload(instance);
+        })(parseImageWithIndex(images))
+      );
       return resolve();
     } catch (e) {
       return reject(e);
@@ -136,7 +140,7 @@ export const updateProductImages = (productId, imagesToPersist) =>
 
       const idsToPersist = R.map(R.prop('id'))(imagesToPersist);
 
-      if (!imagesToPersist || imagesToPersist.length === 0) {
+      if (imagesToPersist.length === 0) {
         await deleteProductImages(ids);
         return resolve();
       }
