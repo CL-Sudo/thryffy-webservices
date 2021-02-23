@@ -36,13 +36,16 @@ const parseImagesToPersist = fields => {
     parseFromJSON
   )(
     Object.keys(fields).map(key => {
-      if (key.substr(0, 5) === 'image') {
-        return fields[key];
+      if (isJSON(fields[key]) && key.substr(0, 5) === 'image') {
+        const indexString = `, "index": ${key.substr(6, 1)}}`;
+        return fields[key].replace('}', indexString);
+      }
+      if (!isJSON(fields[key]) && key.substr(0, 5) === 'image') {
+        return { id: fields[key].id, index: Number(key.substr(6, 1)) };
       }
       return 1;
     })
   );
-
   return result;
 };
 
@@ -209,11 +212,6 @@ export const updateProduct = async (req, res, next) => {
     if (err) return next(err);
     try {
       await updateProductValidator(addProductValidator)(req, fields, files);
-
-      // const result = parseImagesToPersist(fields);
-      // console.log('result', result);
-
-      // throw new Error('');
 
       const { id, type } = req.user;
       const { productId } = req.params;
