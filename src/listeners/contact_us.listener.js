@@ -5,12 +5,15 @@ import Moment from 'moment';
 import EMAIL_TEMPLATE from '@templates/email.template';
 import CONFIG from '@configs/sendgrid.config';
 import EVENT from '@constants/listener.constant';
+import { Users } from '@models';
 
 const contactUsListener = new EventEmitter();
 
 const sendEmail = async data => {
   try {
     const { userId, type, subject, description = '-' } = data;
+
+    const user = await Users.findOne({ where: { id: userId } });
 
     const decideReceiverEmail = enquiryType => {
       switch (enquiryType) {
@@ -30,7 +33,7 @@ const sendEmail = async data => {
 
     await sendMail({
       receiverEmail: decideReceiverEmail(type),
-      senderEmail: CONFIG.SENDGRID_ROOT_SENDER,
+      senderEmail: user.email,
       template: EMAIL_TEMPLATE.CONTACT_US,
       templateData: {
         userId,

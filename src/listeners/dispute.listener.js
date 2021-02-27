@@ -95,6 +95,7 @@ const sendEmailToAdmin = async response => {
     await sendMail({
       template: EMAIL_TEMPLATE.DISPUTE_RESPONDED_EMAIL,
       // type: SENDGRID_CONFIG.TYPE.SUPPORT,
+      senderEmail: seller.email,
       receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
       templateData: {
         sellerName: seller.fullName || seller.username || seller.email,
@@ -127,6 +128,7 @@ const sendEmailWhenBuyerDispute = async (order, dispute) => {
     await sendMail({
       template: EMAIL_TEMPLATE.DISPUTE_CREATED_EMAIL,
       receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
+      senderEmail: buyer.email,
       templateData: {
         buyerName: buyer.fullName || buyer.username || buyer.email,
         transactionId: order.transactionId,
