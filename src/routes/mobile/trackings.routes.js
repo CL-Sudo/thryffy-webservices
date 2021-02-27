@@ -3,5 +3,5 @@ import { getTrackingInfoByOrderId } from '@controllers/tracking.controller';
 
 const router = new Router();
 
-router.route('/:orderId/result', getTrackingInfoByOrderId);
+router.get('/order/:orderId', getTrackingInfoByOrderId);
 export default router;

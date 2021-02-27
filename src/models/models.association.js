@@ -104,6 +104,10 @@ Models.SalesOrders.belongsTo(Models.ShippingFees, {
 });
 Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'sellerId', as: 'seller' });
 Models.SalesOrders.hasOne(Models.Disputes, { foreignKey: 'orderId', as: 'dispute' });
+Models.SalesOrders.hasOne(Models.DeliveryStatuses, {
+  foreignKey: 'orderId',
+  as: 'trackingmore'
+});
 
 /**
  * OrderItems
@@ -308,3 +312,8 @@ Models.NotificationTopicUsers.belongsTo(Models.NotificationTopics, {
 
 Models.Comments.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 Models.Comments.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
+
+/**
+ * DeliveryStatuses
+ */
+Models.DeliveryStatuses.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'order' });

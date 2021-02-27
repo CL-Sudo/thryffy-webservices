@@ -30,6 +30,7 @@ const sendEmail = async data => {
 
     await sendMail({
       receiverEmail: decideReceiverEmail(type),
+      senderEmail: CONFIG.SENDGRID_ROOT_SENDER,
       template: EMAIL_TEMPLATE.CONTACT_US,
       templateData: {
         userId,

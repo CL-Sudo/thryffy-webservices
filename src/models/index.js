@@ -39,3 +39,4 @@ export * from './notification_topics.model';
 export * from './notification_topic_users.model';
 export * from './comments.model';
 export * from './followings.model';
+export * from './delivery_statuses.model';

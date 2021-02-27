@@ -3,7 +3,8 @@ import {
   billplzCallback,
   subscribeCallback,
   subscriptionRedirect,
-  billplzRedirect
+  billplzRedirect,
+  trackingMoreWebHook
 } from '@controllers/public.controller';
 
 import {
@@ -36,5 +37,7 @@ router.get('/home/curated', publicCuratedList);
 router.get('/products/:productId', getOne);
 
 router.get('/products/:productId/recommendations', youMayAlsoLike);
+
+router.post('/trackingmore/webhook', trackingMoreWebHook);
 
 export default router;
