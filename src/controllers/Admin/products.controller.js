@@ -1,7 +1,6 @@
 import { Products, Brands, Sizes, Categories, ProductColors, Galleries, Users } from '@models';
 import { getLimitOffset, getScopes } from '@utils/express.util';
 import { Op } from 'sequelize';
-import _ from 'lodash';
 
 import PublicationListener from '@listeners/publication.listener';
 

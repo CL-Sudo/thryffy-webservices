@@ -25,3 +25,7 @@ export const PUBLICATION = {
   UNPUBLISHED:
     'Oh no! Your item got taken down. Check our listing terms & conditions to see what went wrong.'
 };
+
+export const DELIVERY = {
+  COMPLETED: orderRef => `Your order ${orderRef} has just delivered successfully!`
+};

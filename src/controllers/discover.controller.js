@@ -187,14 +187,22 @@ export const discoverList = async (req, res, next) => {
       filterByPrice
     )(products);
 
+    const sorter = R.cond([
+      [R.always(order === 'RELEVANCE'), R.identity],
+      [R.always(order === 'ASC'), R.sortBy(R.prop('displayPrice'))],
+      [
+        R.always(order === 'DESC'),
+        instance => R.reverse(R.sortBy(R.prop('displayPrice'))(instance))
+      ]
+    ]);
+
     await Promise.all(
       R.map(async product => {
         await product.getExtraFields(id);
       })(filteredProducts)
     );
 
-    const sorted =
-      order === 'RELEVANCE' ? filteredProducts : R.sortBy(R.prop('displayPrice'))(filteredProducts);
+    const sorted = sorter(filteredProducts);
 
     return res.status(200).json({
       message: 'success',

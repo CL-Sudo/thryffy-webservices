@@ -1,18 +1,34 @@
 import moment from 'moment';
 import R from 'ramda';
 
-import { Packages, SalesOrders, Subscriptions, Users, OrderItems, Products } from '@models';
+import {
+  Packages,
+  SalesOrders,
+  Subscriptions,
+  Users,
+  OrderItems,
+  Products,
+  Notifications,
+  DeliveryStatuses
+} from '@models';
 
 import Billplz from '@services/billplz.service';
+import { vertifySignature } from '@services/trackingmore.service';
 
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 import LISTENER from '@constants/listener.constant';
+import NOTIFICATION_TYPE from '@constants/notification.constant';
+import NOTIFIABLE_TYPE from '@constants/model.constant';
 
 import { subscriptionListner } from '@listeners/subscription.listener';
 
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 
 import { cartListener } from '@listeners/cart.listener';
+
+import { sendCloudMessage } from '@services/notification.service';
+
+import { DELIVERY } from '@templates/notification.template';
 
 /**
  *
@@ -232,6 +248,58 @@ export const subscribeCallback = async (req, res, next) => {
       await subscription.user.update({ hasValidSubscription: true });
 
       subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
+    }
+
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const trackingMoreWebHook = async (req, res, next) => {
+  try {
+    const { tracking_number: deliveryTrackingNo, status } = req.body.data;
+    const { timeStr, signature } = req.body.verifyInfo;
+
+    const isSignatureValid = await vertifySignature(timeStr, signature);
+
+    if (R.toUpper(status) === 'DELIVERED' && isSignatureValid) {
+      await sequelize.transaction(async transaction => {
+        const order = await SalesOrders.findOne({
+          where: { deliveryTrackingNo },
+          include: [
+            { model: Users, as: 'buyer' },
+            { model: OrderItems, as: 'orderItems', include: [{ model: Products, as: 'product' }] },
+            { model: DeliveryStatuses, as: 'trackingmore' }
+          ],
+          transaction
+        });
+
+        await order.update({ deliveryStatus: DELIVERY_STATUS.COMPLETED }, { transaction });
+
+        await order.trackingmore.update(
+          { trackingmorePayload: JSON.stringify(req.body.data) },
+          { transaction }
+        );
+
+        await Notifications.create(
+          {
+            title: DELIVERY.COMPLETED(order.orderRef),
+            actorId: order.sellerId,
+            notifierId: order.userId,
+            type: NOTIFICATION_TYPE.DELIVERY_COMPLETED,
+            notifiableId: order.id,
+            notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+          },
+          { transaction }
+        );
+
+        await sendCloudMessage({
+          title: DELIVERY.COMPLETED(order.orderRef),
+          token: order.buyer.deviceToken,
+          data: order
+        });
+      });
     }
 
     return res.status(200).json({ message: 'success' });
