@@ -43,7 +43,7 @@ const pushNotification = async (productIds, order) => {
 
       await sendCloudMessage({
         token: seller.deviceToken,
-        title: SALE_MADE_SELLER,
+        title: SALE_MADE_SELLER.TITLE,
         message: SALE_MADE_SELLER.DESCRIPTION,
         data
       });
