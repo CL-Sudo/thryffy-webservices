@@ -23,7 +23,7 @@ const sendNotification = async productId => {
     const notifier = await Users.findOne({ where: { id: product.userId } });
 
     await Sequelize.transaction(async transaction => {
-      await Notifications.create(
+      const notification = await Notifications.create(
         {
           notifierId: notifier.id,
           notifiableId: productId,
@@ -34,12 +34,12 @@ const sendNotification = async productId => {
         { transaction }
       );
 
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
       await sendCloudMessage({
         token: notifier.deviceToken,
         title: PUBLICATION.UNPUBLISHED,
-        data: {
-          ...product.dataValues
-        }
+        data: data.dataValues
       });
     });
 
