@@ -263,7 +263,7 @@ export const trackingMoreWebHook = async (req, res, next) => {
 
     const isSignatureValid = await vertifySignature(timeStr, signature);
 
-    if (R.toUpper(status) === 'DELIVERED' && isSignatureValid) {
+    if (isSignatureValid) {
       await sequelize.transaction(async transaction => {
         const order = await SalesOrders.findOne({
           where: { deliveryTrackingNo },
@@ -282,23 +282,25 @@ export const trackingMoreWebHook = async (req, res, next) => {
           { transaction }
         );
 
-        await Notifications.create(
-          {
-            title: DELIVERY.COMPLETED(order.orderRef),
-            actorId: order.sellerId,
-            notifierId: order.userId,
-            type: NOTIFICATION_TYPE.DELIVERY_COMPLETED,
-            notifiableId: order.id,
-            notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
-          },
-          { transaction }
-        );
+        if (R.toUpper(status) === 'DELIVERED') {
+          await Notifications.create(
+            {
+              title: DELIVERY.COMPLETED(order.orderRef),
+              actorId: order.sellerId,
+              notifierId: order.userId,
+              type: NOTIFICATION_TYPE.DELIVERY_COMPLETED,
+              notifiableId: order.id,
+              notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+            },
+            { transaction }
+          );
 
-        await sendCloudMessage({
-          title: DELIVERY.COMPLETED(order.orderRef),
-          token: order.buyer.deviceToken,
-          data: order
-        });
+          await sendCloudMessage({
+            title: DELIVERY.COMPLETED(order.orderRef),
+            token: order.buyer.deviceToken,
+            data: order
+          });
+        }
       });
     }
 
