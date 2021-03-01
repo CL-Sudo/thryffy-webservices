@@ -275,7 +275,7 @@ export const trackingMoreWebHook = async (req, res, next) => {
           transaction
         });
 
-        await order.update({ deliveryStatus: DELIVERY_STATUS.COMPLETED }, { transaction });
+        await order.update({ deliveryStatus: DELIVERY_STATUS.DELIVERED }, { transaction });
 
         await order.trackingmore.update(
           { trackingmorePayload: JSON.stringify(req.body.data) },
