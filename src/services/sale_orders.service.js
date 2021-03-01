@@ -5,7 +5,7 @@ import { SalesOrders } from '@models/sales_orders.model';
 export const setAsDeliveredAfterShipping = async () => {
   try {
     const orders = await SalesOrders.findAll({
-      where: { deliveryStatus: DELIVERY_STATUS.SHIPPED }
+      where: { deliveryStatus: DELIVERY_STATUS.DELIVERED }
     });
 
     const ordersToBeMarked = orders.filter(instance => {
