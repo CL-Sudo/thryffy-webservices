@@ -27,7 +27,7 @@ export const create = async (req, res, next) => {
       const { orderId } = fields;
 
       const order = await SalesOrders.findOne({ where: { id: orderId } });
-      if (order.deliveryStatus !== DELIVERY_STATUS.SHIPPED)
+      if (order.deliveryStatus !== DELIVERY_STATUS.DELIVERED)
         throw new Error('You are not allowed to dispute this item.');
 
       const disputeId = await sequelize.transaction(async transaction => {
