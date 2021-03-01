@@ -159,7 +159,7 @@ export const exportOrderToExcel = async (req, res, next) => {
         ...instance.dataValues,
         beneficiaryName: instance.seller.beneficiaryName,
         beneficiaryBank: instance.seller.beneficiaryBank,
-        beneficiaryAccountNo: instance.seller.beneficiaryAccountNo,
+        beneficiaryAccountNo: instance.seller.bankAccountNo,
         identityType: instance.seller.identityType,
         identityNo: instance.seller.identityNo,
         paymentAmount: productPrice - instance.commission + instance.shippingFee.actualPrice,

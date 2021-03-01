@@ -62,6 +62,7 @@ export const deleteCustomer = async (req, res, next) => {
         paranoid: false,
         transaction
       });
+
       const addressId = orders.map(order => order.addressId);
 
       const addresses = await Addresses.findAll({
@@ -69,6 +70,7 @@ export const deleteCustomer = async (req, res, next) => {
         paranoid: false,
         transaction
       });
+
       await Promise.all(
         addresses.map(async instance => {
           await instance.update({ userId: null }, { transaction });
@@ -105,9 +107,9 @@ export const deleteCustomer = async (req, res, next) => {
         })
       );
 
-      const user = await Users.findOne({ where: { id: customerId } });
+      // const user = await Users.findOne({ where: { id: customerId } });
 
-      await user.destroy({ force: true, transaction });
+      await Users.destroy({ where: { id: customerId }, transaction });
     });
 
     return res.status(200).json({ message: 'Delete success' });
