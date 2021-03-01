@@ -66,7 +66,8 @@ const SalesOrders = SequelizeConnector.define(
     },
     deliveryStatus: {
       type: Sequelize.STRING(50),
-      field: 'delivery_status'
+      field: 'delivery_status',
+      defaultValue: DELIVERY_STATUS.DID_NOT_SHIP
     },
     deliveryTrackingNo: {
       type: Sequelize.TEXT,

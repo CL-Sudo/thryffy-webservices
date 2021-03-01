@@ -26,6 +26,7 @@ export const PAYMENT_STATUS = {
 };
 
 export const DELIVERY_STATUS = {
+  DID_NOT_SHIP: 'DID NOT SHIP',
   TO_SHIP: 'TO SHIP',
   SHIPPED: 'SHIPPED',
   COMPLETED: 'COMPLETED',
