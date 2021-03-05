@@ -98,7 +98,8 @@ const sendEmailToAdmin = async response => {
       senderEmail: seller.email,
       receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
       templateData: {
-        sellerName: seller.fullName || seller.username || seller.email,
+        sellerName: seller.fullName || seller.username || 'NA',
+        sellerEmail: seller.email || 'NA',
         transactionId: order.transactionId,
         disputeTitle,
         disputeDescription,
@@ -130,7 +131,8 @@ const sendEmailWhenBuyerDispute = async (order, dispute) => {
       receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
       senderEmail: buyer.email,
       templateData: {
-        buyerName: buyer.fullName || buyer.username || buyer.email,
+        buyerName: buyer.fullName || buyer.username || 'NA',
+        buyerEmail: buyer.email || 'NA',
         transactionId: order.transactionId,
         disputeTitle,
         disputeDescription,
