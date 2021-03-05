@@ -6,10 +6,15 @@ import {
   Comments,
   Notifications,
   Subscriptions,
-  Packages
+  Packages,
+  NotificationSettings,
+  CartItems,
+  Enquiries,
+  Followings
 } from '@models';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
+import { Op } from 'sequelize';
 
 export const list = async (req, res, next) => {
   try {
@@ -54,7 +59,6 @@ export const getCustomerProductRequest = async (req, res, next) => {
 export const deleteCustomer = async (req, res, next) => {
   try {
     const { id: customerId } = req.params;
-    const { id } = req.user;
 
     await Sequelize.transaction(async transaction => {
       const orders = await SalesOrders.findAll({
@@ -101,15 +105,36 @@ export const deleteCustomer = async (req, res, next) => {
         transaction
       });
 
+      await NotificationSettings.destroy({
+        where: { userId: customerId },
+        force: true,
+        transaction
+      });
+
+      await CartItems.destroy({ where: { userId: customerId }, force: true, transaction });
+
+      await Enquiries.update(
+        { userId: null },
+        { where: { userId: customerId }, force: true, transaction }
+      );
+
       await Promise.all(
         notifications.map(async instance => {
           await instance.update({ actorId: null }, { transaction });
         })
       );
 
-      // const user = await Users.findOne({ where: { id: customerId } });
+      await Followings.destroy({
+        where: { [Op.or]: [{ followerId: customerId }, { sellerId: customerId }] },
+        force: true,
+        transaction
+      });
 
-      await Users.destroy({ where: { id: customerId }, transaction });
+      await Subscriptions.destroy({ where: { userId: customerId }, force: true, transaction });
+
+      await Notifications.destroy({ where: { notifierId: customerId }, force: true, transaction });
+
+      await Users.destroy({ where: { id: customerId }, force: true, transaction });
     });
 
     return res.status(200).json({ message: 'Delete success' });

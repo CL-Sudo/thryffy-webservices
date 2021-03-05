@@ -33,9 +33,10 @@ const sendEmail = async data => {
 
     await sendMail({
       receiverEmail: decideReceiverEmail(type),
-      senderEmail: user.email,
       template: EMAIL_TEMPLATE.CONTACT_US,
       templateData: {
+        customerName: user.fullName || user.username || 'NA',
+        customerEmail: user.email || 'NA',
         userId,
         type,
         subject,
@@ -45,7 +46,7 @@ const sendEmail = async data => {
       }
     });
   } catch (e) {
-    console.log('e', e);
+    console.log('e', e.response.data.errors);
   }
 };
 
