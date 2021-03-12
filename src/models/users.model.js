@@ -129,13 +129,6 @@ const Users = SequelizeConnector.define(
       type: Sequelize.STRING,
       field: 'profile_picture'
     },
-    otp: {
-      type: Sequelize.STRING(20)
-    },
-    otpValidity: {
-      type: Sequelize.DATE,
-      field: 'otp_validity'
-    },
     isVerified: {
       type: Sequelize.BOOLEAN,
       defaultValue: false,
@@ -235,7 +228,6 @@ const Users = SequelizeConnector.define(
     underscored: false,
     defaultScope: {
       attributes: { exclude: ['password'] }
-      // include: [{ model: NotificationSettings, as: 'notificationSetting' }]
     },
     scopes: {
       search: params => search(Users, params, []),

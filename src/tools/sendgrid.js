@@ -24,7 +24,7 @@ export const sendMail = ({
               to: [
                 {
                   email: receiverEmail,
-                  name: `${receiverFirstName} ${receiverLastName}`
+                  name: `${receiverFirstName || ''} ${receiverLastName || ''}`
                 }
               ],
               dynamic_template_data: templateData

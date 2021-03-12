@@ -2,7 +2,7 @@ import R from 'ramda';
 import _ from 'lodash';
 import passport from 'passport';
 import AppleAuth from 'apple-signin-auth';
-import { Users, Admins, NotificationSettings } from '@models';
+import { Users, Admins, NotificationSettings, Otps } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import {
@@ -441,52 +441,72 @@ export const googleCallback = async (req, res) => {
 
 export const verifyOTP = async (req, res, next) => {
   req.check('otp').exists();
+  req.check('username').exists();
+  req.check('password').exists();
+  req.check('phoneCountryCode').exists();
+  req.check('phoneNumber').exists();
+  req.check('email').exists();
   try {
     await req.asyncValidationErrors();
-    const { otp, email = null, id = null } = req.body;
+    const { otp, email, username, password, phoneCountryCode, phoneNumber } = req.body;
 
-    const getUser = async () => {
-      try {
-        const userById = await Users.findOne({ where: { id } });
+    const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
 
-        const userByEmail = await Users.findOne({
-          where: { email }
-        });
+    if (!existingOTP) {
+      throw new Error('Invalid phone number given');
+    }
 
-        const userByUsername = await Users.findOne({
-          where: { username: email }
-        });
+    if (existingOTP.isVerified) {
+      throw new Error('Your phone number has been verified.');
+    }
 
-        if (R.isNil(userByEmail) && R.isNil(userByUsername) && R.isNil(userById)) {
-          throw new Error('User not found');
-        }
+    if (existingOTP.otp !== otp) {
+      throw new Error(
+        `Sorry, we couldn't verify your phone number (${phoneCountryCode} ${phoneNumber}.)`
+      );
+    }
 
-        return Promise.resolve(userById || userByEmail || userByUsername);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+    if (existingOTP.otpValidity < new Date()) {
+      throw new Error('OTP expired, please resend OTP again.');
+    }
 
-    const verifyTac = tacFromRequest => async user => {
-      try {
-        if (tacFromRequest !== user.otp || user.otpValidity < new Date()) {
-          throw new Error(
-            `Sorry, we couldn't verify your phone number (${user.phoneCountryCode} ${user.phoneNumber}.)`
-          );
-        }
+    const jsonData = await sequelize.transaction(async transaction => {
+      const refreshToken = generateRefreshToken();
 
-        await user.update({ isVerified: true, otp: null, otpValidity: null });
-        return Promise.resolve(user);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+      const user = await Users.create(
+        {
+          email,
+          password,
+          phoneCountryCode,
+          phoneNumber,
+          username,
+          refreshToken,
+          isVerified: true
+        },
+        { transaction }
+      );
 
-    await R.pipeP(getUser, verifyTac(otp))();
+      const omit = R.omit(['password', 'refreshToken']);
+      const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
+      const jwt = await generateJWT(tokenPayload);
+      const processedPayload = R.pipe(
+        omit,
+        assignUserType(R.__)(USER_TYPE.CUSTOMER)
+      )(user.dataValues);
 
-    return res.status(200).json({
-      message: 'success'
+      await existingOTP.update({ isVerified: true }, { transaction });
+
+      return {
+        message: 'success',
+        payload: processedPayload,
+        token: `Bearer ${jwt}`,
+        refreshToken
+      };
     });
+
+    authListener.emit(LISTENER_EVENT.AUTHENTICATION.SIGNUP, jsonData.payload);
+
+    return res.status(200).json(jsonData);
   } catch (e) {
     return next(e);
   }
@@ -578,99 +598,55 @@ export const userRegistration = async (req, res, next) => {
   try {
     requestValidator(req);
 
-    const u = await Users.findOne({
-      where: { username: req.body.username }
+    const { username, email, phoneNumber, phoneCountryCode } = req.body;
+
+    const userByUsername = await Users.findOne({
+      where: { username }
     });
-    if (!R.isNil(u)) {
-      if (!u.isVerified) {
-        const otp = generateOTP();
-        await u.update({
-          otp,
-          otpValidity: moment().add(10, 'minutes')
-        });
-        await u.reload();
-        return res.status(202).json({ message: 'User not verified' });
-      }
+
+    if (!R.isNil(userByUsername)) {
       throw new Error('Username is not available');
     }
 
-    const checkUserByEmail = async requestBody => {
-      try {
-        const user = await Users.findOne({
-          where: { email: requestBody.email }
-        });
-        if (R.not(R.isNil(user))) {
-          throw new Error('email is not available');
-        }
-        return Promise.resolve(requestBody);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+    const userByEmail = await Users.findOne({
+      where: { email }
+    });
+    if (!R.isNil(userByEmail)) {
+      throw new Error('email is not available');
+    }
 
-    const checkUserByPhoneNumber = async requestBody => {
-      try {
-        const user = await Users.findOne({
-          where: { phoneNumber: requestBody.phoneNumber }
-        });
-        if (!R.isNil(user)) {
-          throw new Error('Phone number is not available');
-        }
-        return Promise.resolve(requestBody);
-      } catch (e) {
-        return Promise.reject(e);
+    const userByPhoneNumber = await Users.findOne({
+      where: {
+        phoneCountryCode,
+        phoneNumber
       }
-    };
+    });
+    if (!R.isNil(userByPhoneNumber)) {
+      throw new Error('Phone number is not available');
+    }
 
-    const createNewUser = async requestBody => {
-      try {
-        const refreshToken = generateRefreshToken();
-        const otp = generateOTP();
-        const otpValidity = moment().add(10, 'minutes');
-        const user = await Users.create({ ...requestBody, refreshToken, otp, otpValidity });
-        await user.reload();
-        await sendMail({
-          receiverEmail: user.email,
-          template: EMAIL_TEMPLATE.WELCOME_EMAIL,
-          templateData: {
-            username: user.fullName || user.username
-          }
-        });
-        authListener.emit(LISTENER_EVENT.AUTHENTICATION.SIGNUP, user);
-        return Promise.resolve(user);
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+    const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
+    const otp = generateOTP();
 
-    const generateJwt = async user => {
-      try {
-        const omit = R.omit(['password', 'refreshToken', 'otp', 'otpValidity']);
-        const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
-        const jwt = await generateJWT(tokenPayload);
-        const processedPayload = R.pipe(
-          omit,
-          assignUserType(R.__)(USER_TYPE.CUSTOMER)
-        )(user.dataValues);
-        return Promise.resolve({ jwt, user: processedPayload, refreshToken: user.refreshToken });
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    };
+    if (existingOTP && existingOTP.isVerified) {
+      throw new Error('This phoneNumber has been verified');
+    }
 
-    const payload = await R.pipeP(
-      // checkUsername,
-      checkUserByEmail,
-      checkUserByPhoneNumber,
-      createNewUser,
-      generateJwt
-    )(req.body);
+    if (!R.isNil(existingOTP)) {
+      await existingOTP.update({ otp, otpValidity: moment().add(10, 'minutes') });
+    } else {
+      await Otps.create({
+        phoneCountryCode,
+        phoneNumber,
+        otp,
+        otpValidity: moment().add(10, 'minutes')
+      });
+    }
+
+    await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
 
     return res.status(200).json({
-      message: 'success',
-      payload: payload.user,
-      refreshToken: payload.refreshToken,
-      token: `Bearer ${payload.jwt}`
+      message: 'success'
     });
   } catch (e) {
     return next(e);
@@ -685,9 +661,6 @@ export const forgotPassword = async (req, res, next) => {
 
     const user = await Users.findOne({ where: { id: userId } });
     user.update({ resetToken });
-
-    // const redirectUrl = `thryffy://reset-password/${resetToken}`;
-    // await sendMail(user.email, user.firstName, user.lastName, { redirectUrl });
 
     return res.status(200).json({
       message: 'success'
@@ -718,20 +691,24 @@ export const resetPassword = async (req, res, next) => {
 
 export const resendOTP = async (req, res, next) => {
   try {
-    const { id } = req.user;
-    const user = await Users.findOne({
-      attributes: ['id', 'phoneNumber', 'phoneCountryCode', 'isVerified'],
-      where: { id }
-    });
-
-    if (user.isVerified) throw new Error('You account has been verified');
+    const { phoneCountryCode, phoneNumber } = req.body;
 
     const otp = generateOTP();
-    const otpValidity = moment().add(10, 'minutes');
-    const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
+    const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
 
-    user.update({ otp, otpValidity });
-    await sendSMS(phoneNumber, SMSVerifcation(otp));
+    if (R.isNil(existingOTP)) {
+      throw new Error('Invalid phone number given');
+    }
+
+    if (existingOTP.isVerified) {
+      throw new Error('You account has been verified');
+    }
+
+    const otpValidity = moment().add(10, 'minutes');
+    const completePhoneNumber = `${phoneCountryCode}${phoneNumber}`;
+
+    await existingOTP.update({ otp, otpValidity });
+    await sendSMS(completePhoneNumber, SMSVerifcation(otp));
 
     return res.status(200).json({
       message: 'success'

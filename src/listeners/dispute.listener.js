@@ -94,7 +94,6 @@ const sendEmailToAdmin = async response => {
 
     await sendMail({
       template: EMAIL_TEMPLATE.DISPUTE_RESPONDED_EMAIL,
-      // type: SENDGRID_CONFIG.TYPE.SUPPORT,
       senderEmail: seller.email,
       receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
       templateData: {

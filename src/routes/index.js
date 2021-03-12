@@ -55,7 +55,7 @@ export default app => {
     require('./mobile/notification_settings.routes').default
   );
   app.use('/api/mobile/comments', mobileAuth, require('./mobile/comments.routes').default);
-  app.use('/api/mobile/users', mobileAuth, require('./mobile/users.routes').default);
+  app.use('/api/mobile/users', require('./mobile/users.routes').default);
   app.use('/api/mobile/followings', mobileAuth, require('./mobile/followings.routes').default);
   app.use('/api/mobile/trackings', mobileAuth, require('./mobile/trackings.routes').default);
 
