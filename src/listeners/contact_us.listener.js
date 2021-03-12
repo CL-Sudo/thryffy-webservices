@@ -32,6 +32,7 @@ const sendEmail = async data => {
     };
 
     await sendMail({
+      receiverFirstName: 'Thryffy',
       receiverEmail: decideReceiverEmail(type),
       template: EMAIL_TEMPLATE.CONTACT_US,
       templateData: {

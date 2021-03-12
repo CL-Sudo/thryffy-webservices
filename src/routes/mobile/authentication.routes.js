@@ -17,7 +17,7 @@ router.post('/login', Controllers.mobileSignIn);
 router.post('/revoke', Controllers.mobileRevoke);
 router.post('/register', validators.registrationValidator, Controllers.userRegistration);
 router.post('/verify-otp', Controllers.verifyOTP);
-router.post('/resend-otp', mobileAuth, Controllers.resendOTP);
+router.post('/resend-otp', Controllers.resendOTP);
 router.post('/forgot-password', validators.forgotPasswordValidator, Controllers.forgotPassword);
 router.patch('/reset-password', validators.resetPasswordValidator, Controllers.resetPassword);
 router.post('/logout', mobileAuth, async (req, res, next) => {

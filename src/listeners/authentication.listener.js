@@ -1,18 +1,22 @@
 import { EventEmitter } from 'events';
-import { sendSMS } from '@services/sms.service';
-import { SMSVerifcation } from '@templates/sms.template';
+import EMAIL_TEMPLATE from '@templates/email.template';
 import LISTENER_EVENT from '@constants/listener.constant';
+import { sendMail } from '@tools/sendgrid';
 
 export const authListener = new EventEmitter();
 
-const sendOTPViaSMS = async user => {
+const sendWelcomeEmail = async user => {
   try {
-    const phoneNumber = `${user.phoneCountryCode}${user.phoneNumber}`;
-    console.log('phoneNumber', phoneNumber);
-    await sendSMS(phoneNumber, SMSVerifcation(user.otp));
+    await sendMail({
+      receiverEmail: user.email,
+      template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+      templateData: {
+        username: user.fullName || user.username
+      }
+    });
   } catch (e) {
-    console.error(e);
+    console.log(e);
   }
 };
 
-authListener.on(LISTENER_EVENT.AUTHENTICATION.SIGNUP, sendOTPViaSMS);
+authListener.on(LISTENER_EVENT.AUTHENTICATION.SIGNUP, sendWelcomeEmail);
