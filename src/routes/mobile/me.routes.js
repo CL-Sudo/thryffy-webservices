@@ -45,4 +45,6 @@ router.post('/generate-otp', controllers.generateOtp);
 
 router.patch('/identity', validators.updateIdentityNoValidators, controllers.updateIdentityNo);
 
+router.post('/verify-otp', controllers.verifyOTP);
+
 export default router;

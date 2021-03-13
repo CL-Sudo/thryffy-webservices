@@ -266,6 +266,15 @@ export const updateProfile = async (req, res, next) => {
 
       const user = await Users.findOne({ where: { id } });
 
+      const existingOTP = await Otps.findOne({
+        where: { phoneCountryCode: user.phoneCountryCode, phoneNumber: user.phoneNumber }
+      });
+
+      await existingOTP.update({
+        phoneCountryCode: fields.phoneCountryCode,
+        phoneNumber: fields.phoneNumber
+      });
+
       await user.update(fields);
 
       if (profilePicture) {
@@ -744,6 +753,29 @@ export const updateIdentityNo = async (req, res, next) => {
     await user.update({ identityNo });
     await user.reload();
     return res.status(200).json({ message: 'success', payload: user });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const verifyOTP = async (req, res, next) => {
+  try {
+    const { otp, phoneCountryCode, phoneNumber } = req.body;
+    const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
+
+    if (otp !== existingOTP.otp) {
+      throw new Error(
+        `Sorry, we couldn't verify your phone number (${phoneCountryCode} ${phoneNumber}.)`
+      );
+    }
+
+    if (new Date() > existingOTP.otpValidity) {
+      throw new Error('OTP expired, please resend again');
+    }
+
+    await existingOTP.update({ isVerified: true });
+
+    return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
   }
