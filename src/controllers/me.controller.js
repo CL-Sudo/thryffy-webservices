@@ -14,7 +14,8 @@ import {
   Brands,
   Conditions,
   Subscriptions,
-  Packages
+  Packages,
+  Otps
 } from '@models';
 
 import { hashPassword } from '@tools/bcrypt';
@@ -696,16 +697,21 @@ export const getOneSubscription = async (req, res, next) => {
 
 export const generateOtp = async (req, res, next) => {
   try {
-    const { id } = req.user;
     const { phoneCountryCode, phoneNumber } = req.body;
 
     const otp = getOtp();
     const otpValidity = moment().add(10, 'minutes');
 
-    const user = await Users.findOne({ where: { id } });
-    await user.update({ otp, otpValidity });
+    await sequelize.transaction(async transaction => {
+      const existingOTP = await Otps.findOne({
+        where: { phoneCountryCode, phoneNumber },
+        transaction
+      });
 
-    await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
+      await existingOTP.update({ otp, otpValidity }, { transaction });
+
+      await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
+    });
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {
