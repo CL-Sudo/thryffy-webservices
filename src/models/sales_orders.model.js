@@ -150,7 +150,6 @@ const SalesOrders = SequelizeConnector.define(
                         exclude: [
                           ...defaultExcludeFields,
                           'refreshToken',
-                          'otp',
                           'facebookId',
                           'googleId',
                           'otpValidity',

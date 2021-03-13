@@ -280,8 +280,6 @@ const Users = SequelizeConnector.define(
             'facebookId',
             'googleId',
             'deviceToken',
-            'otp',
-            'otpValidity',
             'refreshToken',
             'resetToken',
             'loginFrequency',
