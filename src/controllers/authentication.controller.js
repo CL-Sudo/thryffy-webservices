@@ -633,7 +633,11 @@ export const userRegistration = async (req, res, next) => {
     }
 
     if (!R.isNil(existingOTP)) {
-      await existingOTP.update({ otp, otpValidity: moment().add(10, 'minutes') });
+      await existingOTP.update({
+        otp,
+        otpValidity: moment().add(10, 'minutes'),
+        isVerified: false
+      });
     } else {
       await Otps.create({
         phoneCountryCode,
@@ -707,7 +711,7 @@ export const resendOTP = async (req, res, next) => {
     const otpValidity = moment().add(10, 'minutes');
     const completePhoneNumber = `${phoneCountryCode}${phoneNumber}`;
 
-    await existingOTP.update({ otp, otpValidity });
+    await existingOTP.update({ otp, otpValidity, isVerified: false });
     await sendSMS(completePhoneNumber, SMSVerifcation(otp));
 
     return res.status(200).json({
