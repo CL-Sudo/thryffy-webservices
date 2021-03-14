@@ -266,15 +266,6 @@ export const updateProfile = async (req, res, next) => {
 
       const user = await Users.findOne({ where: { id } });
 
-      const existingOTP = await Otps.findOne({
-        where: { phoneCountryCode: user.phoneCountryCode, phoneNumber: user.phoneNumber }
-      });
-
-      await existingOTP.update({
-        phoneCountryCode: fields.phoneCountryCode,
-        phoneNumber: fields.phoneNumber
-      });
-
       await user.update(fields);
 
       if (profilePicture) {
