@@ -11,7 +11,10 @@ import {
   CartItems,
   Enquiries,
   Followings,
-  NotificationTopicUsers
+  NotificationTopicUsers,
+  FavouriteProducts,
+  Preferences,
+  Reviews
 } from '@models';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -68,6 +71,12 @@ export const deleteCustomer = async (req, res, next) => {
         transaction
       });
 
+      const sellingOrder = await SalesOrders.findAll({
+        where: { sellerId: customerId },
+        paranoid: false,
+        transaction
+      });
+
       const addressId = orders.map(order => order.addressId);
 
       const addresses = await Addresses.findAll({
@@ -85,6 +94,12 @@ export const deleteCustomer = async (req, res, next) => {
       await Promise.all(
         orders.map(async instance => {
           await instance.update({ userId: null }, { transaction });
+        })
+      );
+
+      await Promise.all(
+        sellingOrder.map(async instance => {
+          await instance.update({ sellerId: null }, { transaction });
         })
       );
 
@@ -135,7 +150,19 @@ export const deleteCustomer = async (req, res, next) => {
 
       await Notifications.destroy({ where: { notifierId: customerId }, force: true, transaction });
 
-      await NotificationTopicUsers.destroy({ where: { userId: customerId }, transaction });
+      await NotificationTopicUsers.destroy({
+        where: { userId: customerId },
+        force: true,
+        transaction
+      });
+
+      await FavouriteProducts.destroy({ where: { userId: customerId }, force: true, transaction });
+
+      await Preferences.destroy({ where: { userId: customerId }, force: true, transaction });
+
+      await Reviews.destroy({ where: { sellerId: customerId }, force: true, transaction });
+
+      await Products.update({ userId: null }, { where: { userId: customerId }, transaction });
 
       await Users.destroy({ where: { id: customerId }, force: true, transaction });
     });
