@@ -10,7 +10,8 @@ import {
   NotificationSettings,
   CartItems,
   Enquiries,
-  Followings
+  Followings,
+  NotificationTopicUsers
 } from '@models';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -133,6 +134,8 @@ export const deleteCustomer = async (req, res, next) => {
       await Subscriptions.destroy({ where: { userId: customerId }, force: true, transaction });
 
       await Notifications.destroy({ where: { notifierId: customerId }, force: true, transaction });
+
+      await NotificationTopicUsers.destroy({ where: { userId: customerId }, transaction });
 
       await Users.destroy({ where: { id: customerId }, force: true, transaction });
     });
