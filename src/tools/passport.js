@@ -115,6 +115,7 @@ const mobileJwtStrategyCallback = (req, token, done) => {
     }
     throw new Error('Invalid User Type');
   } catch (error) {
+    console.log(`error`, error);
     return done(error);
   }
 };
