@@ -28,6 +28,7 @@ router.post('/logout', mobileAuth, async (req, res, next) => {
     await user.update({ deviceToken: null });
     return res.status(200).json({ message: 'Logout successfuly' });
   } catch (e) {
+    console.log(`e`, e);
     return next(e);
   }
 });
