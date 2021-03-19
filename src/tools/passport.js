@@ -81,6 +81,7 @@ passport.use(
 
 const mobileJwtStrategyCallback = (req, token, done) => {
   try {
+    console.log(`token`, token);
     if (token.authData.type === USER_TYPE.CUSTOMER) {
       req.authData = token.authData;
       req.body = _.omit(req.body, [
