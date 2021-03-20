@@ -8,7 +8,13 @@ import { Op } from 'sequelize';
 
 export const generateRefreshToken = () => randtoken.uid(255);
 
-export const generateJWT = data =>
+/**
+ *
+ * @param {*} data
+ * @param {String} validityDuration
+ * @returns String
+ */
+export const generateJWT = (data, validityDuration) =>
   new Promise(async (resolve, reject) => {
     try {
       const jwtToken = jwt.sign(
@@ -17,7 +23,7 @@ export const generateJWT = data =>
         },
         Config.jwt.secret,
         {
-          expiresIn: Config.jwt.expiresIn
+          expiresIn: validityDuration || Config.jwt.expiresIn
         }
       );
       return resolve(jwtToken);

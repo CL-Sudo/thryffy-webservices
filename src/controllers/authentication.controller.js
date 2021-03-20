@@ -5,12 +5,7 @@ import AppleAuth from 'apple-signin-auth';
 import { Users, Admins, NotificationSettings, Otps } from '@models';
 import * as Configs from '@configs';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
-import {
-  generateRefreshToken,
-  generateJWT,
-  generateOTP,
-  generateResetToken
-} from '@utils/auth.util';
+import { generateRefreshToken, generateJWT, generateOTP } from '@utils/auth.util';
 import { USER_TYPE } from '@constants/index';
 import { authListener } from '@listeners';
 import { requestValidator } from '@validators';
@@ -659,16 +654,52 @@ export const userRegistration = async (req, res, next) => {
 
 export const forgotPassword = async (req, res, next) => {
   try {
-    const { email, userId } = req.body;
+    const { phoneCountryCode, phoneNumber } = req.body;
 
-    const resetToken = await generateResetToken(email);
+    const otp = generateOTP();
+    const otpValidity = moment().add(10, 'minutes');
 
-    const user = await Users.findOne({ where: { id: userId } });
-    user.update({ resetToken });
+    await sequelize.transaction(async transaction => {
+      const existingOTP = await Otps.findOne({
+        where: { phoneCountryCode, phoneNumber },
+        transaction
+      });
+
+      await existingOTP.update({ otp, otpValidity, isVerifed: false }, { transaction });
+
+      await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
+    });
 
     return res.status(200).json({
       message: 'success'
     });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const verifyForgotPasswordOTP = async (req, res, next) => {
+  try {
+    const { otp, phoneCountryCode, phoneNumber } = req.body;
+    const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
+
+    if (otp !== existingOTP.otp) {
+      throw new Error(
+        `Sorry, we couldn't verify your phone number (${phoneCountryCode} ${phoneNumber}.)`
+      );
+    }
+
+    if (new Date() > existingOTP.otpValidity) {
+      throw new Error('OTP expired, please resend again');
+    }
+
+    await existingOTP.update({ isVerified: true });
+
+    const user = await Users.findOne({ where: { phoneCountryCode, phoneNumber } });
+
+    const jwt = await generateJWT(user.id, '5m');
+
+    return res.status(200).json({ message: 'success', payload: jwt });
   } catch (e) {
     return next(e);
   }

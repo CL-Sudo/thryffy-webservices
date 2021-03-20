@@ -81,7 +81,6 @@ passport.use(
 
 const mobileJwtStrategyCallback = (req, token, done) => {
   try {
-    console.log(`token`, token);
     if (token.authData.type === USER_TYPE.CUSTOMER) {
       req.authData = token.authData;
       req.body = _.omit(req.body, [
@@ -115,7 +114,6 @@ const mobileJwtStrategyCallback = (req, token, done) => {
     }
     throw new Error('Invalid User Type');
   } catch (error) {
-    console.log(`error`, error);
     return done(error);
   }
 };
