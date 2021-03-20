@@ -52,8 +52,7 @@ export const resetPasswordValidator = [
       try {
         const decoded = jwt.verify(resetToken, configs.jwt.secret);
         const user = await Users.findOne({
-          attributes: ['id'],
-          where: { resetToken, email: decoded.email }
+          where: { id: decoded.authData }
         });
         if (R.isNil(user)) throw new Error('Invalid resetToken given.');
         req.body.userId = user.id;

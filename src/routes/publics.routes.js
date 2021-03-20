@@ -4,7 +4,8 @@ import {
   subscribeCallback,
   subscriptionRedirect,
   billplzRedirect,
-  trackingMoreWebHook
+  trackingMoreWebHook,
+  generateOTP
 } from '@controllers/public.controller';
 
 import {

@@ -20,6 +20,7 @@ router.post('/verify-otp', Controllers.verifyOTP);
 router.post('/resend-otp', Controllers.resendOTP);
 router.post('/forgot-password', validators.forgotPasswordValidator, Controllers.forgotPassword);
 router.patch('/reset-password', validators.resetPasswordValidator, Controllers.resetPassword);
+router.post('/forgot-password/verify-otp', Controllers.verifyForgotPasswordOTP);
 router.post('/logout', mobileAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
@@ -28,7 +29,6 @@ router.post('/logout', mobileAuth, async (req, res, next) => {
     await user.update({ deviceToken: null });
     return res.status(200).json({ message: 'Logout successfuly' });
   } catch (e) {
-    console.log(`e`, e);
     return next(e);
   }
 });
