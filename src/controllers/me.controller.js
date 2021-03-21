@@ -708,7 +708,11 @@ export const generateOtp = async (req, res, next) => {
         transaction
       });
 
-      await existingOTP.update({ otp, otpValidity }, { transaction });
+      if (!existingOTP) {
+        await Otps.create({ otp, otpValidity, phoneCountryCode, phoneNumber }, { transaction });
+      } else {
+        await existingOTP.update({ otp, otpValidity, isVerified: false }, { transaction });
+      }
 
       await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
     });

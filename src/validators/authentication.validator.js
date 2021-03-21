@@ -29,18 +29,15 @@ export const registrationValidator = [
 ];
 
 export const forgotPasswordValidator = [
-  check('email')
+  check('phoneCountryCode')
+    .exists()
+    .isLength({ min: 1 })
+    .withMessage('Required'),
+
+  check('phoneNumber')
     .exists()
     .isLength({ min: 1 })
     .withMessage('Required')
-    .isEmail()
-    .withMessage('Invalid Format')
-    .normalizeEmail()
-    .custom(async (email, { req }) => {
-      const user = await Users.findOne({ raw: true, where: { email } });
-      if (R.isNil(user)) throw new Error('Invalid email address given, no user found');
-      req.body.userId = user.id;
-    })
 ];
 
 export const resetPasswordValidator = [
