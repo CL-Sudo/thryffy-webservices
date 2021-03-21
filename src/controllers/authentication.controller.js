@@ -654,6 +654,7 @@ export const userRegistration = async (req, res, next) => {
 
 export const forgotPassword = async (req, res, next) => {
   try {
+    requestValidator(req);
     const { phoneCountryCode, phoneNumber } = req.body;
 
     const otp = generateOTP();
@@ -665,7 +666,11 @@ export const forgotPassword = async (req, res, next) => {
         transaction
       });
 
-      await existingOTP.update({ otp, otpValidity, isVerifed: false }, { transaction });
+      if (!existingOTP) {
+        await Otps.create({ phoneCountryCode, phoneNumber, otp, otpValidity }, { transaction });
+      } else {
+        await existingOTP.update({ otp, otpValidity, isVerifed: false }, { transaction });
+      }
 
       await sendSMS(`${phoneCountryCode}${phoneNumber}`, SMSVerifcation(otp));
     });
