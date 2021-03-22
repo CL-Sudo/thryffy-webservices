@@ -702,6 +702,10 @@ export const verifyForgotPasswordOTP = async (req, res, next) => {
 
     const user = await Users.findOne({ where: { phoneCountryCode, phoneNumber } });
 
+    if (!user) {
+      throw new Error('Account not found, please register a new account with this phone number');
+    }
+
     const jwt = await generateJWT(user.id, '5m');
 
     return res.status(200).json({ message: 'success', payload: jwt });
