@@ -1,14 +1,13 @@
 import fs from 'fs';
 import _ from 'lodash';
 import AWS from 'aws-sdk';
-import dotenv from 'dotenv';
 import path from 'path';
+import dotenv from 'dotenv';
 // import uuid from 'uuid/v4';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime-types';
 
 dotenv.config();
-
 // // For dev purposes only
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -24,7 +23,12 @@ const s3BucketPublic = new AWS.S3({
   region: 'ap-southeast-1'
 });
 
-export const uploadToS3 = (s3Directory, filestream, extension, { publicAccess = true, publicBucket = false, filename } = {}) =>
+export const uploadToS3 = (
+  s3Directory,
+  filestream,
+  extension,
+  { publicAccess = true, publicBucket = false, filename } = {}
+) =>
   new Promise((resolve, reject) => {
     const configs = {};
     if (publicAccess) configs.ACL = 'public-read';
@@ -63,7 +67,11 @@ export const getObjectFromS3 = (filePath, publicBucket = false) =>
     });
   });
 
-export const uploadFileToS3 = (files, s3Directory, { publicAccess = false, publicBucket = false } = {}) =>
+export const uploadFileToS3 = (
+  files,
+  s3Directory,
+  { publicAccess = false, publicBucket = false } = {}
+) =>
   new Promise(async (resolve, reject) => {
     try {
       let data;
@@ -72,14 +80,18 @@ export const uploadFileToS3 = (files, s3Directory, { publicAccess = false, publi
         _.forEach(files, async file => {
           const filestream = fs.readFileSync(file.path);
           let extension = path.extname(file.name);
-          if (!extension) extension = mime.extension(file.type) ? `.${mime.extension(file.type)}` : undefined;
-          fileUploadPromises.push(uploadToS3(s3Directory, filestream, extension, { publicAccess, publicBucket }));
+          if (!extension)
+            extension = mime.extension(file.type) ? `.${mime.extension(file.type)}` : undefined;
+          fileUploadPromises.push(
+            uploadToS3(s3Directory, filestream, extension, { publicAccess, publicBucket })
+          );
         });
         data = await Promise.all(fileUploadPromises);
       } else {
         const filestream = fs.readFileSync(files.path);
         let extension = path.extname(files.name);
-        if (!extension) extension = mime.extension(files.type) ? `.${mime.extension(files.type)}` : undefined;
+        if (!extension)
+          extension = mime.extension(files.type) ? `.${mime.extension(files.type)}` : undefined;
         data = await uploadToS3(s3Directory, filestream, extension, { publicBucket });
       }
       return resolve(data);
