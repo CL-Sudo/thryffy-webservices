@@ -657,6 +657,12 @@ export const forgotPassword = async (req, res, next) => {
     requestValidator(req);
     const { phoneCountryCode, phoneNumber } = req.body;
 
+    const user = await Users.findOne({ where: { phoneCountryCode, phoneNumber } });
+
+    if (!user) {
+      throw new Error('Account not found, please register a new account with this phone number');
+    }
+
     const otp = generateOTP();
     const otpValidity = moment().add(10, 'minutes');
 
@@ -701,10 +707,6 @@ export const verifyForgotPasswordOTP = async (req, res, next) => {
     await existingOTP.update({ isVerified: true });
 
     const user = await Users.findOne({ where: { phoneCountryCode, phoneNumber } });
-
-    if (!user) {
-      throw new Error('Account not found, please register a new account with this phone number');
-    }
 
     const jwt = await generateJWT(user.id, '5m');
 
