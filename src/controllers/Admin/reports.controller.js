@@ -111,7 +111,7 @@ export const exportOrderToExcel = async (req, res, next) => {
     worksheet.insertRow(3, []);
     worksheet.insertRow(4, ['Employer Info:']);
     worksheet.insertRow(5, ['Crediting Date:', parseDate(new Date())]);
-    worksheet.insertRow(6, ['Payment Reference:', 'E-Commerce']);
+    worksheet.insertRow(6, ['Payment Reference:', 'Ecommerce']);
     worksheet.insertRow(7, ['Payment Description:', 'Sale on Thryffy']);
     worksheet.insertRow(8, ['Bulk Payment Type:', 'Online Banking']);
     worksheet.insertRow(9, []);
