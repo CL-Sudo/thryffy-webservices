@@ -1,9 +1,6 @@
 import { Users } from '@models';
-
 import { Op } from 'sequelize';
-
 import { paginate } from '@utils';
-
 import { requestValidator } from '@validators';
 
 export const search = async (req, res, next) => {
