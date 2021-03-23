@@ -14,6 +14,9 @@ import {
   publicCuratedList
 } from '@controllers/home.controller';
 
+import { search } from '@controllers/users.controller';
+import { searchValidator } from '@validators/users.validator';
+
 import * as controllers from '@controllers/discover.controller';
 import * as validators from '@validators/discover.validator';
 
@@ -40,5 +43,7 @@ router.get('/products/:productId', getOne);
 router.get('/products/:productId/recommendations', youMayAlsoLike);
 
 router.post('/trackingmore/webhook', trackingMoreWebHook);
+
+router.get('/users/search', searchValidator, search);
 
 export default router;
