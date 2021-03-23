@@ -157,15 +157,15 @@ export const exportOrderToExcel = async (req, res, next) => {
 
       const obj = {
         ...instance.dataValues,
-        beneficiaryName: instance.seller.beneficiaryName,
-        beneficiaryBank: instance.seller.beneficiaryBank,
-        beneficiaryAccountNo: instance.seller.bankAccountNo,
-        identityType: instance.seller.identityType,
-        identityNo: instance.seller.identityNo,
+        beneficiaryName: _.get(instance, 'seller.beneficiaryName', 'NA'),
+        beneficiaryBank: _.get(instance, 'seller.beneficiaryBank', 'NA'),
+        beneficiaryAccountNo: _.get(instance, 'seller.bankAccountNo', 'NA'),
+        identityType: _.get(instance, 'seller.identityType', 'NA'),
+        identityNo: _.get(instance, 'seller.identityNo', 'NA'),
         paymentAmount: productPrice - instance.commission + instance.shippingFee.actualPrice,
-        paymentRef: 'E-Commerce',
+        paymentRef: 'Ecommerce',
         paymentDescription: 'Sale on Thryffy',
-        parcelType: instance.shippingFee.parcelName,
+        parcelType: _.get(instance, 'seller.parcelName', 'NA'),
         shippingFee: _.get(instance, 'shippingFee.price', 0).toFixed(2)
       };
       return obj;
