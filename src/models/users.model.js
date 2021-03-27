@@ -357,7 +357,7 @@ Users.prototype.getEarnings = async function() {
       where: {
         id: [
           Sequelize.literal(
-            `SELECT id FROM order_items
+            `SELECT sales_order_id FROM order_items
               WHERE product_id IN (
                 SELECT id FROM products
                 WHERE user_id = ${this.id}
