@@ -99,7 +99,7 @@ const sendEmailToAdmin = async response => {
       templateData: {
         sellerName: seller.fullName || seller.username || 'NA',
         sellerEmail: seller.email || 'NA',
-        transactionId: order.transactionId,
+        orderRef: order.orderRef,
         disputeTitle,
         disputeDescription,
         disputeDateTime,
@@ -132,7 +132,7 @@ const sendEmailWhenBuyerDispute = async (order, dispute) => {
       templateData: {
         buyerName: buyer.fullName || buyer.username || 'NA',
         buyerEmail: buyer.email || 'NA',
-        transactionId: order.transactionId,
+        orderRef: order.orderRef,
         disputeTitle,
         disputeDescription,
         disputeDateTime,
