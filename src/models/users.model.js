@@ -17,7 +17,8 @@ import {
   OrderItems,
   ShippingFees,
   Sizes,
-  Followings
+  Followings,
+  Otps
 } from '@models';
 
 import { Reviews } from '@models/reviews.model';

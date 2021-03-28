@@ -14,7 +14,8 @@ import {
   NotificationTopicUsers,
   FavouriteProducts,
   Preferences,
-  Reviews
+  Reviews,
+  Otps
 } from '@models';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
@@ -164,7 +165,15 @@ export const deleteCustomer = async (req, res, next) => {
 
       await Products.update({ userId: null }, { where: { userId: customerId }, transaction });
 
-      await Users.destroy({ where: { id: customerId }, force: true, transaction });
+      const user = await Users.findOne({ where: { id: customerId }, transaction });
+
+      await Otps.destroy({
+        where: { phoneCountryCode: user.phoneCountryCode, phoneNumber: user.phoneNumber },
+        force: true,
+        transaction
+      });
+
+      await user.destroy({ force: true, transaction });
     });
 
     return res.status(200).json({ message: 'Delete success' });
