@@ -1,21 +1,12 @@
 import { constactUsValidator } from '@validators/contact_us.validator';
 import formidable from 'formidable';
-import { Enquiries, EnquiryImages, Users } from '@models';
+import { Enquiries, EnquiryImages } from '@models';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import { uploadFileToS3 } from '@tools/s3';
 import { parsePathForDBStoring } from '@utils/s3.util';
 import S3 from '@configs/s3.config';
 import LISTENER from '@listeners/contact_us.listener';
 import EVENT from '@constants/listener.constant';
-
-/**
- * DELETE
- */
-import ENQUIRY_TYPE from '@constants/enquiry.constant';
-import CONFIG from '@configs/sendgrid.config';
-import { sendMail } from '@tools/sendgrid';
-import EMAIL_TEMPLATE from '@templates/email.template';
-import Moment from 'moment';
 
 export const sendEnquiry = async (req, res, next) => {
   const { id } = req.user;
@@ -57,49 +48,10 @@ export const sendEnquiry = async (req, res, next) => {
         ]
       });
 
-      // LISTENER.emit(EVENT.CONTACT_US.ENQUIY_SENT, payload);
-
-      const decideReceiverEmail = enquiryType => {
-        switch (enquiryType) {
-          case ENQUIRY_TYPE.BILLING:
-            return CONFIG.SENDGRID_BILLING_SENDER;
-
-          case ENQUIRY_TYPE.ENQUIRIES:
-            return CONFIG.SENDGRID_ENQUIRY_SENDER;
-
-          case ENQUIRY_TYPE.SUPPORT:
-            return CONFIG.SENDGRID_SUPPORT_SENDER;
-
-          default:
-            throw new Error('Invalid type given');
-        }
-      };
-
-      const user = await Users.findOne({ where: { id: payload.userId } });
-
-      const theType = decideReceiverEmail(payload.type);
-
-      return res.status(200).json({ message: theType });
-
-      await sendMail({
-        receiverFirstName: 'Thryffy',
-        receiverEmail: decideReceiverEmail(payload.type),
-        template: EMAIL_TEMPLATE.CONTACT_US,
-        templateData: {
-          customerName: user.fullName || user.username || 'NA',
-          customerEmail: user.email || 'NA',
-          userId: payload.userId,
-          type: payload.type,
-          subject: payload.subject,
-          description: payload.description,
-          images: payload.images.map(instance => ({ path: instance.path })),
-          dateTime: Moment(payload.createdAt).format('DD-MM-YY HH:mm')
-        }
-      });
+      LISTENER.emit(EVENT.CONTACT_US.ENQUIY_SENT, payload);
 
       return res.status(200).json({ message: 'success', payload });
     } catch (e) {
-      // return res.status(200).json({ message: e.response.data.errors });
       return next(e);
     }
   });
