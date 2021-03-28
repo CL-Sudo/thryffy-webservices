@@ -97,7 +97,7 @@ export const sendEnquiry = async (req, res, next) => {
 
       return res.status(200).json({ message: 'success', payload });
     } catch (e) {
-      return res.status(200).json({ message: e.response.data.errors, email:  });
+      return res.status(200).json({ message: e.response.data.errors });
       // return next(e.response.data.errors);
     }
   });
