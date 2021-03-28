@@ -77,7 +77,9 @@ export const sendEnquiry = async (req, res, next) => {
 
       const user = await Users.findOne({ where: { id: payload.userId } });
 
-      const data = await sendMail({
+      throw new Error(decideReceiverEmail(payload.type));
+
+      await sendMail({
         receiverFirstName: 'Thryffy',
         receiverEmail: decideReceiverEmail(payload.type),
         template: EMAIL_TEMPLATE.CONTACT_US,
@@ -95,7 +97,7 @@ export const sendEnquiry = async (req, res, next) => {
 
       return res.status(200).json({ message: 'success', payload });
     } catch (e) {
-      return res.status(200).json({ message: e.response.data.errors });
+      return res.status(200).json({ message: e.response.data.errors, email:  });
       // return next(e.response.data.errors);
     }
   });
