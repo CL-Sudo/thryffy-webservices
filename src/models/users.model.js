@@ -326,6 +326,13 @@ const Users = SequelizeConnector.define(
             })
           );
         }
+      },
+      afterDestroy: async (user, { transaction }) => {
+        await Otps.destroy({
+          where: { phoneCountryCode: user.phoneCountryCode, phoneNumber: user.number },
+          transaction,
+          force: true
+        });
       }
     }
   }
