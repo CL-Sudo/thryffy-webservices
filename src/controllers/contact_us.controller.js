@@ -89,7 +89,7 @@ export const sendEnquiry = async (req, res, next) => {
           subject: payload.subject,
           description: payload.description,
           images: payload.images.map(instance => ({ path: instance.path })),
-          dateTime: Moment(payload.data.createdAt).format('DD-MM-YY HH:mm')
+          dateTime: Moment(payload.createdAt).format('DD-MM-YY HH:mm')
         }
       });
 
