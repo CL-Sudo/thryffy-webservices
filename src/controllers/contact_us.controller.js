@@ -77,7 +77,9 @@ export const sendEnquiry = async (req, res, next) => {
 
       const user = await Users.findOne({ where: { id: payload.userId } });
 
-      throw new Error(decideReceiverEmail(payload.type));
+      const theType = decideReceiverEmail(payload.type);
+
+      return res.status(200).json({ message: theType });
 
       await sendMail({
         receiverFirstName: 'Thryffy',
