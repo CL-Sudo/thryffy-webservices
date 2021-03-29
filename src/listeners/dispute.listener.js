@@ -74,10 +74,12 @@ const pushNotification = async order => {
 const sendEmailToAdmin = async response => {
   try {
     const order = await SalesOrders.findOne({
-      id: response.dispute.orderId
+      where: { id: response.dispute.orderId }
     });
 
-    const seller = await Users.findeOne({ where: { id: order.sellerId } });
+    const buyer = await Users.findOne({ where: { id: order.userId } });
+
+    const seller = await Users.findOne({ where: { id: order.sellerId } });
 
     const disputeTitle = response.dispute.title;
     const disputeDescription = response.dispute.description;
@@ -99,6 +101,8 @@ const sendEmailToAdmin = async response => {
       templateData: {
         sellerName: seller.fullName || seller.username || 'NA',
         sellerEmail: seller.email || 'NA',
+        buyerName: buyer.fullName || buyer.username || 'NA',
+        buyerEmail: buyer.email || 'NA',
         orderRef: order.orderRef,
         disputeTitle,
         disputeDescription,
@@ -110,7 +114,8 @@ const sendEmailToAdmin = async response => {
       }
     });
   } catch (e) {
-    console.log('e', e);
+    console.log(`e`, e);
+    console.log('e', e.response.data.errors);
   }
 };
 
