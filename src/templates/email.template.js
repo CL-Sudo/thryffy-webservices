@@ -1,5 +1,5 @@
 export default {
-  DISPUTE_RESPONDED_EMAIL: 'd-7ad74d14c0ba4b8dbc14c0648e35a9cc',
+  DISPUTE_RESPONDED_EMAIL: 'd-74ccfa757ebc4896b4413adcbb404e58',
 
   DISPUTE_CREATED_EMAIL: 'd-7ad74d14c0ba4b8dbc14c0648e35a9cc',
 
