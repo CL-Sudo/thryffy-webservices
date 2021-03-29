@@ -140,7 +140,7 @@ const sendEmailWhenBuyerDispute = async (order, dispute) => {
       }
     });
   } catch (e) {
-    console.log('e', e);
+    console.log('e', e.response.data.errors);
   }
 };
 
