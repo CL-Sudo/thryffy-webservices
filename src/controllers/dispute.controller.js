@@ -178,3 +178,17 @@ export const getDispute = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const getResponse = async (req, res, next) => {
+  try {
+    const { orderId } = req.params;
+    const dispute = await Disputes.findOne({ where: { orderId } });
+    const response = await DisputeResponses.findOne({
+      where: { disputeId: dispute.id },
+      include: [{ model: ResponseImages, as: 'images' }]
+    });
+    return res.status(200).json({ message: 'success', payload: response });
+  } catch (e) {
+    return next(e);
+  }
+};

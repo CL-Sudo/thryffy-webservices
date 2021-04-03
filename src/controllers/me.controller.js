@@ -246,6 +246,15 @@ export const updateProfile = async (req, res, next) => {
       const { username, email } = fields;
       const { id } = req.user;
 
+      const userById = await Users.findOne({ where: { id } });
+      if (
+        userById.username !== null &&
+        userById.username.length > 0 &&
+        username !== userById.username
+      ) {
+        throw new Error('You are not allowed to change your username');
+      }
+
       if (username) {
         const userByUsername = await Users.findOne({ where: { username } });
         if (userByUsername && id !== userByUsername.id) {

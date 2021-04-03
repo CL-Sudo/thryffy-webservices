@@ -1,14 +1,11 @@
 import Router from 'express';
-import { create, respond, getDispute } from '@controllers/dispute.controller';
-import { crud } from '@utils/controller-crud.util';
-import { Disputes } from '@models';
-
-const controller = crud(Disputes);
+import { create, respond, getDispute, getResponse } from '@controllers/dispute.controller';
 
 const router = new Router();
 
 router.post('/', create);
 router.post('/respond', respond);
 router.get('/:orderId', getDispute);
+router.get('/:orderId/dispute-response', getResponse);
 
 export default router;
