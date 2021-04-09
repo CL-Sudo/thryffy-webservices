@@ -2,13 +2,20 @@ import moment from 'moment';
 import R from 'ramda';
 
 import { EventEmitter } from 'events';
-import { CartItems, Users, Notifications, Addresses, NotificationSettings } from '@models';
+import {
+  CartItems,
+  Users,
+  Notifications,
+  Addresses,
+  NotificationSettings,
+  SalesOrders
+} from '@models';
 import { SequelizeConnector as sequelize } from '@configs/sequelize-connector.config';
 import { sendCloudMessage } from '@services/notification.service';
 
 import SENDGRID_CONFIG from '@configs/sendgrid.config';
 
-import { SALE_MADE_SELLER } from '@templates/notification.template';
+import { SALE_MADE_SELLER, PAYMENT } from '@templates/notification.template';
 import EMAIL_TEMPLATE from '@templates/email.template';
 
 import { sendMail } from '@tools/sendgrid';
@@ -25,6 +32,9 @@ const pushNotification = async (productIds, order) => {
       where: { id: order.sellerId },
       include: [{ model: NotificationSettings, as: 'notificationSetting' }]
     });
+
+    const buyer = await Users.findOne({ where: { id: order.userId } });
+
     await sequelize.transaction(async transaction => {
       const notification = await Notifications.create(
         {
@@ -45,6 +55,28 @@ const pushNotification = async (productIds, order) => {
         token: seller.deviceToken,
         title: SALE_MADE_SELLER.TITLE,
         message: SALE_MADE_SELLER.DESCRIPTION,
+        data
+      });
+    });
+
+    await sequelize.transaction(async transaction => {
+      const notification = await Notifications.create(
+        {
+          title: PAYMENT.ORDER.SUCCESS(order.orderRef),
+          notifierId: order.userId,
+          actorId: order.userId,
+          type: NOTIFICATION_TYPE.PAYMENT.ORDER.SUCCESS,
+          notifiableId: order.id,
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+        },
+        { transaction }
+      );
+
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
+      await sendCloudMessage({
+        token: buyer.deviceToken,
+        title: PAYMENT.ORDER.SUCCESS(order.orderRef),
         data
       });
     });
@@ -110,6 +142,42 @@ const removeCartItems = async productIds => {
   }
 };
 
+const pushFailedPaymentNotification = async orderId => {
+  try {
+    await sequelize.transaction(async transaction => {
+      const order = await SalesOrders.scope({
+        method: ['orderDetails', orderId]
+      }).findOne({ transaction });
+
+      const buyer = await Users.findOne({ where: { id: order.userId }, transaction });
+
+      const notification = await Notifications.create(
+        {
+          title: PAYMENT.ORDER.FAILED,
+          notifierId: order.userId,
+          actorId: order.userId,
+          type: NOTIFICATION_TYPE.PAYMENT.ORDER.FAILED,
+          notifiableId: order.id,
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+        },
+        { transaction }
+      );
+
+      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
+      await sendCloudMessage({
+        token: buyer.deviceToken,
+        title: PAYMENT.ORDER.FAILED,
+        data
+      });
+    });
+  } catch (e) {
+    console.log(`e`, e);
+  }
+};
+
 cartListener.on(LISTENER.CART.PAYMENT_MADE, pushNotification);
 cartListener.on(LISTENER.CART.PAYMENT_MADE, sendEmail);
 cartListener.on(LISTENER.CART.PAYMENT_MADE, removeCartItems);
+
+cartListener.on(LISTENER.CART.PAYMENT_NOT_MADE, pushFailedPaymentNotification);

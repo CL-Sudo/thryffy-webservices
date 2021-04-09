@@ -97,18 +97,18 @@ export const billplzCallback = async (req, res, next) => {
           { transaction }
         );
 
-        if (paid === 'true') {
-          const orderItems = await OrderItems.findAll({
-            where: { salesOrderId: orderId },
-            include: [
-              {
-                model: Products,
-                as: 'product'
-              }
-            ],
-            transaction
-          });
+        const orderItems = await OrderItems.findAll({
+          where: { salesOrderId: orderId },
+          include: [
+            {
+              model: Products,
+              as: 'product'
+            }
+          ],
+          transaction
+        });
 
+        if (paid === 'true') {
           const productIds = orderItems.map(instance => instance.product.id);
 
           await Promise.all(
@@ -121,6 +121,8 @@ export const billplzCallback = async (req, res, next) => {
           const payload = R.assoc('seller', seller)(order.dataValues);
 
           cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
+        } else {
+          cartListener.emit(LISTENER.CART.PAYMENT_NOT_MADE, orderId);
         }
       });
     }
@@ -137,7 +139,7 @@ export const billplzRedirect = async (req, res) => {
 
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 4500);
+        setTimeout(resolve, 5000);
       });
 
     await wait();
@@ -173,7 +175,7 @@ export const subscriptionRedirect = async (req, res) => {
 
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 4500);
+        setTimeout(resolve, 5000);
       });
 
     await wait();
@@ -249,7 +251,6 @@ export const subscribeCallback = async (req, res, next) => {
 
       subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
     }
-
     return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);

@@ -19,5 +19,12 @@ export default {
 
   PUBLICATION: {
     UNPUBLISHED: 'PRODUCT UNPUBLISHED'
+  },
+
+  PAYMENT: {
+    ORDER: {
+      SUCCESS: 'ORDER PAYMENT SUCCESS',
+      FAILED: 'ORDER PAYMENT FAILED'
+    }
   }
 };

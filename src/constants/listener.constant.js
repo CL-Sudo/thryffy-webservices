@@ -5,7 +5,8 @@ export default {
   },
 
   CART: {
-    PAYMENT_MADE: 'PAYMENT MADE'
+    PAYMENT_MADE: 'PAYMENT MADE',
+    PAYMENT_NOT_MADE: 'PAYMENT NOT MADE'
   },
 
   SUBSCRIPTION: {
