@@ -29,3 +29,20 @@ export const PUBLICATION = {
 export const DELIVERY = {
   COMPLETED: orderRef => `Your order ${orderRef} has just delivered successfully!`
 };
+
+export const PAYMENT = {
+  ORDER: {
+    SUCCESS: orderRef =>
+      `Success! Payment for your order ${orderRef} is successfully processed, thank you for shopping with us!`,
+
+    FAILED:
+      'Oops, something wrong while processing payment for your order. Please contact your bank for further validation.'
+  },
+
+  SUBSCRIPTION: {
+    SUCCESS: 'Success! Payment for your subscription is successfully processed, thank you!',
+
+    FAILED:
+      'Oops, something wrong while processing payment for your subscription. Please contact your bank for further validation.'
+  }
+};
