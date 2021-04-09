@@ -37,12 +37,5 @@ export const PAYMENT = {
 
     FAILED:
       'Oops, something wrong while processing payment for your order. Please contact your bank for further validation.'
-  },
-
-  SUBSCRIPTION: {
-    SUCCESS: 'Success! Payment for your subscription is successfully processed, thank you!',
-
-    FAILED:
-      'Oops, something wrong while processing payment for your subscription. Please contact your bank for further validation.'
   }
 };
