@@ -17,7 +17,6 @@ import { CartItems } from '@models/cart_items.model';
 import { Brands } from '@models/brands.model';
 import { Sizes } from '@models/sizes.model';
 import { Conditions } from '@models/conditions.model';
-import { Op } from 'sequelize';
 import R from 'ramda';
 
 const Products = SequelizeConnector.define(
