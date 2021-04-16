@@ -399,3 +399,26 @@ export const getSellerReviews = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const publication = async (req, res, next) => {
+  try {
+    const { id: userId } = req.user;
+    const { productId } = req.params;
+    const { isPublished } = req.body;
+
+    const product = await Products.findOne({ where: { id: productId } });
+
+    if (!product) {
+      throw new Error('Invalid productId given');
+    }
+
+    if (product.userId !== userId) {
+      throw new Error(`Product ${productId} does not to user ${userId}`);
+    }
+
+    await product.update({ isPublished });
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
