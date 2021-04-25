@@ -310,3 +310,11 @@ export const trackingMoreWebHook = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const createCreditCardCallback = async (req, res, next) => {
+  try {
+    return res.status(200).json({ message: 'success', payload: {} });
+  } catch (e) {
+    return next(e);
+  }
+};

@@ -47,4 +47,6 @@ router.patch('/identity', validators.updateIdentityNoValidators, controllers.upd
 
 router.post('/verify-otp', controllers.verifyOTP);
 
+router.post('/add-credit-card', controllers.addCreditCard);
+
 export default router;
