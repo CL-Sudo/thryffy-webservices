@@ -1,3 +1,4 @@
+/* eslint-disable class-methods-use-this */
 import axios from 'axios';
 import R from 'ramda';
 import crypto from 'crypto';
@@ -16,6 +17,10 @@ class Billplz {
     this.url = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_URL : CONFIG.URL;
     this.signatureKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_SIGNATURE_KEY : CONFIG.SIGNATURE_KEY;
     this.collectionId = CONFIG.COLLECTION_ID;
+    this._header = {
+      'Content-Type': 'application/json',
+      Authorization: `Basic ${base64.encode('29c1eb6d-f8b5-4b33-907a-df5ac16d90d1')}`
+    };
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -121,6 +126,56 @@ class Billplz {
           Authorization: `Basic ${base64.encode(this.apiKey)}`
         }
       });
+      return Promise.resolve(res);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+  async createCreaditCard({ name, email, phone, callbackUrl }) {
+    try {
+      const res = await axios({
+        url: 'https://www.billplz.com/api/v4/cards',
+        method: 'POST',
+        headers: this._header,
+        data: {
+          name,
+          email,
+          phone,
+          callback_url: callbackUrl
+        }
+      });
+
+      return Promise.resolve(res);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+  async deleteCreditCard(token, cardId) {
+    try {
+      const res = await axios({
+        method: 'DELETE',
+        url: `https://www.billplz.com/api/v4/cards/${cardId}`,
+        headers: this._header,
+        data: { token }
+      });
+
+      return Promise.resolve(res);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+  async chargeCreditCard(token, billId, cardId) {
+    try {
+      const res = await axios({
+        method: 'POST',
+        url: `https://www.billplz.com/api/v4/bills/${billId}/charge`,
+        headers: this._header,
+        data: { token, card_id: cardId }
+      });
+
       return Promise.resolve(res);
     } catch (e) {
       return Promise.reject(e);

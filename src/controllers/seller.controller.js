@@ -346,7 +346,9 @@ export const getProducts = async (req, res, next) => {
     const { sellerId } = req.params;
     const { limit, offset } = req.query;
 
-    const products = await Products.scope('default').findAll({ where: { userId: sellerId } });
+    const products = await Products.scope('default').findAll({
+      where: { userId: sellerId, isPublished: true }
+    });
 
     return res.status(200).json({
       message: 'success',

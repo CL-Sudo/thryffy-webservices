@@ -39,6 +39,12 @@ import { sendSMS } from '@services/sms.service';
 
 import { SMSVerifcation } from '@templates/sms.template';
 
+import { Billplz } from '@services/billplz.service';
+
+const nodeEnv = process.env.NODE_ENV;
+const serverUrl = process.env.SERVER_URL;
+const ngrokUrl = process.env.NGROK_URL;
+
 export const addAddress = async (req, res, next) => {
   try {
     requestValidator(req);
@@ -780,6 +786,28 @@ export const verifyOTP = async (req, res, next) => {
     await existingOTP.update({ isVerified: true });
 
     return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const addCreditCard = async (req, res, next) => {
+  try {
+    const { id: userId } = req.user;
+    const user = await Users.findOne({ where: { id: userId } });
+    const billplzService = new Billplz();
+
+    const callbackUrl = `${
+      nodeEnv === 'DEV' ? ngrokUrl : serverUrl
+    }/api/publics//billplz/create-credit-card/callback`;
+
+    const response = await billplzService.createCreaditCard({
+      name: `${user.fullName}`,
+      email: user.email,
+      phone: user.completePhoneNumber,
+      callbackUrl
+    });
+    return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
     return next(e);
   }
