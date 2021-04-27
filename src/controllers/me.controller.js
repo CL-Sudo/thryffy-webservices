@@ -378,8 +378,8 @@ export const listOrders = async (req, res, next) => {
       try {
         const where =
           unsold === 'false'
-            ? { userId: id, isPublished: false }
-            : { userId: id, isPurchased: false, isPublished: false };
+            ? { userId: id, isPublished: true }
+            : { userId: id, isPurchased: false, isPublished: true };
         const result = await Products.scope('listings').findAll({ where });
         await Promise.all(
           R.map(async product => {
