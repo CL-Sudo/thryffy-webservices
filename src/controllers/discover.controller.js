@@ -64,7 +64,7 @@ export const discoverList = async (req, res, next) => {
             )
           ]
         },
-        isPublished: true
+        is_published: true
       }
     ];
 
