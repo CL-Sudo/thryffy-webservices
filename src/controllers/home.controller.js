@@ -125,6 +125,7 @@ export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
     const products = await Products.findAll({
+      isPublished: true,
       limit: 1000,
       order: [['createdAt', 'DESC']]
     });
