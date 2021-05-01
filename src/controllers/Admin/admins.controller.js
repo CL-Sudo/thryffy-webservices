@@ -95,10 +95,10 @@ export const adminChangePassword = async (req, res, next) => {
 
     const validPassword = await admin.comparePassword(currentPassword);
     if (!validPassword) {
-      throw new Error('Password is incorrect, please try again...');
+      throw new Error('Password is incorrect, please try again.');
     }
     if (password !== confirmPassword) {
-      throw new Error('Confirmation Password does not match with password.');
+      throw new Error('New passwords does not match.');
     }
 
     admin.update({
