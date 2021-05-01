@@ -231,7 +231,11 @@ export const changePassword = async (req, res, next) => {
 
     const isValid = await user.comparePassword(oldPassword);
 
-    if (!isValid) throw new Error('Invalid Old Password Provided');
+    if (!isValid) throw new Error('Please input your correct old password.');
+
+    if (oldPassword === password) {
+      throw new Error('Please input a different password.');
+    }
 
     user.update({ password: hashPassword(password) });
 

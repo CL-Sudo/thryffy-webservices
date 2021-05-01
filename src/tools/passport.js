@@ -41,7 +41,7 @@ passport.use(
 
         const validPassword = await user.comparePassword(password);
         if (!validPassword)
-          return done(null, false, { message: 'Password is incorrect, please try again...' });
+          return done(null, false, { message: 'Password is incorrect, please try again.' });
 
         return done(null, user, { message: 'Logged in Successfully' });
       } catch (error) {
@@ -68,7 +68,7 @@ passport.use(
 
         const validPassword = await admin.comparePassword(password);
         if (!validPassword) {
-          return done(null, false, { message: 'Password is incorrect, please try again...' });
+          return done(null, false, { message: 'Password is incorrect, please try again.' });
         }
 
         return done(null, admin, { message: 'Logged in Successfully' });

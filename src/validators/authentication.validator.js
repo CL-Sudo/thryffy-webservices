@@ -74,7 +74,7 @@ export const resetPasswordValidator = [
     .custom((confirmPassword, { req }) => {
       const { password } = req.body;
       if (password !== confirmPassword) {
-        throw new Error('Confirmation password does not match.');
+        throw new Error('New passwords does not match.');
       }
       return Promise.resolve();
     })

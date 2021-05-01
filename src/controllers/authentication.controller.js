@@ -451,9 +451,9 @@ export const verifyOTP = async (req, res, next) => {
       throw new Error('Invalid phone number given');
     }
 
-    if (existingOTP.isVerified) {
-      throw new Error('Your phone number has been verified.');
-    }
+    // if (existingOTP.isVerified) {
+    //   throw new Error('Your phone number has been verified.');
+    // }
 
     if (existingOTP.otp !== otp) {
       throw new Error(
@@ -623,9 +623,9 @@ export const userRegistration = async (req, res, next) => {
     const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
     const otp = generateOTP();
 
-    if (existingOTP && existingOTP.isVerified) {
-      throw new Error('This phoneNumber has been verified');
-    }
+    // if (existingOTP && existingOTP.isVerified) {
+    //   throw new Error('This phoneNumber has been verified');
+    // }
 
     if (!R.isNil(existingOTP)) {
       await existingOTP.update({
@@ -746,9 +746,9 @@ export const resendOTP = async (req, res, next) => {
       throw new Error('Invalid phone number given');
     }
 
-    if (existingOTP.isVerified) {
-      throw new Error('You account has been verified');
-    }
+    // if (existingOTP.isVerified) {
+    //   throw new Error('You account has been verified');
+    // }
 
     const otpValidity = moment().add(10, 'minutes');
     const completePhoneNumber = `${phoneCountryCode}${phoneNumber}`;

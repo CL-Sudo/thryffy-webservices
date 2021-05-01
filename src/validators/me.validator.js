@@ -44,7 +44,7 @@ export const changePasswordValidator = [
     .trim()
     .custom((confirmPassword, { req }) => {
       if (confirmPassword !== req.body.password) {
-        throw new Error('Confirmation password does not match.');
+        throw new Error('New passwords does not match.');
       }
       return Promise.resolve();
     })
