@@ -262,6 +262,10 @@ export const trackingMoreWebHook = async (req, res, next) => {
     const { tracking_number: deliveryTrackingNo, status } = req.body.data;
     const { timeStr, signature } = req.body.verifyInfo;
 
+    // console.log(`req.body`, req.body);
+
+    // return res.status(200).json({ payload: req.body.data });
+
     const isSignatureValid = await vertifySignature(timeStr, signature);
 
     if (isSignatureValid) {

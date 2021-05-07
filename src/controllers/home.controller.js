@@ -98,6 +98,8 @@ export const getCuratedList = async (req, res, next) => {
       isPurchased: false
     });
 
+    console.log(`where`, where);
+
     const products = await Products.scope('default').findAll({
       where
     });

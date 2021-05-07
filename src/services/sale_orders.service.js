@@ -9,12 +9,12 @@ export const setAsDeliveredAfterShipping = async () => {
     });
 
     const ordersToBeMarked = orders.filter(instance => {
-      const formattedDate = moment(instance.shippedAt).format('YYYY-MM-DD');
+      const formattedDate = moment(instance.shippedAt).format('YYYY-MM-DD HH:mm:ss');
       const currentDate = moment();
 
-      const diff = currentDate.diff(formattedDate, 'days');
+      const diff = currentDate.diff(formattedDate, 'hours');
 
-      return diff >= 7;
+      return diff >= 24;
     });
 
     await Promise.all(
