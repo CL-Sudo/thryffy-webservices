@@ -98,14 +98,12 @@ export const getCuratedList = async (req, res, next) => {
       isPurchased: false
     });
 
-    console.log(`where`, where);
-
     const products = await Products.scope('default').findAll({
       where
     });
 
     const rows = await Promise.all(
-      paginate(limit)(offset)(products).map(async row => {
+      paginate(limit)(offset)(shuffle(products)).map(async row => {
         await row.getExtraFields(id);
         return row;
       })
