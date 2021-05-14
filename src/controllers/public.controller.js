@@ -260,11 +260,8 @@ export const subscribeCallback = async (req, res, next) => {
 export const trackingMoreWebHook = async (req, res, next) => {
   try {
     const { tracking_number: deliveryTrackingNo, status } = req.body.data;
+    const { trackinfo } = req.body.data.origin_info;
     const { timeStr, signature } = req.body.verifyInfo;
-
-    // console.log(`req.body`, req.body);
-
-    // return res.status(200).json({ payload: req.body.data });
 
     const isSignatureValid = await vertifySignature(timeStr, signature);
 
@@ -280,14 +277,16 @@ export const trackingMoreWebHook = async (req, res, next) => {
           transaction
         });
 
-        await order.update({ deliveryStatus: DELIVERY_STATUS.DELIVERED }, { transaction });
-
         await order.trackingmore.update(
           { trackingmorePayload: JSON.stringify(req.body.data) },
           { transaction }
         );
 
-        if (R.toUpper(status) === 'DELIVERED') {
+        if (
+          R.toUpper(status) === 'DELIVERED' &&
+          R.toUpper(trackinfo[0].checkpoint_status) === 'DELIVERED'
+        ) {
+          await order.update({ deliveryStatus: DELIVERY_STATUS.DELIVERED }, { transaction });
           await Notifications.create(
             {
               title: DELIVERY.COMPLETED(order.orderRef),
