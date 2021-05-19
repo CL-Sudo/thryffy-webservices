@@ -7,6 +7,7 @@ import { getChildIds } from '@services';
 import { normaliseBrand } from '@utils/product.utils';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { paginate } from '@utils/utils';
+import _ from 'lodash';
 
 export const home = async (req, res, next) => {
   try {
@@ -189,7 +190,7 @@ export const discoverList = async (req, res, next) => {
     )(products);
 
     const sorter = R.cond([
-      [R.always(order === 'RELEVANCE'), R.identity],
+      [R.always(order === 'RELEVANCE'), _.shuffle],
       [R.always(order === 'ASC'), R.sortBy(R.prop('displayPrice'))],
       [
         R.always(order === 'DESC'),

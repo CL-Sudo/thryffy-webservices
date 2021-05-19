@@ -13,10 +13,14 @@ const getCollectionId = collectionId => (NODE_ENV === 'DEV' ? testCollectionId :
 
 class Billplz {
   constructor() {
-    this.apiKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_API_KEY : CONFIG.API_KEY;
-    this.url = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_URL : CONFIG.URL;
-    this.signatureKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_SIGNATURE_KEY : CONFIG.SIGNATURE_KEY;
-    this.collectionId = CONFIG.COLLECTION_ID;
+    // this.apiKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_API_KEY : CONFIG.API_KEY;
+    this.apiKey = CONFIG.SANDBOX_API_KEY;
+    // this.url = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_URL : CONFIG.URL;
+    this.url = CONFIG.SANDBOX_URL;
+    // this.signatureKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_SIGNATURE_KEY : CONFIG.SIGNATURE_KEY;
+    this.signatureKey = CONFIG.SANDBOX_SIGNATURE_KEY;
+    // this.collectionId = CONFIG.COLLECTION_ID;
+    this.collectionId = testCollectionId;
     this._header = {
       'Content-Type': 'application/json',
       Authorization: `Basic ${base64.encode('29c1eb6d-f8b5-4b33-907a-df5ac16d90d1')}`
