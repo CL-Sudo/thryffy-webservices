@@ -11,6 +11,8 @@ const { NODE_ENV } = process.env;
 const testCollectionId = '8gtte95c';
 const getCollectionId = collectionId => (NODE_ENV === 'DEV' ? testCollectionId : collectionId);
 
+//
+
 class Billplz {
   constructor() {
     this.apiKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_API_KEY : CONFIG.API_KEY;
