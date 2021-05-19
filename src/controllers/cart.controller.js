@@ -228,7 +228,8 @@ export const pay = async (req, res, next) => {
     const billplz = new Billplz();
 
     const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
-    const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
+    // const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
+    const serverUrl = NGROK_URL;
 
     const response = await billplz.createBill({
       amount: order.total,
