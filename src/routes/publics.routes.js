@@ -4,8 +4,9 @@ import {
   subscribeCallback,
   subscriptionRedirect,
   billplzRedirect,
-  trackingMoreWebHook,
-  createCreditCardCallback
+  trackingMoreWebHook
+  // createCreditCardCallback,
+  // senangpayCallback
 } from '@controllers/public.controller';
 
 import {
@@ -27,8 +28,6 @@ const router = new Router();
 router.route('/billplz/callback').post(billplzCallback);
 router.route('/billplz/redirect').get(billplzRedirect);
 
-router.route('/billplz/create-credit-card/callback').post(createCreditCardCallback);
-
 router.route('/subscriptions/callback').post(subscribeCallback);
 router.route('/subscriptions/redirect').get(subscriptionRedirect);
 
@@ -47,5 +46,7 @@ router.get('/products/:productId/recommendations', youMayAlsoLike);
 router.post('/trackingmore/webhook', trackingMoreWebHook);
 
 router.get('/users/search', searchValidator, search);
+
+// router.post('/senangpay/callback', senangpayCallback);
 
 export default router;
