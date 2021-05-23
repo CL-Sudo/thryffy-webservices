@@ -72,6 +72,7 @@ export const youMayAlsoLike = async (req, res, next) => {
 
     const recommedations = await Products.scope('default').findAll({
       where: {
+        isPublished: true,
         categoryId: product.categoryId
       }
     });

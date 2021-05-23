@@ -314,10 +314,21 @@ export const trackingMoreWebHook = async (req, res, next) => {
   }
 };
 
-export const createCreditCardCallback = async (req, res, next) => {
-  try {
-    return res.status(200).json({ message: 'success', payload: {} });
-  } catch (e) {
-    return next(e);
-  }
-};
+// export const senangpayCallback = async (req, res, next) => {
+//   try {
+//     console.log(`req.params`, req.params);
+//     console.log(`req.query`, req.query);
+//     console.log(`req.body`, req.body);
+//     return res.status(200).json({ message: 'success', payload: {} });
+//   } catch (e) {
+//     return next(e);
+//   }
+// };
+
+// export const createCreditCardCallback = async (req, res, next) => {
+//   try {
+//     return res.status(200).json({ message: 'success', payload: {} });
+//   } catch (e) {
+//     return next(e);
+//   }
+// };
