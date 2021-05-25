@@ -20,7 +20,7 @@ const getLatestCartList = async userId => {
   try {
     const cart = await CartItems.findAll({
       attributes: ['productId'],
-      raw: true,
+      include: [{ model: Products, as: 'product', where: { isPublished: true } }],
       where: {
         userId
       }
