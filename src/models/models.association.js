@@ -175,8 +175,8 @@ Models.Reviews.belongsTo(Models.Users, { foreignKey: 'createdBy', as: 'buyer' })
 /**
  * CartItems
  */
-Models.CartItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'cartItem' });
-Models.CartItems.belongsTo(Models.Users, { foreignKey: 'userId', as: 'cartOnwer' });
+Models.CartItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
+Models.CartItems.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 
 /**
  * Brands
