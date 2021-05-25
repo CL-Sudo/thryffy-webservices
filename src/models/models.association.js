@@ -317,3 +317,10 @@ Models.Comments.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
  * DeliveryStatuses
  */
 Models.DeliveryStatuses.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 'order' });
+
+/**
+ * FavouriteProducts
+ *
+ */
+
+Models.FavouriteProducts.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
