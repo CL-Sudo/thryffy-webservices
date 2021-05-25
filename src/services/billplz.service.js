@@ -122,6 +122,22 @@ class Billplz {
     try {
       const res = await axios({
         method: 'GET',
+        url: `${this.url}/v3/bills/${billId}/transactions`,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Basic ${base64.encode(this.apiKey)}`
+        }
+      });
+      return Promise.resolve(res);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+  async getATransaction(billId) {
+    try {
+      const res = await axios({
+        method: 'GET',
         url: `${this.url}/v3/bills/${billId}`,
         headers: {
           'Content-Type': 'application/json',
