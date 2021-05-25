@@ -4,9 +4,9 @@ import {
   subscribeCallback,
   subscriptionRedirect,
   billplzRedirect,
-  trackingMoreWebHook
-  // createCreditCardCallback,
-  // senangpayCallback
+  trackingMoreWebHook,
+  senangpayCallback,
+  senangpayRedirect
 } from '@controllers/public.controller';
 
 import {
@@ -47,6 +47,7 @@ router.post('/trackingmore/webhook', trackingMoreWebHook);
 
 router.get('/users/search', searchValidator, search);
 
-// router.post('/senangpay/callback', senangpayCallback);
+router.all('/senangpay/callback', senangpayCallback);
+router.all('/senangpay/redirect', senangpayRedirect);
 
 export default router;

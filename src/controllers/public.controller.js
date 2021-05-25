@@ -1,4 +1,5 @@
 import moment from 'moment';
+import _ from 'lodash';
 import R from 'ramda';
 
 import {
@@ -314,21 +315,189 @@ export const trackingMoreWebHook = async (req, res, next) => {
   }
 };
 
-// export const senangpayCallback = async (req, res, next) => {
-//   try {
-//     console.log(`req.params`, req.params);
-//     console.log(`req.query`, req.query);
-//     console.log(`req.body`, req.body);
-//     return res.status(200).json({ message: 'success', payload: {} });
-//   } catch (e) {
-//     return next(e);
-//   }
-// };
+export const senangpayCallback = async (req, res, next) => {
+  try {
+    console.log(
+      `********************************Senangpay Callback********************************`
+    );
+    console.log(`req.params`, req.params);
+    console.log(`req.query`, req.query);
+    console.log(`req.body`, req.body);
+    console.log(
+      `********************************Senangpay Callback********************************`
+    );
 
-// export const createCreditCardCallback = async (req, res, next) => {
-//   try {
-//     return res.status(200).json({ message: 'success', payload: {} });
-//   } catch (e) {
-//     return next(e);
-//   }
-// };
+    const billId = _.get(req, 'body.order_id', req.query.order_id);
+    const email = _.get(req, 'body.email', req.query.email);
+    let status = req.body.status || req.query.status;
+    const amount = (req.body.amount || req.query.amout) / 100;
+
+    // const { order_id: billId, email, phone } = req.query;
+    // const { order_id: billId, email } = req.body;
+    // let { status } = req.body;
+    // const amount = req.body.amount / 100;
+
+    if (status === 1 || status === '1') status = true;
+    if (status === 0 || status === '0') status = false;
+
+    const orderByBillId = await SalesOrders.findOne({ where: { billId } });
+
+    const billplz = new Billplz();
+
+    const response = await billplz.getATransaction(billId);
+    const transactionId = _.get(response, 'data.transactions[0].id', null);
+
+    console.log(`transactionId`, transactionId);
+
+    await sequelize.transaction(async transaction => {
+      // For mechandise
+      if (orderByBillId) {
+        const order = await SalesOrders.scope({
+          method: ['orderDetails', orderByBillId.id]
+        }).findOne({ transaction });
+
+        await order.update(
+          {
+            paymentStatus: status ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
+            deliveryStatus: status ? DELIVERY_STATUS.TO_SHIP : null,
+            transactionId: status ? transactionId : null
+          },
+          { transaction }
+        );
+
+        const orderItems = await OrderItems.findAll({
+          where: { salesOrderId: orderByBillId.id },
+          include: [
+            {
+              model: Products,
+              as: 'product'
+            }
+          ],
+          transaction
+        });
+
+        if (status) {
+          const productIds = orderItems.map(instance => instance.product.id);
+
+          await Promise.all(
+            orderItems.map(async instance => {
+              await instance.product.update({ isPurchased: true, soldAt: new Date() }, transaction);
+            })
+          );
+
+          const { seller } = order.orderItems[0].product;
+          const payload = R.assoc('seller', seller)(order.dataValues);
+
+          cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
+        } else {
+          cartListener.emit(LISTENER.CART.PAYMENT_NOT_MADE, orderByBillId.id);
+        }
+      }
+
+      // For subscription
+      if (!orderByBillId) {
+        const { id: userId } = await Users.findOne({ where: { email } });
+        const { id: packageId } = await Packages.findOne({ where: { price: amount } });
+        const currentSubscription = await Subscriptions.findOne({ where: { userId } });
+
+        if (currentSubscription) {
+          const expiryDate = await decideExpiryDate(packageId, userId);
+          await currentSubscription.update({
+            packageId,
+            expiryDate
+          });
+        } else {
+          const productCount = await Products.count({ where: { userId } });
+          await Subscriptions.create({
+            packageId,
+            listingCount: productCount,
+            userId,
+            expiryDate: moment()
+              .add(1, 'months')
+              .format('YYYY-MM-DD')
+          });
+        }
+
+        const subscription = await Subscriptions.findOne({
+          where: { userId },
+          include: [
+            { model: Users, as: 'user' },
+            { model: Packages, as: 'package' }
+          ]
+        });
+        await subscription.user.update({ hasValidSubscription: true });
+
+        subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
+      }
+    });
+
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    console.log(`e`, e);
+    return next(e);
+  }
+};
+
+export const senangpayRedirect = async (req, res) => {
+  try {
+    console.log(
+      `********************************Senangpay Redirect********************************`
+    );
+    console.log(`req.params`, req.params);
+    console.log(`req.query`, req.query);
+    console.log(`req.body`, req.body);
+    console.log(`********************************Senangpay Redirect****************************`);
+
+    const { order_id: billId, email } = req.query;
+
+    const orderByBillId = await SalesOrders.findOne({ where: { billId } });
+    let payload;
+    const wait = () =>
+      new Promise(async resolve => {
+        setTimeout(resolve, 5000);
+      });
+
+    if (orderByBillId) {
+      await wait();
+
+      payload = await SalesOrders.scope({ method: ['orderDetails', orderByBillId.id] }).findOne();
+    }
+
+    if (!orderByBillId) {
+      const { id: userId } = await Users.findOne({ where: { email } });
+
+      await wait();
+
+      const subscription = await Subscriptions.findOne({
+        where: { userId },
+        include: [{ model: Packages, as: 'package' }]
+      });
+
+      payload = R.isNil(subscription)
+        ? { paymentStatus: PAYMENT_STATUS.FAILED }
+        : { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.dataValues };
+    }
+
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(
+            JSON.stringify({
+              status: true,
+              payload
+            })
+          )}
+        );
+      </script>
+    `);
+  } catch (e) {
+    console.log(`e`, e);
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(JSON.stringify({ status: false, message: e.message }))}
+        );
+      </script>
+    `);
+  }
+};

@@ -40,6 +40,10 @@ const SalesOrders = SequelizeConnector.define(
     userId: foreignKey('user_id', 'users', false),
     sellerId: foreignKey('seller_id', 'users', false),
     addressId: foreignKey('address_id', 'addresses', false),
+    billId: {
+      type: Sequelize.STRING,
+      field: 'bill_id'
+    },
     transactionId: {
       field: 'transaction_id',
       type: Sequelize.STRING(30)
