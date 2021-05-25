@@ -6,9 +6,9 @@ import { paginate } from '@utils';
 const getLatestFavouriteList = async userId => {
   try {
     const favourites = await FavouriteProducts.findAll({
-      raw: true,
       attributes: ['productId'],
-      where: { userId }
+      where: { userId },
+      include: [{ model: Products, as: 'product', where: { isPublished: true } }]
     });
 
     const productIds = R.map(R.prop('productId'), favourites);
