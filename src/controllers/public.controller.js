@@ -317,37 +317,18 @@ export const trackingMoreWebHook = async (req, res, next) => {
 
 export const senangpayCallback = async (req, res, next) => {
   try {
-    console.log(
-      `********************************Senangpay Callback********************************`
-    );
-    console.log(`req.params`, req.params);
-    console.log(`req.query`, req.query);
-    console.log(`req.body`, req.body);
-    console.log(
-      `********************************Senangpay Callback********************************`
-    );
-
-    const billId = _.get(req, 'body.order_id', req.query.order_id);
+    const transactionId = _.get(req, 'body.transaction_id', req.query.transaction_id);
     const email = _.get(req, 'body.email', req.query.email);
     let status = req.body.status || req.query.status;
-    const amount = (req.body.amount || req.query.amout) / 100;
-
-    // const { order_id: billId, email, phone } = req.query;
-    // const { order_id: billId, email } = req.body;
-    // let { status } = req.body;
-    // const amount = req.body.amount / 100;
+    const amount = req.body.amount || req.query.amount;
 
     if (status === 1 || status === '1') status = true;
     if (status === 0 || status === '0') status = false;
 
-    const orderByBillId = await SalesOrders.findOne({ where: { billId } });
-
     const billplz = new Billplz();
+    const billId = await billplz.getBillByTransactionId(transactionId, email, amount);
 
-    const response = await billplz.getATransaction(billId);
-    const transactionId = _.get(response, 'data.transactions[0].id', null);
-
-    console.log(`transactionId`, transactionId);
+    const orderByBillId = await SalesOrders.findOne({ where: { billId } });
 
     await sequelize.transaction(async transaction => {
       // For mechandise
@@ -395,7 +376,7 @@ export const senangpayCallback = async (req, res, next) => {
       }
 
       // For subscription
-      if (!orderByBillId) {
+      if (!orderByBillId && status) {
         const { id: userId } = await Users.findOne({ where: { email } });
         const { id: packageId } = await Packages.findOne({ where: { price: amount } });
         const currentSubscription = await Subscriptions.findOne({ where: { userId } });
@@ -440,21 +421,18 @@ export const senangpayCallback = async (req, res, next) => {
 
 export const senangpayRedirect = async (req, res) => {
   try {
-    console.log(
-      `********************************Senangpay Redirect********************************`
-    );
-    console.log(`req.params`, req.params);
-    console.log(`req.query`, req.query);
-    console.log(`req.body`, req.body);
-    console.log(`********************************Senangpay Redirect****************************`);
+    const transactionId = _.get(req, 'body.transaction_id', req.query.transaction_id);
+    const email = _.get(req, 'body.email', req.query.email);
+    const amount = req.body.amount || req.query.amount;
 
-    const { order_id: billId, email } = req.query;
+    const billplz = new Billplz();
+    const billId = await billplz.getBillByTransactionId(transactionId, email, amount);
 
     const orderByBillId = await SalesOrders.findOne({ where: { billId } });
     let payload;
     const wait = () =>
       new Promise(async resolve => {
-        setTimeout(resolve, 5000);
+        setTimeout(resolve, 10000);
       });
 
     if (orderByBillId) {

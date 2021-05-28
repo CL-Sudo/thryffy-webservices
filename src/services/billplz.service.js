@@ -1,11 +1,17 @@
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-await-in-loop */
 /* eslint-disable class-methods-use-this */
 import axios from 'axios';
 import R from 'ramda';
 import crypto from 'crypto';
+import _ from 'lodash';
 
 import CONFIG from '@configs/billplze.config';
 
 import { base64 } from '@utils';
+import SalesOrders from '@models/sales_orders.model';
+import Users from '@models/users.model';
 
 const { NODE_ENV } = process.env;
 const testCollectionId = '8gtte95c';
@@ -65,7 +71,7 @@ class Billplz {
   }
 
   async createBill({
-    collectionId,
+    // collectionId,
     email,
     mobile,
     name = '',
@@ -122,7 +128,7 @@ class Billplz {
     try {
       const res = await axios({
         method: 'GET',
-        url: `${this.url}/v3/bills/${billId}/transactions`,
+        url: `${this.url}/v3/bills/${billId}`,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Basic ${base64.encode(this.apiKey)}`
@@ -138,7 +144,7 @@ class Billplz {
     try {
       const res = await axios({
         method: 'GET',
-        url: `${this.url}/v3/bills/${billId}`,
+        url: `${this.url}/v3/bills/${billId}/transactions`,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Basic ${base64.encode(this.apiKey)}`
@@ -150,55 +156,77 @@ class Billplz {
     }
   }
 
-  async createCreaditCard({ name, email, phone, callbackUrl }) {
+  async getBillByTransactionId(transactionId, email, amount) {
     try {
-      const res = await axios({
-        url: 'https://www.billplz.com/api/v4/cards',
-        method: 'POST',
-        headers: this._header,
-        data: {
-          name,
-          email,
-          phone,
-          callback_url: callbackUrl
+      const orders = await SalesOrders.findAll({
+        where: { total: amount },
+        include: [{ model: Users, as: 'buyer', where: { email } }],
+        order: [['createdAt', 'DESC']]
+      });
+
+      for (const instance of orders) {
+        const { data } = await this.getATransaction(instance.billId);
+        const i = _.findIndex(data.transactions, t => t.id === transactionId);
+        if (i !== -1) {
+          return Promise.resolve(instance.billId);
         }
-      });
+      }
 
-      return Promise.resolve(res);
+      return Promise.resolve(null);
     } catch (e) {
       return Promise.reject(e);
     }
   }
 
-  async deleteCreditCard(token, cardId) {
-    try {
-      const res = await axios({
-        method: 'DELETE',
-        url: `https://www.billplz.com/api/v4/cards/${cardId}`,
-        headers: this._header,
-        data: { token }
-      });
+  // async createCreaditCard({ name, email, phone, callbackUrl }) {
+  //   try {
+  //     const res = await axios({
+  //       url: 'https://www.billplz.com/api/v4/cards',
+  //       method: 'POST',
+  //       headers: this._header,
+  //       data: {
+  //         name,
+  //         email,
+  //         phone,
+  //         callback_url: callbackUrl
+  //       }
+  //     });
 
-      return Promise.resolve(res);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+  //     return Promise.resolve(res);
+  //   } catch (e) {
+  //     return Promise.reject(e);
+  //   }
+  // }
 
-  async chargeCreditCard(token, billId, cardId) {
-    try {
-      const res = await axios({
-        method: 'POST',
-        url: `https://www.billplz.com/api/v4/bills/${billId}/charge`,
-        headers: this._header,
-        data: { token, card_id: cardId }
-      });
+  // async deleteCreditCard(token, cardId) {
+  //   try {
+  //     const res = await axios({
+  //       method: 'DELETE',
+  //       url: `https://www.billplz.com/api/v4/cards/${cardId}`,
+  //       headers: this._header,
+  //       data: { token }
+  //     });
 
-      return Promise.resolve(res);
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }
+  //     return Promise.resolve(res);
+  //   } catch (e) {
+  //     return Promise.reject(e);
+  //   }
+  // }
+
+  // async chargeCreditCard(token, billId, cardId) {
+  //   try {
+  //     const res = await axios({
+  //       method: 'POST',
+  //       url: `https://www.billplz.com/api/v4/bills/${billId}/charge`,
+  //       headers: this._header,
+  //       data: { token, card_id: cardId }
+  //     });
+
+  //     return Promise.resolve(res);
+  //   } catch (e) {
+  //     return Promise.reject(e);
+  //   }
+  // }
 }
 
 export { Billplz };
