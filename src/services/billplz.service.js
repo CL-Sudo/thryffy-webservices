@@ -21,10 +21,14 @@ const getCollectionId = collectionId => (NODE_ENV === 'DEV' ? testCollectionId :
 
 class Billplz {
   constructor() {
-    this.apiKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_API_KEY : CONFIG.API_KEY;
-    this.url = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_URL : CONFIG.URL;
-    this.signatureKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_SIGNATURE_KEY : CONFIG.SIGNATURE_KEY;
-    this.collectionId = NODE_ENV === 'DEV' ? testCollectionId : CONFIG.COLLECTION_ID;
+    this.apiKey = CONFIG.API_KEY;
+    this.url = CONFIG.URL;
+    this.signatureKey = CONFIG.SIGNATURE_KEY;
+    this.collectionId = CONFIG.COLLECTION_ID;
+    // this.apiKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_API_KEY : CONFIG.API_KEY;
+    // this.url = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_URL : CONFIG.URL;
+    // this.signatureKey = NODE_ENV === 'DEV' ? CONFIG.SANDBOX_SIGNATURE_KEY : CONFIG.SIGNATURE_KEY;
+    // this.collectionId = NODE_ENV === 'DEV' ? testCollectionId : CONFIG.COLLECTION_ID;
     this._header = {
       'Content-Type': 'application/json',
       Authorization: `Basic ${base64.encode('29c1eb6d-f8b5-4b33-907a-df5ac16d90d1')}`
@@ -87,7 +91,8 @@ class Billplz {
       const res = await axios({
         method: 'POST',
         params: {
-          collection_id: NODE_ENV === 'DEV' ? testCollectionId : this.collectionId,
+          collection_id: this.collectionId,
+          // collection_id: NODE_ENV === 'DEV' ? testCollectionId : this.collectionId,
           email,
           mobile,
           name,
@@ -177,56 +182,6 @@ class Billplz {
       return Promise.reject(e);
     }
   }
-
-  // async createCreaditCard({ name, email, phone, callbackUrl }) {
-  //   try {
-  //     const res = await axios({
-  //       url: 'https://www.billplz.com/api/v4/cards',
-  //       method: 'POST',
-  //       headers: this._header,
-  //       data: {
-  //         name,
-  //         email,
-  //         phone,
-  //         callback_url: callbackUrl
-  //       }
-  //     });
-
-  //     return Promise.resolve(res);
-  //   } catch (e) {
-  //     return Promise.reject(e);
-  //   }
-  // }
-
-  // async deleteCreditCard(token, cardId) {
-  //   try {
-  //     const res = await axios({
-  //       method: 'DELETE',
-  //       url: `https://www.billplz.com/api/v4/cards/${cardId}`,
-  //       headers: this._header,
-  //       data: { token }
-  //     });
-
-  //     return Promise.resolve(res);
-  //   } catch (e) {
-  //     return Promise.reject(e);
-  //   }
-  // }
-
-  // async chargeCreditCard(token, billId, cardId) {
-  //   try {
-  //     const res = await axios({
-  //       method: 'POST',
-  //       url: `https://www.billplz.com/api/v4/bills/${billId}/charge`,
-  //       headers: this._header,
-  //       data: { token, card_id: cardId }
-  //     });
-
-  //     return Promise.resolve(res);
-  //   } catch (e) {
-  //     return Promise.reject(e);
-  //   }
-  // }
 }
 
 export { Billplz };

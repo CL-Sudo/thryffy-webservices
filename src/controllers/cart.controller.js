@@ -199,7 +199,7 @@ export const pay = async (req, res, next) => {
           subTotal,
           shippingFeeId,
           tax,
-          total
+          total: 2
         },
         { transaction }
       );
