@@ -424,6 +424,9 @@ export const senangpayRedirect = async (req, res) => {
     const transactionId = _.get(req, 'body.transaction_id', req.query.transaction_id);
     const email = _.get(req, 'body.email', req.query.email);
     const amount = req.body.amount || req.query.amount;
+    const { message } = req.query;
+
+    const isPaymentSuccessful = message === 'Payment_was_successful';
 
     const billplz = new Billplz();
     const billId = await billplz.getBillByTransactionId(transactionId, email, amount);
@@ -439,6 +442,10 @@ export const senangpayRedirect = async (req, res) => {
       await wait();
 
       payload = await SalesOrders.scope({ method: ['orderDetails', orderByBillId.id] }).findOne();
+
+      if (isPaymentSuccessful) {
+        await payload.update({ paymentStatus: PAYMENT_STATUS.SUCCESS });
+      }
     }
 
     if (!orderByBillId) {
@@ -451,9 +458,9 @@ export const senangpayRedirect = async (req, res) => {
         include: [{ model: Packages, as: 'package' }]
       });
 
-      payload = R.isNil(subscription)
-        ? { paymentStatus: PAYMENT_STATUS.FAILED }
-        : { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.dataValues };
+      payload = isPaymentSuccessful
+        ? { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.dataValues }
+        : { paymentStatus: PAYMENT_STATUS.FAILED };
     }
 
     return res.status(200).send(`
