@@ -1,6 +1,7 @@
 import { getTrackingResult } from '@services/trackingmore.service';
 import { DeliveryStatuses, SalesOrders } from '@models';
 import R from 'ramda';
+import * as _ from 'lodash';
 
 export const getTrackingDataRequest = async (req, res, next) => {
   try {
@@ -27,21 +28,24 @@ export const getTrackingInfoByOrderId = async (req, res, next) => {
       include: [{ model: DeliveryStatuses, as: 'trackingmore' }]
     });
 
+    if (!order) throw new Error('Invalid order id given');
+
     if (id !== order.sellerId && id !== order.userId) {
       throw new Error('Request declined');
     }
 
+    const trackingmorePayload = _.get(order, 'trackingmore.trackingmorePayload');
+
     let trackinfo;
 
-    if (R.isEmpty(R.pathOr('', ['trackingmore', 'trackingmorePayload'], order))) {
+    if (R.isEmpty(trackingmorePayload) || R.isNil(trackingmorePayload)) {
       trackinfo = [];
     } else {
-      trackinfo = R.path(['origin_info', 'trackinfo'])(
-        JSON.parse(order.trackingmore.trackingmorePayload)
-      );
+      trackinfo = R.pathOr([], ['origin_info', 'trackinfo'])(JSON.parse(trackingmorePayload));
+      trackinfo = R.reverse(trackinfo);
     }
 
-    return res.status(200).json({ message: 'success', payload: R.reverse(trackinfo) });
+    return res.status(200).json({ message: 'success', payload: trackinfo });
   } catch (e) {
     return next(e);
   }
