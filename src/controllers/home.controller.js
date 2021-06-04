@@ -2,6 +2,7 @@ import R from 'ramda';
 import { shuffle } from 'lodash';
 import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
 import { paginate } from '@utils';
+import { Op } from 'sequelize';
 
 export const getBannersList = async (req, res, next) => {
   try {
@@ -95,7 +96,10 @@ export const getCuratedList = async (req, res, next) => {
       assignCondition
     )({
       isPublished: true,
-      isPurchased: false
+      isPurchased: false,
+      userId: {
+        [Op.ne]: id
+      }
     });
 
     const products = await Products.scope('default').findAll({
