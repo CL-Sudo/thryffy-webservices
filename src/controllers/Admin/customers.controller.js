@@ -157,6 +157,8 @@ export const deleteCustomer = async (req, res, next) => {
         transaction
       });
 
+      await Addresses.destroy({ where: { userId: customerId }, force: true, transaction });
+
       await FavouriteProducts.destroy({ where: { userId: customerId }, force: true, transaction });
 
       await Preferences.destroy({ where: { userId: customerId }, force: true, transaction });
