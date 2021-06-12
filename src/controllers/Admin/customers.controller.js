@@ -169,14 +169,6 @@ export const deleteCustomer = async (req, res, next) => {
 
       const user = await Users.findOne({ where: { id: customerId }, transaction });
 
-      if (user.phoneCountryCode && user.phoneNumber) {
-        await Otps.destroy({
-          where: { phoneCountryCode: user.phoneCountryCode, phoneNumber: user.phoneNumber },
-          force: true,
-          transaction
-        });
-      }
-
       await user.destroy({ force: true, transaction });
     });
 
