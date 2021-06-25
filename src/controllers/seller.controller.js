@@ -16,7 +16,8 @@ import {
   Sizes,
   Users,
   Subscriptions,
-  Reviews
+  Reviews,
+  Galleries
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -106,7 +107,16 @@ export const addProduct = async (req, res, next) => {
           );
 
           await saveProductImages(product.id, images);
-          await setThumbnail(product.id, thumbnailIndex);
+
+          const image = await Galleries.findOne({
+            where: {
+              index: thumbnailIndex,
+              productId: product.id
+            }
+          });
+          await product.update({ thumbnail: image.filePath }, { transaction });
+
+          // await setThumbnail(product.id, thumbnailIndex);
 
           const subscription = await Subscriptions.findOne({ where: { userId: id }, transaction });
           if (!_.isEmpty(subscription)) {
