@@ -84,10 +84,11 @@ export const getPriceSummary = async productIds =>
 
           const total = R.view(totalLens, summaryObj);
 
-          const { subTotal } = summaryObj;
-          const shippingFee = summaryObj.shippingFee.price;
+          // const { subTotal } = summaryObj;
+          // const shippingFee = summaryObj.shippingFee.price;
 
-          const newTax = (subTotal + shippingFee) * CHARGE.TAX_PERCENTAGE + CHARGE.TRANSACTION_FEE;
+          const newTax = CHARGE.TRANSACTION_FEE;
+          // const newTax = (subTotal + shippingFee) * CHARGE.TAX_PERCENTAGE + CHARGE.TRANSACTION_FEE;
 
           const newTotal = R.add(newTax, total);
 
