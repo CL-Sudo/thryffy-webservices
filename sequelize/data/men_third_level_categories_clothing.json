@@ -1,0 +1,86 @@
+[
+  {
+    "title": "Tops & T-Shirts",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Shirts",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Upper Active Wears",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Pajamas Pants",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Pajamas Tops",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Active Wears",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Swim Wears",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Shorts",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Pants",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Jeans",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Sweaters",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Lower Active Wears",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Swim Trunks",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Winter Jackets",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Jackets",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Coats",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Suits",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Blazers",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Special Costumes & Outfits",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Underwears",
+    "shippingFeeId": 1
+  },
+  {
+    "title": "Socks",
+    "shippingFeeId": 1
+  }
+]

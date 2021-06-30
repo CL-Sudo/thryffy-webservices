@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<style>
+  #table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+
+  #table th {
+    /* border: 1px solid #ddd; */
+    padding: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+    background-color: rgba(179, 179, 179, 1);
+    border-left: rgba(179, 179, 179, 1);
+    border-right: rgba(179, 179, 179, 1);
+  }
+
+  #table td {
+    /* border: 1px solid #ddd; */
+    border-bottom: 1px solid #ddd;
+    padding: 5px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .column-offset {
+    background: transparent !important;
+    color: transparent !important;
+    border: none !important;
+  }
+
+  .total-label {
+    background: transparent !important;
+    border: none !important;
+    text-align: right !important;
+    font-weight: bold !important;
+  }
+
+  .total-label::after {
+    content: ":";
+    position: relative;
+    top: -.5px;
+    margin: 0 8px 0 2px;
+  }
+
+  .total-value {
+    border-top: 2px solid black !important;
+    border-bottom: 2px solid black !important;
+    font-weight: bold !important;
+    text-align: right !important;
+  }
+
+  .b-top {
+    border-top: 2px solid black !important;
+  }
+
+  .b-bottom {
+    border-bottom: 2px solid black !important;
+  }
+
+  .empty {
+    border: none !important
+  }
+
+  /* #table tr:nth-child(even) {
+    background-color: #f2f2f2;
+  } */
+</style>
+
+<table id="table">
+  <tr>
+    {{#if withRowCount}}
+    <th width="10">No.</th>
+    {{/if}}
+    {{#if withRowKey}}
+    <th width="10">No.</th>
+    {{/if}}
+    {{#columns}}
+    <th width="{{width}}" style="{{ style }}" class="{{ class }}">{{title}}</th>
+    {{/columns}}
+  </tr>
+
+  {{#if isObject}}
+  {{#each dataSource}}
+  <td colspan="999" style="background-color: #f2f2f2;">
+    <h3 class="m-1">{{@key}}</h3>
+  </td>
+  {{#if this.[value]}}
+  {{#each this.[value] as |row rowKey|}}
+  <tr>
+    {{#if ../../withRowCount}}<td style="text-align: center">{{rowCount}}</td>{{/if}}
+    {{#if ../../withRowKey}}<td style="text-align: center">{{incremented rowKey}}</td>{{/if}}
+    {{#each ../../columns as |column key|}}
+    <td style="{{column.[rowStyle]}}" class="{{ column.[rowClass] }}">{{lookup row column.[dataIndex] }}</td>
+    {{/each}}
+  </tr>
+  {{/each}}
+  {{#if this.[extraComponent]}}
+  {{this.[extraComponent]}}
+  {{/if}}
+  {{else}}
+  {{#each this as |row rowKey|}}
+  <tr>
+    {{#if ../../withRowCount}}<td style="text-align: center">{{rowCount}}</td>{{/if}}
+    {{#if ../../withRowKey}}<td style="text-align: center">{{incremented rowKey}}</td>{{/if}}
+    {{#each ../../columns as |column key|}}
+    <td style="{{column.[rowStyle]}}" class="{{ column.[rowClass] }}">{{lookup row column.[dataIndex] }}</td>
+    {{/each}}
+  </tr>
+  {{/each}}
+  {{/if}}
+  {{/each}}
+  {{else}}
+  {{#each dataSource as |row rowKey|}}
+  <tr>
+    {{#if ../withRowCount}}
+    <td style="text-align: center">{{incremented @index}}</td>
+    {{/if}}
+    {{#if ../withRowKey}}<td style="text-align: center">{{incremented rowKey}}</td>{{/if}}
+    {{#each ../columns as |column key|}}
+    <td style="{{column.[rowStyle]}} {{row.[style]}}" class="{{ column.[rowClass] }} {{row.[class]}}">
+      {{lookup row column.[dataIndex] }}</td>
+    {{/each}}
+  </tr>
+  {{/each}}
+  {{/if}}
+
+  {{#if total}}
+  <tfoot>
+    <tr>
+      <td class="column-offset" colspan="6"></td>
+      <td class="total-label">Total</td>
+      <td class="total-value">{{total}}</td>
+    </tr>
+  </tfoot>
+  {{/if}}
+</table>

@@ -1,4 +1,5 @@
 export * from './configs';
+
 export const authTokenName = `${process.env.GLOBAL_APP_NAME}.at`;
 export const refreshTokenName = `${process.env.GLOBAL_APP_NAME}.rt`;
 

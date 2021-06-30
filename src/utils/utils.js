@@ -1,27 +1,71 @@
 /* eslint-disable consistent-return, no-param-reassign */
 
 import _ from 'lodash';
+import R from 'ramda';
 import moment from 'moment';
 import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
-export const variable = {
-  isClass: func => typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func)),
-  isBoolean: v => typeof v === 'boolean'
+/**
+ *
+ * @param {Array} existingList
+ * @param {Array} newList
+ * @returns {Object} {intersectedItems, additionalItems, removedItems}
+ */
+export const listDiff = (existingList, newList) => {
+  try {
+    const intersectedItems = R.intersection(existingList, newList);
+    const additionalItems = R.without(existingList, newList);
+    const removedItems = R.difference(existingList, newList);
+
+    return { intersectedItems, additionalItems, removedItems };
+  } catch (e) {
+    throw new Error(e);
+  }
 };
 
-export const asyncForEach = (array, callback) =>
-  new Promise(async (resolve, reject) => {
-    for (let index = 0; index < array.length; index++) {
-      try {
-        await callback(array[index], index, array); //eslint-disable-line
-      } catch (e) {
-        reject(e);
-      }
+export const asyncSequentialMap = async (instances, callback) => {
+  try {
+    const array = [];
+    // eslint-disable-next-line no-restricted-syntax
+    for (const instance of instances) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await callback(instance);
+      array.push(result);
     }
-    resolve();
-  });
+    return Promise.resolve(array);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+export const base64 = {
+  encode: string => {
+    const encoder = Buffer.from(string);
+    return encoder.toString('base64');
+  },
+
+  decode: encodedString => {
+    const decoder = Buffer.from(encodedString, 'base64');
+    return decoder.toString();
+  }
+};
+
+export const mapObjectsToArray = objects => {
+  const result = [];
+  R.map(obj => result.push(obj))(objects);
+  return result;
+};
+
+export const paginate = (limit = 10) => (offset = 0) => list =>
+  R.compose(R.take(Number(limit)), R.drop(Number(offset)))(list);
+
+export const variable = {
+  isClass: func =>
+    typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func)),
+  isBoolean: v => typeof v === 'boolean'
+};
 
 export const splitStringToArray = (str, symbol) => {
   if (!str) return [];
@@ -30,13 +74,6 @@ export const splitStringToArray = (str, symbol) => {
     result[index] = val.replace(/\s/g, ''); // Remove white space
   });
   return _.isEmpty(result) ? [] : result;
-};
-
-export const formatParkingSiteCode = code => {
-  let result = code.replace(/\s/g, '');
-  result = result.substring(0, 3);
-  result = _.toUpper(result);
-  return result;
 };
 
 export const getErrorMessage = err => {
@@ -71,7 +108,7 @@ export const getErrorMessage = err => {
   return errorMessage;
 };
 
-export const paginate = ({ data, limit = 10, offset = 0 }) => _.drop(data, offset || 0).slice(0, limit || 10);
+// export const paginate = ({ data, limit = 10, offset = 0 }) => _.drop(data, offset || 0).slice(0, limit || 10);
 
 export const decimalToPercentage = value => parseFloat((value * 100).toFixed(2));
 
@@ -126,7 +163,8 @@ export const getPermissionsFromAccessLevel = accessLevel => {
   return _.map(permissions, p => p.action);
 };
 
-export const booleanToString = (bool, [yes, no]) => (bool === true || bool === 'true' || bool === 1 || bool === '1' ? yes : no);
+export const booleanToString = (bool, [yes, no]) =>
+  bool === true || bool === 'true' || bool === 1 || bool === '1' ? yes : no;
 
 export const getQuarterlyMonths = (month, year, { force = false } = {}) => {
   if (month instanceof Date) month = month.getMonth() + 1;
@@ -190,7 +228,10 @@ export const currencyToWords = function(totalRent) {
   str += n[3] != 0 ? (a[Number(n[3])] || b[n[3][0]] + ' ' + a[n[3][1]]) + 'thousand ' : '';
   str += n[4] != 0 ? (a[Number(n[4])] || b[n[4][0]] + ' ' + a[n[4][1]]) + 'hundred ' : '';
   str += n[5] != 0 ? (a[Number(n[5])] || b[n[5][0]] + ' ' + a[n[5][1]]) + 'ringgit ' : '';
-  str += d[1] != 0 ? (str != '' ? 'and ' : '') + (a[Number(d[1])] || b[d[1][0]] + ' ' + a[d[1][1]]) + 'cent only' : 'only';
+  str +=
+    d[1] != 0
+      ? (str != '' ? 'and ' : '') + (a[Number(d[1])] || b[d[1][0]] + ' ' + a[d[1][1]]) + 'cent only'
+      : 'only';
   return str;
 };
 /* eslint-enable */
@@ -214,7 +255,8 @@ export const getExtensionFromString = val => {
 
 export const randomInArray = ary => ary[Math.floor(Math.random() * ary.length)];
 
-export const monthDiff = (dateFrom, dateTo) => dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
+export const monthDiff = (dateFrom, dateTo) =>
+  dateTo.getMonth() - dateFrom.getMonth() + 12 * (dateTo.getFullYear() - dateFrom.getFullYear());
 
 export const isJson = (val, getJsonValue = false) => {
   try {
@@ -255,7 +297,11 @@ export const isDate = s => {
 
 export const utcToTimezone = (
   date,
-  { fromFormat = 'YYYY-MM-DD HH:mm:ss', toFormat = 'YYYY-MM-DD HH:mm:ss', timezone = 'Asia/Kuala_Lumpur' } = {}
+  {
+    fromFormat = 'YYYY-MM-DD HH:mm:ss',
+    toFormat = 'YYYY-MM-DD HH:mm:ss',
+    timezone = 'Asia/Kuala_Lumpur'
+  } = {}
 ) => {
   if (!date) return date;
   const d = moment.utc(date, fromFormat);
@@ -274,7 +320,10 @@ export const isSuffixEmail = email => {
   return false;
 };
 
-export const toUtc = (date, { startOf, endOf, toFormat = 'YYYY-MM-DD HH:mm:ss', fromFormat = 'YYYY-MM-DD HH:mm:ss' } = {}) => {
+export const toUtc = (
+  date,
+  { startOf, endOf, toFormat = 'YYYY-MM-DD HH:mm:ss', fromFormat = 'YYYY-MM-DD HH:mm:ss' } = {}
+) => {
   let d;
   if (startOf) {
     d = moment.tz(date, fromFormat, 'Asia/Kuala_Lumpur').startOf(startOf);

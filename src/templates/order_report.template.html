@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    {{> bootstrapUtilities }} {{> commonStyle }} {{> headerStyle}} {{> footerStyle}}
+  </head>
+
+  <body>
+    {{> header}}
+    <!-- 
+    <div>
+      <span class="label">Company</span>
+      <span>{{ companyName }}</span>
+    </div> -->
+
+    <div>
+      <span class="label">Date From</span>
+      <span>{{ from }}</span>
+    </div>
+
+    <div>
+      <span class="label">Date To</span>
+      <span>{{ to }}</span>
+    </div>
+
+    <div class="mt-2">
+      {{> table }}
+    </div>
+
+    <!-- <div style="border: 1px solid; float: right;" class="mt-4">
+    <div class="p-2">
+      <span class="total-label">Cashier Total</span>
+      <span style="font-weight: bold; text-align: right;">{{dailyFinalTotalCashier}}</span>
+    </div>
+    <div class="p-2">
+      <span class="total-label">Autopay Total</span>
+      <span style="font-weight: bold; text-align: right;">{{dailyFinalTotalAutoPay}}</span>
+    </div>
+    <div class="p-2">
+      <span class="total-label">E-Cash Total</span>
+      <span style="font-weight: bold; text-align: right;">{{dailyFinalTotalECash}}</span>
+    </div>
+    <div class="p-2">
+      <span class="total-label">Others Total</span>
+      <span style="font-weight: bold; text-align: right;">{{othersTotalGrandTotal}}</span>
+    </div>
+    <div class="p-2">
+      <span class="total-label">Collection Total</span>
+      <span style="font-weight: bold; text-align: right;">{{collectionTotalGrandTotal}}</span>
+    </div>
+  </div> -->
+
+    {{> footer}}
+  </body>
+</html>

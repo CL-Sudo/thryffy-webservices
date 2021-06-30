@@ -1,0 +1,436 @@
+import R from 'ramda';
+import _ from 'lodash';
+import formidable from 'formidable';
+import {
+  saveProductImages,
+  setThumbnail,
+  getProductBrandId,
+  updateProductImages,
+  getOneProductShippingFee
+} from '@services';
+import { isJSON, paginate, listDiff } from '@utils';
+import {
+  Products,
+  ProductColors,
+  SalesOrders,
+  Sizes,
+  Users,
+  Subscriptions,
+  Reviews,
+  Galleries
+} from '@models';
+import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
+
+import { addProductValidator } from '@validators/seller.validator';
+import { updateProductValidator } from '@validators/Admin/products.validator';
+
+import { requestValidator } from '@validators/index';
+import { DELIVERY_STATUS, USER_TYPE } from '@constants';
+import { postTrackingNumber } from '@services/trackingmore.service';
+import { sellerListener } from '@listeners/seller.listener';
+
+const parseImagesToPersist = fields => {
+  const parseFromJSON = arr => R.map(R.ifElse(isJSON, param => JSON.parse(param), R.identity))(arr);
+
+  const result = R.pipe(
+    R.without([1]),
+    parseFromJSON
+  )(
+    Object.keys(fields).map(key => {
+      if (isJSON(fields[key]) && key.substr(0, 5) === 'image') {
+        const indexString = `, "index": ${key.substr(6, 1)}}`;
+        return fields[key].replace('}', indexString);
+      }
+      if (!isJSON(fields[key]) && key.substr(0, 5) === 'image') {
+        return { id: fields[key].id, index: Number(key.substr(6, 1)) };
+      }
+      return 1;
+    })
+  );
+  return result;
+};
+
+export const addProduct = async (req, res, next) => {
+  const transaction = await Sequelize.transaction();
+  const form = formidable({ multiple: true });
+  form.parse(req, async (err, fields, files) => {
+    if (err) return next(err);
+    try {
+      await addProductValidator(req, fields);
+      const { id, type } = req.user;
+      const isAdmin = type === USER_TYPE.ADMIN;
+
+      const {
+        sellerId,
+        title,
+        description,
+        brand,
+        categoryId,
+        sizeId,
+        conditionId,
+        price: originalPrice,
+        thumbnailIndex
+      } = fields;
+
+      if (sellerId) {
+        const seller = await Users.findOne({ where: { id: sellerId } });
+        if (!seller) throw new Error('Invalid sellerId given');
+      }
+
+      const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
+
+      const saveProduct = async images => {
+        try {
+          if (sizeId) {
+            const size = await Sizes.findOne({ where: { id: sizeId } });
+            if (!size) throw new Error('Invalid sizeId given');
+          }
+
+          const brandId = await getProductBrandId(brand);
+
+          const extraCharges = await getOneProductShippingFee(categoryId, sizeId);
+
+          const product = await Products.create(
+            {
+              userId: isAdmin ? sellerId : id,
+              categoryId,
+              title,
+              description,
+              originalPrice,
+              conditionId,
+              sizeId,
+              brandId,
+              markupPrice: extraCharges.markupPrice,
+              createdBy: isAdmin ? id : null
+            },
+            transaction
+          );
+
+          await saveProductImages(product.id, images);
+
+          const image = await Galleries.findOne({
+            where: {
+              index: thumbnailIndex,
+              productId: product.id
+            }
+          });
+          await product.update({ thumbnail: image.filePath }, { transaction });
+
+          // await setThumbnail(product.id, thumbnailIndex);
+
+          const subscription = await Subscriptions.findOne({ where: { userId: id }, transaction });
+          if (!_.isEmpty(subscription)) {
+            await subscription.update(
+              { listingCount: _.toNumber(_.get(subscription, 'listingCount', 0)) + 1 },
+              { transaction }
+            );
+          }
+          return Promise.resolve(product.id);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      const saveColors = async productId => {
+        try {
+          const createObject = colors.map(color => ({
+            productId,
+            color
+          }));
+
+          await ProductColors.bulkCreate(createObject, { transaction });
+          await transaction.commit();
+          return Promise.resolve(productId);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      const getProduct = async productId => {
+        try {
+          const product = await Products.scope({ method: ['productPage', productId] }).findOne();
+          return Promise.resolve(product);
+        } catch (e) {
+          return Promise.reject(e);
+        }
+      };
+
+      const payload = await R.pipeP(saveProduct, saveColors, getProduct)(files);
+
+      return res.status(200).json({
+        message: 'success',
+        payload
+      });
+    } catch (e) {
+      await transaction.rollback();
+      return next(e);
+    }
+  });
+};
+
+export const getProductShippingFee = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { categoryId, sizeId } = req.query;
+
+    const shippingFee = await getOneProductShippingFee(categoryId, sizeId);
+    return res.status(200).json({
+      message: 'success',
+      payload: shippingFee
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const markAsShipped = async (req, res, next) => {
+  try {
+    requestValidator(req);
+
+    const { orderId, deliveryTrackingNo } = req.body;
+
+    const order = await SalesOrders.findOne({
+      where: { id: orderId }
+    });
+
+    await order.update({
+      deliveryStatus: DELIVERY_STATUS.SHIPPED,
+      deliveryTrackingNo,
+      shippedAt: new Date()
+    });
+
+    const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+    await payload.getExtraFields();
+
+    await postTrackingNumber(deliveryTrackingNo);
+
+    sellerListener.emit('MARKED AS SHIPPED', payload);
+
+    return res.status(200).json({
+      message: 'success',
+      payload
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const updateProduct = async (req, res, next) => {
+  const form = formidable({ multiple: true });
+  form.parse(req, async (err, fields, files) => {
+    if (err) return next(err);
+    try {
+      await updateProductValidator(addProductValidator)(req, fields, files);
+
+      const { id, type } = req.user;
+      const { productId } = req.params;
+      const isAdmin = type === USER_TYPE.ADMIN;
+
+      const existingProduct = await Products.findOne({ where: { id: productId } });
+      if (!existingProduct) throw new Error('Invalid productId given.');
+
+      // const imagesToPersist = R.ifElse(
+      //   isJSON,
+      //   param => JSON.parse(param),
+      //   R.identity
+      // )(fields.imagesToPersist);
+
+      const {
+        title,
+        description,
+        brand,
+        categoryId,
+        sizeId,
+        conditionId,
+        price: originalPrice,
+        thumbnailIndex
+      } = fields;
+
+      const extraCharges = await getOneProductShippingFee(categoryId, sizeId);
+
+      const colors = R.ifElse(isJSON, param => JSON.parse(param), R.identity)(fields.colors);
+
+      const existingColors = R.map(R.prop('color'))(
+        await ProductColors.findAll({ where: { productId } })
+      );
+
+      const { additionalItems: colorsToBeAdded, removedItems: colorsToBeRemoved } = listDiff(
+        existingColors,
+        colors
+      );
+
+      const brandId = await getProductBrandId(brand);
+
+      await Sequelize.transaction(async transaction => {
+        if (colorsToBeAdded.length > 0) {
+          const data = colorsToBeAdded.map(color => ({
+            productId,
+            color
+          }));
+          await ProductColors.bulkCreate(data, transaction);
+        }
+
+        if (colorsToBeRemoved.length > 0) {
+          await ProductColors.destroy({
+            where: { productId, color: colorsToBeRemoved },
+            force: true,
+            transaction
+          });
+        }
+
+        const product = await Products.findOne({ where: { id: productId } });
+        await product.update(
+          {
+            title,
+            description,
+            brandId,
+            categoryId,
+            sizeId,
+            conditionId,
+            originalPrice,
+            markupPrice: extraCharges.markupPrice,
+            updatedBy: isAdmin ? id : product.userId
+          },
+          { where: { id: productId } }
+        );
+
+        await updateProductImages(productId, parseImagesToPersist(fields));
+        await saveProductImages(product.id, files);
+        await setThumbnail(productId, thumbnailIndex);
+      });
+
+      // const updateProductAndImages = async () => {
+      //   try {
+      //     const product = await Products.findOne({ where: { id: productId } });
+      //     await product.update(
+      //       {
+      //         title,
+      //         description,
+      //         brandId,
+      //         categoryId,
+      //         sizeId,
+      //         conditionId,
+      //         originalPrice,
+      //         markupPrice: extraCharges.markupPrice,
+      //         thumbnailIndex,
+      //         updatedBy: isAdmin ? id : product.userId
+      //       },
+      //       { where: { id: productId } }
+      //     );
+      //     await updateProductImages(productId, imagesToPersist);
+      //     await saveProductImages(product.id, files);
+      //     await setThumbnail(productId, thumbnailIndex);
+      //     return Promise.resolve();
+      //   } catch (e) {
+      //     return Promise.reject(e);
+      //   }
+      // };
+
+      // const updateColors = async () => {
+      //   try {
+      //     await ProductColors.destroy({ where: { productId }, force: true });
+      //     const arr = colors.map(color => ({
+      //       productId,
+      //       color
+      //     }));
+      //     await ProductColors.bulkCreate(arr);
+      //     return Promise.resolve();
+      //   } catch (e) {
+      //     return Promise.reject(e);
+      //   }
+      // };
+
+      // await R.pipeP(updateProductAndImages, updateColors)();
+
+      const payload = await Products.scope({ method: ['productPage', productId] }).findOne();
+      return res.status(200).json({ message: 'success', payload });
+    } catch (e) {
+      return next(e);
+    }
+  });
+};
+
+export const getProducts = async (req, res, next) => {
+  try {
+    const { sellerId } = req.params;
+    const { limit, offset } = req.query;
+
+    const products = await Products.scope('default').findAll({
+      where: { userId: sellerId, isPublished: true }
+    });
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: products.length,
+        rows: paginate(limit)(offset)(products)
+      }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getSellerDetail = async (req, res, next) => {
+  try {
+    const { id } = req.user;
+    const { sellerId } = req.params;
+
+    const seller = await Users.scope('sellerDetail').findOne({ where: { id: sellerId } });
+    await seller.getExtraFields();
+    await seller.checkIsFollowed(id);
+
+    return res.status(200).json({ message: 'success', payload: seller });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getSellerReviews = async (req, res, next) => {
+  try {
+    const { sellerId } = req.params;
+    const { limit, offset } = req.query;
+    const orders = await SalesOrders.findAll({
+      where: { sellerId },
+      include: [{ model: Reviews, as: 'review' }]
+    });
+
+    const reviews = orders
+      .filter(instance => !R.isNil(instance.review))
+      .map(instance => instance.review);
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        count: reviews.length,
+        rows: paginate(limit)(offset)(reviews)
+      }
+    });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const publication = async (req, res, next) => {
+  try {
+    const { id: userId } = req.user;
+    const { productId } = req.params;
+    const { isPublished } = req.body;
+
+    const product = await Products.findOne({ where: { id: productId } });
+
+    if (!product) {
+      throw new Error('Invalid productId given');
+    }
+
+    if (product.userId !== userId) {
+      throw new Error(`Product ${productId} does not to user ${userId}`);
+    }
+
+    await product.update({ isPublished });
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};

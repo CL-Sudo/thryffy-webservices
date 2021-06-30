@@ -59,7 +59,10 @@ const getChildInclude = (model, as, extraData = {}) => req => {
           as: modelName,
           attributes: getReqAttributes(req, { valueKey: `'${as}.${modelName}.attributes'` }),
           include: getChildInclude(childIncludeModel, `${as}.${modelName}`)(req),
-          required: getRequired(req, { prefix: `${as}.${modelName}`, defaultValue: !_.isEmpty(scopes) }),
+          required: getRequired(req, {
+            prefix: `${as}.${modelName}`,
+            defaultValue: !_.isEmpty(scopes)
+          }),
           order: getOrder(model)(req, { prefixKey: `${as}.${modelName}` })
         });
       }
@@ -69,7 +72,9 @@ const getChildInclude = (model, as, extraData = {}) => req => {
   return childInclude;
 };
 
-export const getInclude = (Model = rq('Model'), { paranoid = true, custom = [] } = {}) => (req = rq('req')) => {
+export const getInclude = (Model = rq('Model'), { paranoid = true, custom = [] } = {}) => (
+  req = rq('req')
+) => {
   if (_.isEmpty(req)) return [];
   const { include } = _.get(req, 'query', {});
   if (!include && _.isEmpty(custom)) return [];
@@ -128,7 +133,9 @@ export const getInclude = (Model = rq('Model'), { paranoid = true, custom = [] }
   return result;
 };
 
-export const getScopes = (Model = rq('Model'), { ignoreSearchType = [], prefix = '' } = {}) => (req = rq('req')) => {
+export const getScopes = (Model = rq('Model'), { ignoreSearchType = [], prefix = '' } = {}) => (
+  req = rq('req')
+) => {
   const scopes = [];
 
   const modelAttributes = [];
@@ -143,7 +150,10 @@ export const getScopes = (Model = rq('Model'), { ignoreSearchType = [], prefix =
   const keyword = query[`${prefix}keyword`];
   const searchType = query[`${prefix}searchType`] || SEARCH_TYPES.MATCH;
 
-  if (!_.isEmpty(search) && !_.isEmpty(keyword)) scopes.push({ method: ['search', { searchType, search: search || '', keyword: keyword || '' }] });
+  if (!_.isEmpty(search) && !_.isEmpty(keyword))
+    scopes.push({
+      method: ['search', { searchType, search: search || '', keyword: keyword || '' }]
+    });
 
   _.mapValues(query, (value, key) => {
     if (prefix && !key.startsWith(prefix)) return;
@@ -240,7 +250,8 @@ export const getParanoid = (req = rq('req')) => {
 };
 
 export const updateAuthData = data => (req, res, next) => {
-  if (data instanceof Object !== true) throw new Error(`express.util: [updateAuthData]: param must be type of object`);
+  if (data instanceof Object !== true)
+    throw new Error(`express.util: [updateAuthData]: param must be type of object`);
   req.authData = Object.assign({}, req.authData, data);
   next();
 };
@@ -260,7 +271,10 @@ export const setResponseMessage = msg => (req, res, next) => {
   return next();
 };
 
-export const parseReqData = (toIndex, { fromIndex, value, omit, replace = false, forceOmit = true }) => (req, res, next) => {
+export const parseReqData = (
+  toIndex,
+  { fromIndex, value, omit, replace = false, forceOmit = true }
+) => (req, res, next) => {
   try {
     if (!toIndex || (!fromIndex && !value && _.isEmpty(omit))) return next();
     if (value || fromIndex) {
@@ -294,7 +308,10 @@ export const parseReqData = (toIndex, { fromIndex, value, omit, replace = false,
   }
 };
 
-export const validateRecordCount = (Model, { where = {}, fromIndexes = [], recordName } = {}) => async (req, res, next) => {
+export const validateRecordCount = (
+  Model,
+  { where = {}, fromIndexes = [], recordName } = {}
+) => async (req, res, next) => {
   try {
     const query = { ...where };
     _.map(fromIndexes, index => {

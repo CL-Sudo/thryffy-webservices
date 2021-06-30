@@ -10,12 +10,14 @@
       "@controllers/*": ["src/controllers/*"],
       "@hooks/*": ["src/hooks/*"],
       "@filters/*": ["src/filters/*"],
+      "@listeners/*": ["src/listeners/*"],
       "@middlewares/*": ["src/middlewares/*"],
       "@routes/*": ["src/routes/*"],
       "@models/*": ["src/models/*"],
       "@services/*": ["src/services/*"],
       "@utils/*": ["src/utils/*"],
       "@templates/*": ["src/templates/*"],
+      "@validators/*": ["src/validators/*"],
 
       "@configs": ["src/configs/index"],
       "@constants": ["src/constants/index"],
@@ -23,12 +25,14 @@
       "@controllers": ["src/controllers/index"],
       "@hooks": ["src/hooks/index"],
       "@filters": ["src/filters/index"],
+      "@listeners": ["src/listeners/index"],
       "@middlewares": ["src/middlewares/index"],
       "@routes": ["src/routes/index"],
       "@models": ["src/models/index"],
       "@services": ["src/services/index"],
       "@utils": ["src/utils/index"],
-      "@templates": ["src/templates/index"]
+      "@templates": ["src/templates/index"],
+      "@validators": ["src/validators/index"]
     }
   },
   "exclude": ["node_modules", "dist"]

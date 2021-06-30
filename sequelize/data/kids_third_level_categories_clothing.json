@@ -1,0 +1,58 @@
+[
+  {
+    "title": "Baby Clothing",
+    "shippingFeeId": 1
+  },
+  {
+    "title": "Bottoms",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Dresses",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "One Pieces",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Pajamas",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Shirts & Tops",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Swims",
+    "shippingFeeId": 2
+  },
+  {
+    "title": "Costumes",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Jackets",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Winter Jackets",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Coats",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Suits",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Blazers",
+    "shippingFeeId": 3
+  },
+  {
+    "title": "Special Costumes & Outfits",
+    "shippingFeeId": 3
+  }
+]

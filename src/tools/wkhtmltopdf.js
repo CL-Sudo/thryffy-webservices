@@ -1,9 +1,5 @@
 import wkhtmltopdf from 'wkhtmltopdf';
 
-import InvoiceTemplate from '../templates/invoice.template';
-
-export { InvoiceTemplate };
-
 export const generatePDF = (htmlString, config) => {
   const stream = wkhtmltopdf(htmlString, {
     disableSmartShrinking: true,
