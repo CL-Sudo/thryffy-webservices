@@ -13,7 +13,7 @@ const SequelizeConnector = new Sequelize(
   {
     host: process.env[`${[nodeEnv]}_DB_HOST`] || 'localhost',
     dialect: process.env[`${[nodeEnv]}_DB_DRIVER`] || 'mysql',
-    operatorsAliases: true,
+    operatorsAliases: '1',
     pool: {
       max: 30,
       min: 0,
