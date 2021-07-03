@@ -20,9 +20,7 @@ router.get('/shipping-fee', getShippingFeeValidator, getProductShippingFee);
 router.patch('/mark-as-shipped', markAsShippedValidator, markAsShipped);
 
 router.get('/:sellerId/products', getProducts);
-
 router.get('/:sellerId/details', getSellerDetail);
-
 router.get('/:sellerId/reviews', getSellerReviews);
 
 export default router;

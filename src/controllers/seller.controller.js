@@ -1,4 +1,4 @@
-import R from 'ramda';
+import * as R from 'ramda';
 import _ from 'lodash';
 import formidable from 'formidable';
 import {
@@ -6,7 +6,8 @@ import {
   setThumbnail,
   getProductBrandId,
   updateProductImages,
-  getOneProductShippingFee
+  getOneProductShippingFee,
+  getChildIds
 } from '@services';
 import { isJSON, paginate, listDiff } from '@utils';
 import {
@@ -17,7 +18,10 @@ import {
   Users,
   Subscriptions,
   Reviews,
-  Galleries
+  Galleries,
+  Conditions,
+  Brands,
+  Categories
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -28,6 +32,8 @@ import { requestValidator } from '@validators/index';
 import { DELIVERY_STATUS, USER_TYPE } from '@constants';
 import { postTrackingNumber } from '@services/trackingmore.service';
 import { sellerListener } from '@listeners/seller.listener';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
+import { Op } from 'sequelize';
 
 const parseImagesToPersist = fields => {
   const parseFromJSON = arr => R.map(R.ifElse(isJSON, param => JSON.parse(param), R.identity))(arr);
@@ -354,17 +360,126 @@ export const updateProduct = async (req, res, next) => {
 export const getProducts = async (req, res, next) => {
   try {
     const { sellerId } = req.params;
-    const { limit, offset } = req.query;
+    const {
+      categoryId,
+      keyword,
+      brandId,
+      sizeId,
+      conditionId,
+      minPrice,
+      maxPrice,
+      order = 'RELEVANCE',
+      limit = 10,
+      offset = 0
+    } = req.query;
+
+    const { id } = req.user;
+
+    const filterTitle = param => {
+      if (R.isNil(keyword)) {
+        return param;
+      }
+
+      return R.append({
+        [Op.or]: [
+          {
+            title: {
+              [Op.like]: `%${keyword}%`
+            }
+          },
+          {
+            brand_id: [
+              Sequelize.literal(`
+              SELECT id FROM brands WHERE title LIKE '%${keyword}%'
+            `)
+            ]
+          }
+        ]
+      })(param);
+    };
+
+    const where = R.pipe(filterTitle)({ userId: sellerId, isPublished: true, isPurchased: false });
+
+    const childIds = categoryId ? await getChildIds(categoryId) : null;
 
     const products = await Products.scope('default').findAll({
-      where: { userId: sellerId, isPublished: true }
+      where,
+      include: [
+        {
+          model: Categories,
+          as: 'category',
+          where: categoryId
+            ? {
+                id: [categoryId, ...childIds]
+              }
+            : null
+        },
+        {
+          model: Brands,
+          as: 'brand',
+          attributes: ['id', 'title'],
+          where: brandId ? { id: brandId } : null
+        },
+        {
+          model: Sizes,
+          as: 'size',
+          attributes: { exclude: defaultExcludeFields },
+          where: sizeId ? { id: sizeId } : null
+        },
+        {
+          model: Users,
+          as: 'seller',
+          include: [{ model: Subscriptions, as: 'subscription' }]
+        },
+        {
+          model: Conditions,
+          as: 'condition',
+          attributes: { exclude: defaultExcludeFields },
+          where: conditionId ? { id: conditionId } : null
+        }
+      ]
     });
+
+    const filterByPrice = R.ifElse(
+      R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),
+      data => data,
+      R.filter(product => product.displayPrice >= minPrice && product.displayPrice <= maxPrice)
+    );
+
+    const filterBySellerSubscription = R.ifElse(
+      product => !R.isNil(R.path(['seller', 'subscription'], product)),
+      R.filter(instance => instance.seller.subscription.expiryDate > new Date()),
+      R.identity
+    );
+
+    const filteredProducts = R.pipe(
+      filterBySellerSubscription,
+      R.filter(product => product.isPublished && !product.isPurchased),
+      filterByPrice
+    )(products);
+
+    const sorter = R.cond([
+      [R.always(order === 'RELEVANCE'), _.shuffle],
+      [R.always(order === 'ASC'), R.sortBy(R.prop('displayPrice'))],
+      [
+        R.always(order === 'DESC'),
+        instance => R.reverse(R.sortBy(R.prop('displayPrice'))(instance))
+      ]
+    ]);
+
+    await Promise.all(
+      R.map(async product => {
+        await product.getExtraFields(id);
+      })(filteredProducts)
+    );
+
+    const sorted = sorter(filteredProducts);
 
     return res.status(200).json({
       message: 'success',
       payload: {
-        count: products.length,
-        rows: paginate(limit)(offset)(products)
+        count: filteredProducts.length,
+        rows: paginate(limit)(offset)(sorted)
       }
     });
   } catch (e) {

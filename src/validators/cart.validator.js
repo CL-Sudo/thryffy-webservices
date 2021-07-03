@@ -6,7 +6,7 @@ export const payValidator = [
   check('productIds')
     .exists()
     .withMessage('Required')
-    .custom(async (productIds, { req }) => {
+    .custom(async productIds => {
       const idsLength = R.length(productIds);
 
       if (R.type(productIds) !== 'Array') {
@@ -33,14 +33,14 @@ export const payValidator = [
         throw new Error('Items to be checkout cannot be more than 3');
       }
 
-      const cartItems = await CartItems.findAndCountAll({ where: { userId: req.user.id } });
-      const cartItemIds = R.map(R.prop('productId'), cartItems.rows);
+      // const cartItems = await CartItems.findAndCountAll({ where: { userId: req.user.id } });
+      // const cartItemIds = R.map(R.prop('productId'), cartItems.rows);
 
-      R.map(id => {
-        if (!R.includes(id, cartItemIds)) {
-          throw new Error(`productId ${id} not found in cart`);
-        }
-      })(productIds);
+      // R.map(id => {
+      //   if (!R.includes(id, cartItemIds)) {
+      //     throw new Error(`productId ${id} not found in cart`);
+      //   }
+      // })(productIds);
 
       return Promise.resolve();
     }),
@@ -75,7 +75,7 @@ export const checkoutValidator = [
   check('productIds')
     .exists()
     .withMessage('Required')
-    .custom(async (productIds, { req }) => {
+    .custom(async productIds => {
       const idsLength = R.length(productIds);
 
       if (R.type(productIds) !== 'Array') {
@@ -102,15 +102,15 @@ export const checkoutValidator = [
         throw new Error('Items to be checkout cannot be more than 3');
       }
 
-      const cartItems = await CartItems.findAndCountAll({ where: { userId: req.user.id } });
-      const cartItemIds = R.map(R.prop('productId'), cartItems.rows);
+      // const cartItems = await CartItems.findAndCountAll({ where: { userId: req.user.id } });
+      // const cartItemIds = R.map(R.prop('productId'), cartItems.rows);
 
-      R.map(id => {
-        if (!R.includes(id, cartItemIds)) {
-          throw new Error(`productId ${id} not found in cart`);
-        }
-        return true;
-      })(productIds);
+      // R.map(id => {
+      //   if (!R.includes(id, cartItemIds)) {
+      //     throw new Error(`productId ${id} not found in cart`);
+      //   }
+      //   return true;
+      // })(productIds);
 
       return Promise.resolve();
     })
