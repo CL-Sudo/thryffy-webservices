@@ -458,14 +458,21 @@ export const getProducts = async (req, res, next) => {
       filterByPrice
     )(products);
 
-    const sorter = R.cond([
-      [R.always(order === 'RELEVANCE'), _.shuffle],
-      [R.always(order === 'ASC'), R.sortBy(R.prop('displayPrice'))],
-      [
-        R.always(order === 'DESC'),
-        instance => R.reverse(R.sortBy(R.prop('displayPrice'))(instance))
-      ]
-    ]);
+    const sorter = productArr => {
+      if (R.toUpper(order) === 'RELEVANCE') {
+        return _.shuffle(productArr);
+      }
+
+      if (R.toUpper(order) === 'ASC') {
+        return R.sortBy(R.prop('displayPrice'))(productArr);
+      }
+
+      if (R.toUpper(order) === 'DESC') {
+        return R.reverse(R.sortBy(R.prop('displayPrice'))(productArr));
+      }
+
+      return _.shuffle(productArr);
+    };
 
     await Promise.all(
       R.map(async product => {
