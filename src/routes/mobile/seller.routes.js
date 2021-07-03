@@ -7,7 +7,8 @@ import {
   getSellerDetail,
   getSellerReviews,
   updateProduct,
-  publication
+  publication,
+  getSellerCategories
 } from '@controllers/seller.controller';
 import { markAsShippedValidator, getShippingFeeValidator } from '@validators/seller.validator';
 
@@ -22,5 +23,6 @@ router.patch('/mark-as-shipped', markAsShippedValidator, markAsShipped);
 router.get('/:sellerId/products', getProducts);
 router.get('/:sellerId/details', getSellerDetail);
 router.get('/:sellerId/reviews', getSellerReviews);
+router.get('/:sellerId/categories', getSellerCategories);
 
 export default router;

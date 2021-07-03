@@ -556,3 +556,36 @@ export const publication = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const getSellerCategories = async (req, res, next) => {
+  try {
+    const { limit, offset } = req.query;
+    const { sellerId } = req.params;
+
+    const products = await Products.findAll({
+      where: {
+        isPurchased: false,
+        isPublished: true,
+        userId: sellerId
+      },
+      include: [
+        {
+          model: Categories,
+          as: 'category'
+        }
+      ]
+    });
+
+    const categoryIds = products.map(instance => instance.category.id);
+
+    const categories = await Categories.findAndCountAll({
+      where: { id: categoryIds },
+      limit: Number(limit) || null,
+      offset: Number(offset) || null
+    });
+
+    return res.status(200).json({ message: 'success', payload: categories });
+  } catch (e) {
+    return next(e);
+  }
+};
