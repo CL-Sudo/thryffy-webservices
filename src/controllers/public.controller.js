@@ -271,6 +271,7 @@ export const trackingMoreWebHook = async (req, res, next) => {
         const order = await SalesOrders.findOne({
           where: { deliveryTrackingNo },
           include: [
+            { model: Users, as: 'seller' },
             { model: Users, as: 'buyer' },
             { model: OrderItems, as: 'orderItems', include: [{ model: Products, as: 'product' }] },
             { model: DeliveryStatuses, as: 'trackingmore' }
@@ -304,6 +305,29 @@ export const trackingMoreWebHook = async (req, res, next) => {
             title: DELIVERY.COMPLETED(order.orderRef),
             token: order.buyer.deviceToken,
             data: order
+          });
+
+          const sellerNotification = await Notifications.create(
+            {
+              title: 'Your buyer has just received the parcel!',
+              type: NOTIFICATION_TYPE.DELIVERY_COMPLETED,
+              actorId: order.buyer.id,
+              notifierId: order.seller.id,
+              notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
+              notifiableId: order.id
+            },
+            { transaction }
+          );
+
+          const sellerNotificationData = await Notifications.findOne({
+            where: { id: sellerNotification.id },
+            transaction
+          });
+
+          await sendCloudMessage({
+            title: DELIVERY.COMPLETED(order.orderRef),
+            token: order.seller.deviceToken,
+            data: sellerNotificationData
           });
         }
       });
@@ -414,7 +438,6 @@ export const senangpayCallback = async (req, res, next) => {
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {
-    console.log(`e`, e);
     return next(e);
   }
 };
@@ -476,7 +499,6 @@ export const senangpayRedirect = async (req, res) => {
       </script>
     `);
   } catch (e) {
-    console.log(`e`, e);
     return res.status(200).send(`
       <script>
         window.ReactNativeWebView.postMessage(

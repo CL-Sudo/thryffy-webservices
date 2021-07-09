@@ -15,7 +15,8 @@ import {
   Conditions,
   Subscriptions,
   Packages,
-  Otps
+  Otps,
+  Notifications
 } from '@models';
 
 import { hashPassword } from '@tools/bcrypt';
@@ -23,13 +24,13 @@ import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
-import { subscribeTokenToTopic } from '@services/notification.service';
+import { sendCloudMessage, subscribeTokenToTopic } from '@services/notification.service';
 
 import { paginate } from '@utils';
 import { generateOTP as getOtp } from '@utils/auth.util';
 
 import { DELIVERY_STATUS } from '@constants';
-import NOTIFCATION_CONSTANT from '@constants/notification.constant';
+import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 import { Op } from 'sequelize';
@@ -40,6 +41,9 @@ import { sendSMS } from '@services/sms.service';
 import { SMSVerifcation } from '@templates/sms.template';
 
 import { Billplz } from '@services/billplz.service';
+import { DELIVERY } from '@templates/notification.template';
+
+import NOTIFIABLE_TYPE from '@constants/model.constant';
 
 const nodeEnv = process.env.NODE_ENV;
 const serverUrl = process.env.SERVER_URL;
@@ -443,8 +447,37 @@ export const confirmOrderReceived = async (req, res, next) => {
 
     const { orderId } = req.body;
 
-    const order = await SalesOrders.findOne({ where: { id: orderId } });
+    const order = await SalesOrders.findOne({
+      where: { id: orderId },
+      include: [
+        {
+          model: Users,
+          as: 'buyer'
+        },
+        {
+          model: Users,
+          as: 'seller'
+        }
+      ]
+    });
     await order.update({ deliveryStatus: DELIVERY_STATUS.COMPLETED });
+
+    const notification = await Notifications.create({
+      title: DELIVERY.COMPLETED(order.orderRef),
+      type: NOTIFICATION_CONSTANT.DELIVERY_COMPLETED,
+      actorId: order.buyer.id,
+      notifierId: order.seller.id,
+      notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
+      notifiableId: order.id
+    });
+
+    const data = await Notifications.findOne({ where: { id: notification.id } });
+
+    await sendCloudMessage({
+      title: DELIVERY.COMPLETED(order.orderRef),
+      token: order.seller.deviceToken,
+      data
+    });
 
     const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
     await payload.getExtraFields();
@@ -534,7 +567,7 @@ export const updateDeviceToken = async (req, res, next) => {
     const user = await Users.findOne({ where: { id } });
     await user.update({ deviceToken });
 
-    await subscribeTokenToTopic(deviceToken, NOTIFCATION_CONSTANT.MARKETING);
+    await subscribeTokenToTopic(deviceToken, NOTIFICATION_CONSTANT.MARKETING);
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {

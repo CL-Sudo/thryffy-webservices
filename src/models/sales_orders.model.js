@@ -22,6 +22,8 @@ import {
 } from '@models';
 import R from 'ramda';
 import { Op } from 'sequelize';
+import Moment from 'moment';
+import { parseParcelName } from '@utils/sales_orders.util';
 import Conditions from './conditions.model';
 import Categories from './categories.model';
 
@@ -103,6 +105,10 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'commission_paid_at'
     },
+    paidAt: {
+      type: Sequelize.DATE,
+      field: 'paid_at'
+    },
     hasBuyerDispute: {
       type: Sequelize.BOOLEAN,
       field: 'has_buyer_dispute',
@@ -117,6 +123,22 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.DATE,
       field: 'shipped_at'
     },
+    shippingReminderCount: {
+      type: Sequelize.INTEGER,
+      defaultValue: 0,
+      field: 'shipping_reminder_count'
+    },
+    hoursAfterPayment: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        if (!this.getDataValue('paidAt')) return null;
+        const paidAt = Moment(this.getDataValue('paidAt')).format('YYYY-MM-DD HH:mm:ss');
+        const currentDate = Moment();
+        const diff = currentDate.diff(paidAt, 'hours');
+
+        return diff;
+      }
+    },
     itemQuantity: {
       type: Sequelize.VIRTUAL,
       get() {
@@ -127,6 +149,12 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.VIRTUAL,
       get() {
         return this.getDataValue('hasReviewed');
+      }
+    },
+    parcelName: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return parseParcelName(this.getDataValue('parcelType'));
       }
     },
     ...AT_RECORDER,

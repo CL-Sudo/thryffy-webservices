@@ -1,15 +1,17 @@
 export default {
   SMALL: 'SMALL',
-
   MEDIUM: 'MEDIUM',
-
   LARGE: 'LARGE',
-
   MEDIUM_PARCEL: 'MEDIUM PARCEL',
-
   LARGE_PARCEL: 'LARGE PARCEL',
-
   TWO_ITEM_LARGE_PARCEL: 'TWO ITEM LARGE PARCEL',
-
   THREE_ITEM_LARGE_PARCEL: 'THREE ITEM LARGE PARCEL'
+};
+
+export const PARCEL_NAME = {
+  FLEXI_PREPAID_L: 'Flexiprepaid (L)',
+  FLEXI_PREPAID_M: 'Flexiprepaid (M)',
+  FLEXI_PREPAID_S: 'Flexiprepaid (S)',
+  MEDIUM_PARCEL: 'Medium Parcel',
+  LARGE_PARCEL: 'Large Parcel'
 };
