@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import moment from 'moment';
 import R from 'ramda';
 
@@ -15,8 +16,8 @@ import { sendCloudMessage } from '@services/notification.service';
 
 import SENDGRID_CONFIG from '@configs/sendgrid.config';
 
-import { SALE_MADE_SELLER, PAYMENT } from '@templates/notification.template';
-import EMAIL_TEMPLATE from '@templates/email.template';
+import { SALE_MADE_SELLER, PAYMENT, REMIND_TAKE_PHOTO } from '@templates/notification.template';
+import EMAIL_TEMPLATE, { MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP } from '@templates/email.template';
 
 import { sendMail } from '@tools/sendgrid';
 
@@ -56,6 +57,29 @@ const pushNotification = async (productIds, order) => {
         title: SALE_MADE_SELLER.TITLE,
         message: SALE_MADE_SELLER.DESCRIPTION,
         data
+      });
+
+      const sellerNotification = await Notifications.create(
+        {
+          title: REMIND_TAKE_PHOTO,
+          notifierId: seller.id,
+          actorId: order.userId,
+          type: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
+          notifiableId: order.id,
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+        },
+        { transaction }
+      );
+
+      const sellerNotificationData = await Notifications.findOne({
+        where: { id: sellerNotification.id },
+        transaction
+      });
+
+      await sendCloudMessage({
+        token: seller.deviceToken,
+        title: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
+        data: sellerNotificationData
       });
     });
 
@@ -125,6 +149,16 @@ const sendEmail = async (_, order) => {
         shippingFee: `${shippingFee.toFixed(2)}`,
         total: `${total}`,
         items
+      }
+    });
+
+    await sendMail({
+      receiverEmail: order.seller.email,
+      receiverFirstName: order.seller.firstName || '',
+      receiverLastName: order.seller.lastName || '',
+      template: EMAIL_TEMPLATE.SELLER_SHIPPING_REMINDER,
+      templateData: {
+        message: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName)
       }
     });
   } catch (e) {

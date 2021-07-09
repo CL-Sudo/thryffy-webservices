@@ -27,7 +27,12 @@ export const PUBLICATION = {
 };
 
 export const DELIVERY = {
-  COMPLETED: orderRef => `Your order ${orderRef} has just delivered successfully!`
+  COMPLETED: orderRef => `Your order ${orderRef} has just delivered successfully!`,
+
+  NOT_DELIVERED_WITHIN_MAX_HOUR: {
+    BUYER:
+      "It seems that the item you ordered is unavailable. Don't worry we will be sending you a full refund."
+  }
 };
 
 export const PAYMENT = {
@@ -39,3 +44,6 @@ export const PAYMENT = {
       'Oops, something wrong while processing payment for your order. Please contact your bank for further validation.'
   }
 };
+
+export const REMIND_TAKE_PHOTO =
+  'Please take clear photos of your item with the shipping label as your reference';
