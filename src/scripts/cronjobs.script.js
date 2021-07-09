@@ -5,11 +5,13 @@ import { setAsDeliveredAfterShipping } from '@services/sale_orders.service';
 import { remindSellerToShipParcel } from '@services/cronjob.service';
 
 const runJobEveryMorning = () => {
+  console.log(`Cronjob every day 9am...`);
   subscriptionRenewReminder();
   setAsDeliveredAfterShipping();
 };
 
 const runJobEveryTenMinutes = () => {
+  console.log(`Cronjob every 10 mins...`);
   remindSellerToShipParcel();
 };
 
