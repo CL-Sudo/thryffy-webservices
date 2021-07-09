@@ -15,5 +15,7 @@ export default {
 
   DISPUTE_RESPONSE_URL: 'thryffy/dispute_responses/',
 
-  NOTIFICATION_URL: 'thryffy/notifications/'
+  NOTIFICATION_URL: 'thryffy/notifications/',
+
+  DELIVERY_SLIP_URL: 'thryffy/delivery-slips/'
 };
