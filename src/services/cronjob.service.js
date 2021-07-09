@@ -16,7 +16,7 @@ export const remindSellerToShipParcel = async () => {
     const orders = await SalesOrders.findAll({
       where: {
         paymentStatus: PAYMENT_STATUS.SUCCESS,
-        delivery_status: DELIVERY_STATUS.TO_SHIP
+        deliveryStatus: DELIVERY_STATUS.TO_SHIP
       },
       include: [
         {
