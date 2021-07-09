@@ -83,40 +83,77 @@ export const addProductValidator = async (req, fields) =>
     }
   });
 
-export const markAsShippedValidator = [
-  check('orderId')
-    .exists()
-    .isLength({ min: 1 })
-    .withMessage('Required')
-    .custom(async (orderId, { req }) => {
-      const { id } = req.user;
+export const markAsShippedValidator = async (req, fields) => {
+  try {
+    const { id } = req.user;
+    const { orderId, deliveryTrackingNo } = fields;
 
-      const order = await SalesOrders.findOne({
-        where: { id: orderId },
-        include: [
-          {
-            model: OrderItems,
-            as: 'orderItems',
-            include: [
-              {
-                model: Products,
-                as: 'product'
-              }
-            ]
-          }
-        ]
-      });
+    if (isEmpty(orderId)) throw new Error('orderId required');
+    if (isEmpty(deliveryTrackingNo)) throw new Error('deliveryTrackingNo required');
 
-      const sellerId = R.pathOr(null, ['orderItems', 0, 'product', 'userId'])(order);
-      if (R.isNil(order) || sellerId !== id) throw new Error('Invalid orderId Given.');
+    const order = await SalesOrders.findOne({
+      where: { id: orderId },
+      include: [
+        {
+          model: OrderItems,
+          as: 'orderItems',
+          include: [
+            {
+              model: Products,
+              as: 'product'
+            }
+          ]
+        }
+      ]
+    });
 
-      if (order.deliveryStatus !== DELIVERY_STATUS.TO_SHIP) {
-        throw new Error(`This order has been ${R.toLower(order.deliveryStatus)}`);
-      }
+    const sellerId = R.pathOr(null, ['orderItems', 0, 'product', 'userId'])(order);
+    if (R.isNil(order) || sellerId !== id) throw new Error('Invalid orderId Given.');
 
-      return Promise.resolve();
-    })
-];
+    if (order.deliveryStatus !== DELIVERY_STATUS.TO_SHIP) {
+      throw new Error(`This order has been ${R.toLower(order.deliveryStatus)}`);
+    }
+
+    return Promise.resolve();
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
+// export const markAsShippedValidator = [
+//   check('orderId')
+//     .exists()
+//     .isLength({ min: 1 })
+//     .withMessage('Required')
+//     .custom(async (orderId, { req }) => {
+//       const { id } = req.user;
+
+//       const order = await SalesOrders.findOne({
+//         where: { id: orderId },
+//         include: [
+//           {
+//             model: OrderItems,
+//             as: 'orderItems',
+//             include: [
+//               {
+//                 model: Products,
+//                 as: 'product'
+//               }
+//             ]
+//           }
+//         ]
+//       });
+
+//       const sellerId = R.pathOr(null, ['orderItems', 0, 'product', 'userId'])(order);
+//       if (R.isNil(order) || sellerId !== id) throw new Error('Invalid orderId Given.');
+
+//       if (order.deliveryStatus !== DELIVERY_STATUS.TO_SHIP) {
+//         throw new Error(`This order has been ${R.toLower(order.deliveryStatus)}`);
+//       }
+
+//       return Promise.resolve();
+//     })
+// ];
 
 export const getShippingFeeValidator = [
   check('categoryId')
