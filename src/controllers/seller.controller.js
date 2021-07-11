@@ -9,7 +9,7 @@ import {
   getOneProductShippingFee,
   getChildIds
 } from '@services';
-import { isJSON, paginate, listDiff } from '@utils';
+import { isJSON, paginate, listDiff, parseImageWithIndex } from '@utils';
 import { parsePathForDBStoring } from '@utils/s3.util';
 import {
   Products,
@@ -37,6 +37,8 @@ import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { Op } from 'sequelize';
 import { uploadFileToS3 } from '@tools/s3';
 import S3_CONFIG from '@configs/s3.config';
+
+const { AWS_S3_URL } = process.env;
 
 const parseImagesToPersist = fields => {
   const parseFromJSON = arr => R.map(R.ifElse(isJSON, param => JSON.parse(param), R.identity))(arr);
@@ -115,15 +117,32 @@ export const addProduct = async (req, res, next) => {
             transaction
           );
 
-          await saveProductImages(product.id, images);
+          // await saveProductImages(product.id, images);
+
+          await Promise.all(
+            parseImageWithIndex(images).map(async instance => {
+              const uploaded = await uploadFileToS3(instance.image, S3_CONFIG.GALLERY_URL);
+              const filePath = `${AWS_S3_URL}/${uploaded.path}`;
+
+              await Galleries.create(
+                {
+                  index: instance.index,
+                  productId: product.id,
+                  filePath
+                },
+                { transaction }
+              );
+            })
+          );
 
           const image = await Galleries.findOne({
             where: {
               index: thumbnailIndex,
               productId: product.id
-            }
+            },
+            transaction
           });
-          await product.update({ thumbnail: image.filePath }, { transaction });
+          await product.update({ thumbnail: _.get(image, 'filePath', null) }, { transaction });
 
           // await setThumbnail(product.id, thumbnailIndex);
 

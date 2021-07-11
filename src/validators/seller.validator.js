@@ -23,6 +23,8 @@ export const addProductValidator = async (req, fields) =>
     try {
       const { id } = req.user;
 
+      console.log(`req.user`, req.user);
+
       const user = await Users.findOne({ where: { id } });
       if (!user.identityNo) {
         throw new Error('Identity No is required for your account before posting products');
