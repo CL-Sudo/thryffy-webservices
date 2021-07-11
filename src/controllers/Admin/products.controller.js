@@ -1,10 +1,12 @@
 import { Products, Brands, Sizes, Categories, ProductColors, Galleries, Users } from '@models';
 import { getLimitOffset, getScopes } from '@utils/express.util';
 import { Op } from 'sequelize';
+import * as _ from 'lodash';
 
 import PublicationListener from '@listeners/publication.listener';
 
 import EVENT from '@constants/listener.constant';
+import { paginate } from '@utils/utils';
 
 export const managePublication = async (req, res, next) => {
   try {
@@ -65,22 +67,19 @@ export const getProductListRequest = async (req, res, next) => {
     const { limit, offset } = getLimitOffset(req);
     const scopes = getScopes(Products)(req);
 
-    const products = await Products.scope(scopes).findAndCountAll({
+    const products = await Products.scope(scopes).findAll({
       include: [
         {
           model: Brands,
-          as: 'brands',
-          required: brandName ? true : false,
-          where: {
-            title: {
-              [Op.like]: `%${brandName}%`
-            }
-          }
-        },
-        {
-          model: Brands,
           as: 'brand',
-          required: false
+          required: !_.isEmpty(brandName),
+          where: !_.isEmpty(brandName)
+            ? {
+                title: {
+                  [Op.like]: `%${brandName}%`
+                }
+              }
+            : null
         },
         { model: Sizes, as: 'size', required: false },
         { model: Categories, as: 'category', required: false },
@@ -88,15 +87,17 @@ export const getProductListRequest = async (req, res, next) => {
         { model: Galleries, as: 'photos', required: false },
         { model: ProductColors, as: 'colors', required: false }
       ],
-      limit,
-      offset,
       distinct: true,
       order: [['createdAt', 'DESC']]
     });
 
-    return res
-      .status(200)
-      .json({ message: 'Success', payload: { rows: products.rows, count: products.count } });
+    return res.status(200).json({
+      message: 'Success',
+      payload: {
+        count: products.length,
+        rows: paginate(limit)(offset)(products)
+      }
+    });
   } catch (e) {
     return next(e);
   }
