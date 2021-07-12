@@ -7,6 +7,7 @@ import { HOURS_TO_REMIND, MAX_HOUR_BEFORE_SHIPPING } from '@constants/cronjob.co
 import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 import NOTIFIABLE_TYPE from '@constants/model.constant';
 import { DELIVERY } from '@templates/notification.template';
+import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { sendCloudMessage } from './notification.service';
 
 export const remindSellerToShipParcel = async () => {
@@ -35,23 +36,45 @@ export const remindSellerToShipParcel = async () => {
                 const hoursLeftToShip = MAX_HOUR_BEFORE_SHIPPING - order.hoursAfterPayment;
                 let message;
 
-                if (hoursLeftToShip === 24) {
+                if (hoursLeftToShip <= 24) {
                   message = MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_24_HOURS(order.parcelName);
                 }
 
-                if (hoursLeftToShip === 12) {
+                if (hoursLeftToShip <= 12) {
                   message = MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_12_HOURS(order.parcelName);
                 }
 
-                await sendMail({
-                  receiverEmail: order.seller.email,
-                  receiverFirstName: order.seller.firstName || '',
-                  receiverLastName: order.seller.lastName || '',
-                  template: EMAIL_TEMPLATE.SELLER_SHIPPING_REMINDER,
-                  templateData: {
-                    message
-                  }
+                await Sequelize.transaction(async transaction => {
+                  await sendMail({
+                    receiverEmail: order.seller.email,
+                    receiverFirstName: order.seller.firstName || '',
+                    receiverLastName: order.seller.lastName || '',
+                    template: EMAIL_TEMPLATE.SELLER_SHIPPING_REMINDER,
+                    templateData: {
+                      message
+                    }
+                  });
+
+                  const notification = await Notifications.create(
+                    {
+                      notifierId: order.seller.id,
+                      notifiableId: order.id,
+                      notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
+                      title: message,
+                      type: NOTIFICATION_CONSTANT.REMIND_SELLER_TO_SHIP_PARCEL
+                    },
+                    { transaction }
+                  );
+
+                  const data = await Notifications.findOne({ where: { id: notification.id } });
+
+                  await sendCloudMessage({
+                    title: message,
+                    token: order.seller.deviceToken,
+                    data
+                  });
                 });
+
                 await order.increment('shippingReminderCount');
                 return resolve();
               } catch (e) {
