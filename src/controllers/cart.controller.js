@@ -240,7 +240,7 @@ export const pay = async (req, res, next) => {
       callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
     });
 
-    order.update({ billId: response.data.id });
+    await order.update({ billId: response.data.id });
 
     return res.status(200).json({ message: 'success', payload: response.data });
   } catch (e) {
