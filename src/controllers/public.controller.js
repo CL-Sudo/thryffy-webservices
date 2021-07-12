@@ -279,6 +279,9 @@ export const trackingMoreWebHook = async (req, res, next) => {
           transaction
         });
 
+        console.log(`order`, order.dataValues);
+        console.log(`order.trackingmore`, order.trackingmore);
+
         await order.trackingmore.update(
           { trackingmorePayload: JSON.stringify(req.body.data) },
           { transaction }
