@@ -80,10 +80,6 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.TEXT,
       field: 'delivery_tracking_no'
     },
-    deliverySlip: {
-      type: Sequelize.TEXT,
-      field: 'delivery_slip'
-    },
     subTotal: {
       type: Sequelize.DECIMAL(10, 2),
       field: 'sub_total'
