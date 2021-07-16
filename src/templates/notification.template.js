@@ -47,3 +47,15 @@ export const PAYMENT = {
 
 export const REMIND_TAKE_PHOTO =
   'Please take clear photos of your item with the shipping label as your reference';
+
+export const FOLLOWING = {
+  BEING_FOLLOWED: followerName => `${followerName} just followed you.`
+};
+
+export const FAVOURITE = {
+  ADD: username => `${username} likes your item.`
+};
+
+export const PRODUCT = {
+  NEW_PRODUCT_ADDED: sellerName => `${sellerName} uploaded a new item.`
+};

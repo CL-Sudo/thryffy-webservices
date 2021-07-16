@@ -41,3 +41,4 @@ export * from './comments.model';
 export * from './followings.model';
 export * from './delivery_statuses.model';
 export * from './otps.model';
+export * from './delivery_slips.model';

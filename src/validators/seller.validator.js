@@ -23,8 +23,6 @@ export const addProductValidator = async (req, fields) =>
     try {
       const { id } = req.user;
 
-      console.log(`req.user`, req.user);
-
       const user = await Users.findOne({ where: { id } });
       if (!user.identityNo) {
         throw new Error('Identity No is required for your account before posting products');
@@ -85,10 +83,10 @@ export const addProductValidator = async (req, fields) =>
     }
   });
 
-export const markAsShippedValidator = async (req, fields) => {
+export const markAsShippedValidator = async req => {
   try {
     const { id } = req.user;
-    const { orderId, deliveryTrackingNo } = fields;
+    const { orderId, deliveryTrackingNo } = req.body;
 
     if (isEmpty(orderId)) throw new Error('orderId required');
     if (isEmpty(deliveryTrackingNo)) throw new Error('deliveryTrackingNo required');

@@ -26,6 +26,7 @@ import Moment from 'moment';
 import { parseParcelName } from '@utils/sales_orders.util';
 import Conditions from './conditions.model';
 import Categories from './categories.model';
+import DeliverySlips from './delivery_slips.model';
 
 const assignDeliveryStatus = status => whereObj =>
   R.ifElse(
@@ -226,6 +227,11 @@ const SalesOrders = SequelizeConnector.define(
             {
               model: ShippingFees,
               as: 'shippingFee',
+              attributes: { exclude: defaultExcludeFields }
+            },
+            {
+              model: DeliverySlips,
+              as: 'deliverySlips',
               attributes: { exclude: defaultExcludeFields }
             }
           ]

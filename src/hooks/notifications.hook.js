@@ -17,6 +17,8 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.order;
           delete instance.review;
           delete instance.dataValues.review;
+          delete instance.user;
+          delete instance.dataValues.user;
 
           break;
         }
@@ -29,6 +31,8 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.order;
           delete instance.review;
           delete instance.dataValues.review;
+          delete instance.user;
+          delete instance.dataValues.user;
 
           break;
         }
@@ -41,6 +45,8 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.dispute;
           delete instance.order;
           delete instance.dataValues.order;
+          delete instance.user;
+          delete instance.dataValues.user;
 
           break;
         }
@@ -53,9 +59,26 @@ Notifications.addHook('afterFind', async findResult => {
           delete instance.dataValues.dispute;
           delete instance.review;
           delete instance.dataValues.review;
+          delete instance.user;
+          delete instance.dataValues.user;
 
           break;
         }
+
+        case instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.USER &&
+          !R.isNil(instance.user): {
+          delete instance.product;
+          delete instance.dataValues.product;
+          delete instance.dispute;
+          delete instance.dataValues.dispute;
+          delete instance.review;
+          delete instance.dataValues.review;
+          delete instance.order;
+          delete instance.dataValues.order;
+
+          break;
+        }
+
         default:
       }
     });

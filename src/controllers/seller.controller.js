@@ -10,7 +10,6 @@ import {
   getChildIds
 } from '@services';
 import { isJSON, paginate, listDiff, parseImageWithIndex } from '@utils';
-import { parsePathForDBStoring } from '@utils/s3.util';
 import {
   Products,
   ProductColors,
@@ -22,7 +21,8 @@ import {
   Galleries,
   Conditions,
   Brands,
-  Categories
+  Categories,
+  DeliverySlips
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -37,6 +37,7 @@ import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { Op } from 'sequelize';
 import { uploadFileToS3 } from '@tools/s3';
 import S3_CONFIG from '@configs/s3.config';
+import { uploadFiles } from '@tools/multer.tool';
 
 const { AWS_S3_URL } = process.env;
 
@@ -213,45 +214,46 @@ export const getProductShippingFee = async (req, res, next) => {
 };
 
 export const markAsShipped = async (req, res, next) => {
-  const form = formidable({ multiple: true });
-  form.parse(req, async (err, fields, files) => {
-    if (err) return next(err);
-    try {
-      await markAsShippedValidator(req, fields);
+  try {
+    await markAsShippedValidator(req);
 
-      const { orderId, deliveryTrackingNo } = fields;
-      const { deliverySlip } = files;
+    const { orderId, deliveryTrackingNo } = req.body;
 
-      const order = await SalesOrders.findOne({
-        where: { id: orderId }
-      });
+    const order = await SalesOrders.findOne({
+      where: { id: orderId }
+    });
 
-      if (!_.isEmpty(deliverySlip)) {
-        const { path } = await uploadFileToS3(deliverySlip, S3_CONFIG.DELIVERY_SLIP_URL);
-        await order.update({ deliverySlip: parsePathForDBStoring(path) });
-      }
+    if (!_.isEmpty(req.files)) {
+      const uploaded = await uploadFiles(req.files, ['deliverySlip']);
 
-      await order.update({
-        deliveryStatus: DELIVERY_STATUS.SHIPPED,
-        deliveryTrackingNo,
-        shippedAt: new Date()
-      });
+      const createDeliverySlipArr = uploaded.deliverySlip.map(instance => ({
+        orderId: order.id,
+        path: instance.path
+      }));
 
-      const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
-      await payload.getExtraFields();
-
-      await postTrackingNumber(deliveryTrackingNo);
-
-      sellerListener.emit('MARKED AS SHIPPED', payload);
-
-      return res.status(200).json({
-        message: 'success',
-        payload
-      });
-    } catch (e) {
-      return next(e);
+      await DeliverySlips.bulkCreate(createDeliverySlipArr);
     }
-  });
+
+    await order.update({
+      deliveryStatus: DELIVERY_STATUS.SHIPPED,
+      deliveryTrackingNo,
+      shippedAt: new Date()
+    });
+
+    const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+    await payload.getExtraFields();
+
+    await postTrackingNumber(deliveryTrackingNo);
+
+    sellerListener.emit('MARKED AS SHIPPED', payload);
+
+    return res.status(200).json({
+      message: 'success',
+      payload
+    });
+  } catch (e) {
+    return next(e);
+  }
 };
 
 export const updateProduct = async (req, res, next) => {

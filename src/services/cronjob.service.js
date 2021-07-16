@@ -1,8 +1,7 @@
 /* eslint-disable no-console */
 import { Notifications, SalesOrders, Users } from '@models';
 import { DELIVERY_STATUS, PAYMENT_STATUS } from '@constants';
-import { sendMail } from '@tools/sendgrid';
-import EMAIL_TEMPLATE, { MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP } from '@templates/email.template';
+import { MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP } from '@templates/email.template';
 import { HOURS_TO_REMIND, MAX_HOUR_BEFORE_SHIPPING } from '@constants/cronjob.constant';
 import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 import NOTIFIABLE_TYPE from '@constants/model.constant';
@@ -36,7 +35,7 @@ export const remindSellerToShipParcel = async () => {
                 const hoursLeftToShip = MAX_HOUR_BEFORE_SHIPPING - order.hoursAfterPayment;
                 let message;
 
-                if (hoursLeftToShip <= 24) {
+                if (hoursLeftToShip <= 24 && hoursLeftToShip > 12) {
                   message = MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_24_HOURS(order.parcelName);
                 }
 
@@ -45,16 +44,6 @@ export const remindSellerToShipParcel = async () => {
                 }
 
                 await Sequelize.transaction(async transaction => {
-                  await sendMail({
-                    receiverEmail: order.seller.email,
-                    receiverFirstName: order.seller.firstName || '',
-                    receiverLastName: order.seller.lastName || '',
-                    template: EMAIL_TEMPLATE.SELLER_SHIPPING_REMINDER,
-                    templateData: {
-                      message
-                    }
-                  });
-
                   const notification = await Notifications.create(
                     {
                       notifierId: order.seller.id,
@@ -66,7 +55,10 @@ export const remindSellerToShipParcel = async () => {
                     { transaction }
                   );
 
-                  const data = await Notifications.findOne({ where: { id: notification.id } });
+                  const data = await Notifications.findOne({
+                    where: { id: notification.id },
+                    transaction
+                  });
 
                   await sendCloudMessage({
                     title: message,
@@ -103,7 +95,7 @@ export const remindBuyerOfRefund = async () => {
     const orders = await SalesOrders.findAll({
       where: {
         paymentStatus: PAYMENT_STATUS.SUCCESS,
-        shippingStatus: DELIVERY_STATUS.TO_SHIP,
+        deliveryStatus: DELIVERY_STATUS.TO_SHIP,
         shippingReminderCount: HOURS_TO_REMIND.length
       },
       include: [

@@ -93,7 +93,8 @@ export const billplzCallback = async (req, res, next) => {
           {
             paymentStatus: paid === 'true' ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
             deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null,
-            transactionId: paid === 'true' ? transactionId : null
+            transactionId: paid === 'true' ? transactionId : null,
+            paidAt: paid === 'true' ? new Date() : null
           },
           { transaction }
         );
@@ -365,7 +366,8 @@ export const senangpayCallback = async (req, res, next) => {
           {
             paymentStatus: status ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
             deliveryStatus: status ? DELIVERY_STATUS.TO_SHIP : null,
-            transactionId: status ? transactionId : null
+            transactionId: status ? transactionId : null,
+            paidAt: status ? new Date() : null
           },
           { transaction }
         );

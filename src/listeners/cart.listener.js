@@ -27,8 +27,10 @@ import LISTENER from '@constants/listener.constant';
 
 export const cartListener = new EventEmitter();
 
-const pushNotification = async (productIds, order) => {
+const pushNotification = async (productIds, orderData) => {
   try {
+    const order = await SalesOrders.findOne({ where: { id: orderData.id } });
+
     const seller = await Users.findOne({
       where: { id: order.sellerId },
       include: [{ model: NotificationSettings, as: 'notificationSetting' }]
@@ -80,6 +82,31 @@ const pushNotification = async (productIds, order) => {
         token: seller.deviceToken,
         title: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
         data: sellerNotificationData
+      });
+    });
+
+    await sequelize.transaction(async transaction => {
+      const shippingReminderNotification = await Notifications.create(
+        {
+          title: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName),
+          notifierId: seller.id,
+          actorId: order.useId,
+          type: NOTIFICATION_TYPE.REMIND_SELLER_TO_SHIP_PARCEL,
+          notifiableId: order.id,
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+        },
+        { transaction }
+      );
+
+      const shippingReminderNotificationData = await Notifications.findOne({
+        where: { id: shippingReminderNotification.id },
+        transaction
+      });
+
+      await sendCloudMessage({
+        token: seller.deviceToken,
+        title: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName),
+        data: shippingReminderNotificationData
       });
     });
 
