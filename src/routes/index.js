@@ -2,7 +2,6 @@
 import passport from 'passport';
 import { test } from '@controllers';
 import * as Config from '@configs';
-import { deliverySlipUploads } from '@middlewares/multer.middleware';
 // import authentication from './authentication.routes';
 // import commonsRoutes from './commons.routes';
 
@@ -68,7 +67,7 @@ export default app => {
   app.use('/api/publics', require('./publics.routes').default);
   app.use('/api/mobile/conditions', require('./mobile/conditions.routes').default);
 
-  app.use('/api/test', deliverySlipUploads, test);
+  app.use('/api/test', test);
   /*
    * COMMONS API
    */
