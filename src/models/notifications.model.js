@@ -37,6 +37,9 @@ const Notifications = SequelizeConnector.define(
       field: 'is_read',
       defaultValue: false
     },
+    deeplink: {
+      type: Sequelize.TEXT
+    },
     type: {
       type: Sequelize.STRING(80)
     },

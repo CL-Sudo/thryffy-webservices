@@ -93,7 +93,8 @@ const pushNotification = async (productIds, orderData) => {
           actorId: order.useId,
           type: NOTIFICATION_TYPE.REMIND_SELLER_TO_SHIP_PARCEL,
           notifiableId: order.id,
-          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
+          deeplink: `thryffy://orders/seller/${order.id}`
         },
         { transaction }
       );

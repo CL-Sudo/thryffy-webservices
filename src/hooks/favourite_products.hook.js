@@ -21,7 +21,8 @@ FavouriteProducts.addHook('afterCreate', 'pushNotification', async instance => {
       notifierId: product.userId,
       actorId: instance.userId,
       notifiableId: instance.productId,
-      notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT
+      notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT,
+      deeplink: `thryffy://users/${instance.userId}`
     });
 
     const data = await Notifications.findOne({ where: { id: notification.id } });

@@ -50,7 +50,8 @@ export const remindSellerToShipParcel = async () => {
                       notifiableId: order.id,
                       notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
                       title: message,
-                      type: NOTIFICATION_CONSTANT.REMIND_SELLER_TO_SHIP_PARCEL
+                      type: NOTIFICATION_CONSTANT.REMIND_SELLER_TO_SHIP_PARCEL,
+                      deeplink: `thryffy://orders/seller/${order.id}`
                     },
                     { transaction }
                   );

@@ -1,4 +1,4 @@
-import { Notifications } from '@models';
+import { Galleries, Notifications } from '@models';
 import MODEL from '@constants/model.constant';
 import R from 'ramda';
 
@@ -82,6 +82,20 @@ Notifications.addHook('afterFind', async findResult => {
         default:
       }
     });
+  } catch (e) {
+    throw e;
+  }
+});
+
+Notifications.addHook('afterCreate', 'addProductImagePath', async instance => {
+  try {
+    if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.PRODUCT) {
+      const gallery = await Galleries.findOne({
+        where: { productId: instance.productId, index: 0 }
+      });
+
+      await instance.update({ image: gallery.filePath });
+    }
   } catch (e) {
     throw e;
   }

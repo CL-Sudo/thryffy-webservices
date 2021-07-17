@@ -31,7 +31,8 @@ Products.addHook('afterCreate', 'remindFollowers', async instance => {
               notifierId: following.follower.id,
               actorId: following.seller.id,
               notifiableId: instance.id,
-              notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT
+              notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT,
+              deeplink: `thryffy://users/${following.seller.id}`
             });
 
             const data = await Notifications.findOne({ where: { id: notification.id } });
