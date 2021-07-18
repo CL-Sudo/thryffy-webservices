@@ -57,7 +57,7 @@ const parseIndex = (fieldName, key) => {
 export const uploadFiles = async (files = [], keys = []) => {
   try {
     const operations = [];
-    const result = [];
+    const result = {};
 
     keys.forEach(key => {
       _.set(result, key, []);

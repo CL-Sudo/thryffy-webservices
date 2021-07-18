@@ -38,7 +38,6 @@ import { Op } from 'sequelize';
 import { uploadFileToS3 } from '@tools/s3';
 import S3_CONFIG from '@configs/s3.config';
 import { uploadFiles } from '@tools/multer.tool';
-import * as sequelize from 'sequelize';
 
 const { AWS_S3_URL } = process.env;
 
