@@ -38,6 +38,7 @@ import { Op } from 'sequelize';
 import { uploadFileToS3 } from '@tools/s3';
 import S3_CONFIG from '@configs/s3.config';
 import { uploadFiles } from '@tools/multer.tool';
+import * as sequelize from 'sequelize';
 
 const { AWS_S3_URL } = process.env;
 
@@ -219,31 +220,37 @@ export const markAsShipped = async (req, res, next) => {
 
     const { orderId, deliveryTrackingNo } = req.body;
 
-    const order = await SalesOrders.findOne({
-      where: { id: orderId }
+    await Sequelize.transaction(async transaction => {
+      const order = await SalesOrders.findOne({
+        where: { id: orderId },
+        transaction
+      });
+
+      if (!_.isEmpty(req.files)) {
+        const uploaded = await uploadFiles(req.files, ['deliverySlip']);
+
+        const createDeliverySlipArr = uploaded.deliverySlip.map(instance => ({
+          orderId: order.id,
+          path: instance.path
+        }));
+
+        await DeliverySlips.bulkCreate(createDeliverySlipArr, { transaction });
+      }
+
+      await order.update(
+        {
+          deliveryStatus: DELIVERY_STATUS.SHIPPED,
+          deliveryTrackingNo,
+          shippedAt: new Date()
+        },
+        { transaction }
+      );
+
+      await postTrackingNumber(deliveryTrackingNo);
     });
 
-    if (!_.isEmpty(req.files)) {
-      const uploaded = await uploadFiles(req.files, ['deliverySlip']);
-
-      const createDeliverySlipArr = uploaded.deliverySlip.map(instance => ({
-        orderId: order.id,
-        path: instance.path
-      }));
-
-      await DeliverySlips.bulkCreate(createDeliverySlipArr);
-    }
-
-    await order.update({
-      deliveryStatus: DELIVERY_STATUS.SHIPPED,
-      deliveryTrackingNo,
-      shippedAt: new Date()
-    });
-
-    const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
+    const payload = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
     await payload.getExtraFields();
-
-    await postTrackingNumber(deliveryTrackingNo);
 
     sellerListener.emit('MARKED AS SHIPPED', payload);
 

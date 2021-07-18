@@ -1,5 +1,6 @@
 import Multer from 'multer';
 
-const upload = Multer({});
+const storage = Multer.memoryStorage();
+const upload = Multer({ storage });
 
-export const deliverySlipUploads = upload.fields([{ name: 'deliverySlip' }]);
+export const deliverySlipUploads = upload.any();

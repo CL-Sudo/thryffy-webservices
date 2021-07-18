@@ -12,7 +12,6 @@ import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 export const subscriptionRenewReminder = () =>
   new Promise(async (resolve, reject) => {
     try {
-      console.log('cronjob running...');
       const zeroCount = await Subscriptions.findAll({
         where: {
           reminderCount: 0

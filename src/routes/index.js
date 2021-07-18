@@ -2,6 +2,7 @@
 import passport from 'passport';
 import { test } from '@controllers';
 import * as Config from '@configs';
+import { deliverySlipUploads } from '@middlewares/multer.middleware';
 // import authentication from './authentication.routes';
 // import commonsRoutes from './commons.routes';
 
