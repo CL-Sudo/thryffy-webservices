@@ -420,7 +420,7 @@ export const getProducts = async (req, res, next) => {
         return param;
       }
 
-      return R.append({
+      return R.merge({
         [Op.or]: [
           {
             title: {
