@@ -136,7 +136,7 @@ export const deleteOne = async (req, res, next) => {
       throw new Error('Invalid productId given, no item found');
     }
 
-    item.destroy({ force: true });
+    await item.destroy({ force: true });
 
     const payload = await getLatestCartList(id);
 

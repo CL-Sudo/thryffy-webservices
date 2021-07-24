@@ -23,6 +23,8 @@ import * as validators from '@validators/discover.validator';
 
 import { getOne, youMayAlsoLike } from '@controllers/product.controller';
 
+import { getSellerDetail, getSellerCategories, getProducts } from '@controllers/seller.controller';
+
 const router = new Router();
 
 router.route('/billplz/callback').post(billplzCallback);
@@ -49,5 +51,9 @@ router.get('/users/search', searchValidator, search);
 
 router.all('/senangpay/callback', senangpayCallback);
 router.all('/senangpay/redirect', senangpayRedirect);
+
+router.get('/seller/:sellerId/details', getSellerDetail);
+router.get('/seller/:sellerId/categories', getSellerCategories);
+router.get('/seller/:sellerId/products', getProducts);
 
 export default router;

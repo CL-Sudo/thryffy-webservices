@@ -72,6 +72,7 @@ export const add = async (req, res, next) => {
   try {
     const { productId } = req.body;
     const { id } = req.user;
+    // const { limit, offset } = req.query;
 
     const product = await Products.findOne({
       raw: true,
@@ -98,14 +99,14 @@ export const add = async (req, res, next) => {
       userId: id
     });
 
-    const payload = await getLatestFavouriteList(id);
+    // const payload = await getLatestFavouriteList(id);
 
     return res.status(200).json({
-      message: 'success',
-      payload: {
-        count: payload.length,
-        rows: paginate(10)(0)(payload)
-      }
+      message: 'success'
+      // payload: {
+      // count: payload.length,
+      // rows: paginate(limit)(offset)(payload)
+      // }
     });
   } catch (e) {
     return next(e);
@@ -118,6 +119,7 @@ export const moveToBag = async (req, res, next) => {
 
     const { id } = req.user;
     const { productId } = req.body;
+    const { limit, offset } = req.query;
 
     await FavouriteProducts.destroy({
       force: true,
@@ -138,7 +140,7 @@ export const moveToBag = async (req, res, next) => {
       message: 'success',
       payload: {
         count: payload.length,
-        rows: paginate(10)(0)(payload)
+        rows: paginate(limit)(offset)(payload)
       }
     });
   } catch (e) {

@@ -480,6 +480,10 @@ Users.prototype.getFollowingCount = async function() {
 
 Users.prototype.checkIsFollowed = async function(myId) {
   try {
+    if (R.isNil(myId)) {
+      this.setDataValue('isFollowed', false);
+      return false;
+    }
     const follow = await Followings.findOne({ where: { sellerId: this.id, followerId: myId } });
     this.setDataValue('isFollowed', !R.isNil(follow));
     return !R.isNil(follow);

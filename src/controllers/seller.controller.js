@@ -413,7 +413,7 @@ export const getProducts = async (req, res, next) => {
       offset = 0
     } = req.query;
 
-    const { id } = req.user;
+    const id = _.get(req, 'user.id', null);
 
     const filterTitle = param => {
       if (R.isNil(keyword)) {
@@ -536,7 +536,7 @@ export const getProducts = async (req, res, next) => {
 
 export const getSellerDetail = async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const id = _.get(req, 'user.id', null);
     const { sellerId } = req.params;
 
     const seller = await Users.scope('sellerDetail').findOne({ where: { id: sellerId } });

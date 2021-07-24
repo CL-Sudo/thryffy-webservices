@@ -213,6 +213,11 @@ Products.prototype.getFavouriteCount = async function() {
 
 Products.prototype.checkIsAddedToFavourite = async function(userId) {
   try {
+    if (R.isNil(userId)) {
+      this.setDataValue('isAddedToFavourite', false);
+      return false;
+    }
+
     const favouriteProduct = await FavouriteProducts.findOne({
       raw: true,
       where: {
@@ -228,6 +233,10 @@ Products.prototype.checkIsAddedToFavourite = async function(userId) {
 };
 
 Products.prototype.checkIsAddedToCart = async function(userId) {
+  if (R.isNil(userId)) {
+    this.setDataValue('isAddedToCart', false);
+    return false;
+  }
   const cartItem = await CartItems.findOne({
     raw: true,
     where: {
@@ -237,6 +246,7 @@ Products.prototype.checkIsAddedToCart = async function(userId) {
   });
 
   this.setDataValue('isAddedToCart', !R.isNil(cartItem));
+  return !R.isNil(cartItem);
 };
 
 Products.prototype.getExtraFields = async function(userId) {
