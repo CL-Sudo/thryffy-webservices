@@ -27,6 +27,7 @@ import { parseParcelName } from '@utils/sales_orders.util';
 import Conditions from './conditions.model';
 import Categories from './categories.model';
 import DeliverySlips from './delivery_slips.model';
+import Galleries from './galleries.model';
 
 const assignDeliveryStatus = status => whereObj =>
   R.ifElse(
@@ -209,6 +210,11 @@ const SalesOrders = SequelizeConnector.define(
                     {
                       model: Categories,
                       as: 'category',
+                      attributes: { exclude: defaultExcludeFields }
+                    },
+                    {
+                      model: Galleries,
+                      as: 'photos',
                       attributes: { exclude: defaultExcludeFields }
                     }
                   ]

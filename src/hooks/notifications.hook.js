@@ -1,6 +1,7 @@
-import { Galleries, Notifications } from '@models';
+import { Galleries, Notifications, OrderItems, Products, SalesOrders } from '@models';
 import MODEL from '@constants/model.constant';
 import R from 'ramda';
+import * as _ from 'lodash';
 
 Notifications.addHook('afterFind', async findResult => {
   try {
@@ -91,10 +92,31 @@ Notifications.addHook('afterCreate', 'addProductImagePath', async instance => {
   try {
     if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.PRODUCT) {
       const gallery = await Galleries.findOne({
-        where: { productId: instance.productId, index: 0 }
+        where: { productId: instance.notifiableId, index: 0 }
       });
 
       await instance.update({ image: gallery.filePath });
+    }
+
+    if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER) {
+      const order = await SalesOrders.findOne({
+        where: { id: instance.notifiableId },
+        include: [
+          {
+            model: OrderItems,
+            as: 'orderItems',
+            include: [
+              {
+                model: Products,
+                as: 'product'
+              }
+            ]
+          }
+        ]
+      });
+
+      const image = _.get(order, 'orderItems[0].product.thumbnail', null);
+      await instance.update({ image });
     }
   } catch (e) {
     throw e;

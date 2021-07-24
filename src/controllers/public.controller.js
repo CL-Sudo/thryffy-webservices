@@ -291,7 +291,7 @@ export const trackingMoreWebHook = async (req, res, next) => {
           R.toUpper(trackinfo[0].checkpoint_status) === 'DELIVERED'
         ) {
           await order.update({ deliveryStatus: DELIVERY_STATUS.DELIVERED }, { transaction });
-          await Notifications.create(
+          const notification = await Notifications.create(
             {
               title: DELIVERY.COMPLETED(order.orderRef),
               actorId: order.sellerId,
@@ -303,10 +303,12 @@ export const trackingMoreWebHook = async (req, res, next) => {
             { transaction }
           );
 
+          const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+
           await sendCloudMessage({
             title: DELIVERY.COMPLETED(order.orderRef),
             token: order.buyer.deviceToken,
-            data: order
+            data
           });
 
           const sellerNotification = await Notifications.create(
