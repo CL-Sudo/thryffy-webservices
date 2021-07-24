@@ -73,7 +73,7 @@ export const getCuratedList = async (req, res, next) => {
         preferableType: data.preferableType
       })),
       groupByType,
-      R.merge({ condition: [], category: [], brand: [] })
+      R.merge({ condition: [], category: [], brand: [], size: [] })
     );
 
     const preferenceIds = getPreferableObjList(preferences);
@@ -90,10 +90,15 @@ export const getCuratedList = async (req, res, next) => {
       ? R.identity
       : R.assoc('brandId', preferenceIds.brand);
 
+    const assignSize = R.isEmpty(preferenceIds.size)
+      ? R.identity
+      : R.assoc('sizeId', preferenceIds.size);
+
     const where = R.pipe(
       assignBrand,
       assignCategory,
-      assignCondition
+      assignCondition,
+      assignSize
     )({
       isPublished: true,
       isPurchased: false,

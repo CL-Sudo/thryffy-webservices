@@ -10,9 +10,6 @@ import {
   Reviews,
   Products,
   Preferences,
-  Categories,
-  Brands,
-  Conditions,
   Subscriptions,
   Packages,
   Otps,
@@ -580,17 +577,16 @@ export const updatePreferences = async (req, res, next) => {
     requestValidator(req);
 
     const { id } = req.user;
-    const { categoryId, brandId, conditionId } = req.body;
+    const { categoryId, brandId, conditionId, sizeId } = req.body;
 
     const groupId = (acc, { preferableId }) => acc.concat(preferableId);
     const toType = R.prop('preferableType');
 
     const currentPreferences = R.pipe(
       R.reduceBy(groupId, [], toType),
-      R.merge({ condition: [], category: [], brand: [] })
+      R.merge({ condition: [], category: [], brand: [], size: [] })
     )(
       await Preferences.findAll({
-        raw: true,
         where: { userId: id }
       })
     );
@@ -608,6 +604,10 @@ export const updatePreferences = async (req, res, next) => {
       currentPreferences.condition
     );
     const conditionIdsToBeAdded = R.without(intersectedconditionIds)(conditionId);
+
+    const intersectedSizeIds = R.intersection(sizeId)(currentPreferences.size);
+    const sizeIdsToBeDeleted = R.without(intersectedSizeIds)(currentPreferences.size);
+    const sizeIdsToBeAdded = R.without(intersectedSizeIds)(sizeId);
 
     const categoryObjs = R.map(cId => ({
       userId: id,
@@ -627,6 +627,12 @@ export const updatePreferences = async (req, res, next) => {
       preferableType: 'condition'
     }))(conditionIdsToBeAdded);
 
+    const sizeObjs = R.map(sId => ({
+      userId: id,
+      preferableId: sId,
+      preferableType: 'size'
+    }))(sizeIdsToBeAdded);
+
     await sequelize.transaction(async transaction => {
       await Preferences.destroy({
         where: { userId: id, preferableId: conditionIdsToBeDeleted, preferableType: 'condition' },
@@ -645,6 +651,12 @@ export const updatePreferences = async (req, res, next) => {
         force: true,
         transaction
       });
+
+      await Preferences.destroy({
+        where: { userId: id, preferableId: sizeIdsToBeDeleted, preferableType: 'size' },
+        force: true,
+        transaction
+      });
     });
 
     await sequelize.transaction(async transaction => {
@@ -653,24 +665,12 @@ export const updatePreferences = async (req, res, next) => {
       await Preferences.bulkCreate(conditionObjs, transaction);
 
       await Preferences.bulkCreate(brandObjs, transaction);
+
+      await Preferences.bulkCreate(sizeObjs, transaction);
     });
 
     const payload = await Preferences.findAndCountAll({
-      where: { userId: id },
-      include: [
-        {
-          model: Brands,
-          as: 'brand'
-        },
-        {
-          model: Conditions,
-          as: 'condition'
-        },
-        {
-          model: Categories,
-          as: 'category'
-        }
-      ]
+      where: { userId: id }
     });
 
     return res.status(200).json({ message: 'success', payload });
@@ -686,37 +686,24 @@ export const getPreferences = async (req, res, next) => {
 
     const preferences = await Preferences.findAll({
       where: { userId: id },
-      include: [
-        {
-          model: Categories,
-          as: 'category'
-        },
-        {
-          model: Brands,
-          as: 'brand'
-        },
-        {
-          model: Conditions,
-          as: 'condition'
-        }
-      ],
       limit: Number(limit) || null,
       offest: Number(offset) || null
     });
 
-    const getPreferableTypeObject = (condition, brand, category) =>
+    const getPreferableTypeObject = (condition, brand, category, size) =>
       R.cond([
-        [() => R.and(R.isNil(brand), R.isNil(category)), () => condition],
-        [() => R.and(R.isNil(condition), R.isNil(category)), () => brand],
-        [() => R.and(R.isNil(condition), R.isNil(brand)), () => category]
+        [() => R.isNil(brand) && R.isNil(category) && R.isNil(size), () => condition],
+        [() => R.isNil(condition) && R.isNil(category) && R.isNil(size), () => brand],
+        [() => R.isNil(condition) && R.isNil(brand) && R.isNil(size), () => category],
+        [() => R.isNil(condition) && R.isNil(brand) && R.isNil(category), () => size]
       ])();
 
-    const groupPreferenceType = (acc, { condition, brand, category }) =>
-      acc.concat(getPreferableTypeObject(condition, brand, category));
+    const groupPreferenceType = (acc, { condition, brand, category, size }) =>
+      acc.concat(getPreferableTypeObject(condition, brand, category, size));
 
     const payload = R.pipe(
       R.reduceBy(groupPreferenceType, [], R.prop('preferableType')),
-      R.merge({ condition: [], brand: [], category: [] })
+      R.merge({ condition: [], brand: [], category: [], size: [] })
     )(preferences);
 
     return res.status(200).json({ message: 'success', payload });

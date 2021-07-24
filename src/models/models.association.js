@@ -288,6 +288,11 @@ Models.Preferences.belongsTo(Models.Conditions, {
   as: 'condition',
   constraints: false
 });
+Models.Preferences.belongsTo(Models.Sizes, {
+  foreignKey: 'preferableId',
+  as: 'size',
+  constraints: false
+});
 
 /**
  * Conditions
