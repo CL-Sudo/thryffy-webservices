@@ -16,7 +16,7 @@ import {
 import Billplz from '@services/billplz.service';
 import { vertifySignature } from '@services/trackingmore.service';
 
-import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
+import { PAYMENT_STATUS, DELIVERY_STATUS, PAYMENT_METHOD } from '@constants';
 import LISTENER from '@constants/listener.constant';
 import NOTIFICATION_TYPE from '@constants/notification.constant';
 import NOTIFIABLE_TYPE from '@constants/model.constant';
@@ -94,7 +94,8 @@ export const billplzCallback = async (req, res, next) => {
             paymentStatus: paid === 'true' ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
             deliveryStatus: paid === 'true' ? DELIVERY_STATUS.TO_SHIP : null,
             transactionId: paid === 'true' ? transactionId : null,
-            paidAt: paid === 'true' ? new Date() : null
+            paidAt: paid === 'true' ? new Date() : null,
+            paymentMethod: paid === 'true' ? PAYMENT_METHOD.ONLINE_BANKING : null
           },
           { transaction }
         );
@@ -367,7 +368,8 @@ export const senangpayCallback = async (req, res, next) => {
             paymentStatus: status ? PAYMENT_STATUS.SUCCESS : PAYMENT_STATUS.FAILED,
             deliveryStatus: status ? DELIVERY_STATUS.TO_SHIP : null,
             transactionId: status ? transactionId : null,
-            paidAt: status ? new Date() : null
+            paidAt: status ? new Date() : null,
+            paymentMethod: status ? PAYMENT_METHOD.CREDIT_DEBIT_CARD : null
           },
           { transaction }
         );
