@@ -22,7 +22,8 @@ FavouriteProducts.addHook('afterCreate', 'pushNotification', async instance => {
       actorId: instance.userId,
       notifiableId: instance.productId,
       notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT,
-      deeplink: `thryffy://users/${instance.userId}`
+      deeplink: `thryffy://users/${instance.userId}`,
+      image: user.profilePicture
     });
 
     const data = await Notifications.findOne({ where: { id: notification.id } });
