@@ -7,6 +7,9 @@ import numeral from 'numeral';
 import mime from 'mime-types';
 import async from 'async';
 
+export const parseBoolean = param =>
+  param === 'true' || param === '1' || param === 1 || param === true;
+
 /**
  *
  * @param {Array} existingList
@@ -241,16 +244,16 @@ export const downloadStream = (res, stream, filename) => {
   stream.pipe(res);
 };
 
+export const getExtensionFromString = val => {
+  const re = /(?:\.([^.]+))?$/;
+  return re.exec(val)[1];
+};
+
 export const setFileResHeader = (res, filename, ext) => {
   const extension = ext || getExtensionFromString(filename);
   const contentType = mime.lookup(extension);
   res.setHeader('Content-Type', contentType);
   res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
-};
-
-export const getExtensionFromString = val => {
-  const re = /(?:\.([^.]+))?$/;
-  return re.exec(val)[1];
 };
 
 export const randomInArray = ary => ary[Math.floor(Math.random() * ary.length)];

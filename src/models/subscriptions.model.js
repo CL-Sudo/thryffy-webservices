@@ -71,6 +71,7 @@ Subscriptions.prototype.checkHasValidSubscription = async function() {
   try {
     const now = moment();
     const diff = now.diff(this.expiryDate, 'seconds');
+
     return diff <= 0;
   } catch (e) {
     throw e;

@@ -25,7 +25,10 @@ import { Reviews } from '@models/reviews.model';
 import { NotificationSettings } from '@models/notification_settings.model';
 
 import R from 'ramda';
+import * as _ from 'lodash';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
+import Subscriptions from './subscriptions.model';
+import Packages from './packages.model';
 
 const Users = SequelizeConnector.define(
   'Users',
@@ -172,6 +175,18 @@ const Users = SequelizeConnector.define(
     bankAccountNo: {
       type: Sequelize.STRING(50),
       field: 'bank_account_no'
+    },
+    memberType: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('memberType');
+      }
+    },
+    membershipExpiryDate: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('membershipExpiryDate');
+      }
     },
     reviewCount: {
       type: Sequelize.VIRTUAL,
@@ -323,6 +338,8 @@ const Users = SequelizeConnector.define(
               await instance.getEarnings();
               await instance.getTotalLike();
               await instance.getTotalView();
+              await instance.getMemberType();
+              await instance.getMembershipExpiryDate();
             })
           );
         }
@@ -487,6 +504,41 @@ Users.prototype.checkIsFollowed = async function(myId) {
     const follow = await Followings.findOne({ where: { sellerId: this.id, followerId: myId } });
     this.setDataValue('isFollowed', !R.isNil(follow));
     return !R.isNil(follow);
+  } catch (e) {
+    throw e;
+  }
+};
+
+Users.prototype.getMemberType = async function() {
+  try {
+    const subscription = await Subscriptions.findOne({
+      where: {
+        userId: this.id
+      },
+      include: [{ model: Packages, as: 'package' }]
+    });
+
+    const result = _.get(subscription, 'package.title', null);
+
+    this.setDataValue('memberType', result);
+    return result;
+  } catch (e) {
+    throw e;
+  }
+};
+
+Users.prototype.getMembershipExpiryDate = async function() {
+  try {
+    const subscription = await Subscriptions.findOne({
+      where: {
+        userId: this.id
+      }
+    });
+
+    const result = _.get(subscription, 'expiryDate', null);
+
+    this.setDataValue('membershipExpiryDate', result);
+    return result;
   } catch (e) {
     throw e;
   }

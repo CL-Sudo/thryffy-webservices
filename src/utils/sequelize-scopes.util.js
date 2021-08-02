@@ -5,7 +5,16 @@ import { splitStringToArray } from '@utils';
 import { SEARCH_TYPES } from '@constants';
 
 const { Op } = Sequelize;
-const staticFields = ['id', 'active', 'createdBy', 'updatedBy', 'deletedBy', 'createdAt', 'updatedAt', 'deletedAt'];
+const staticFields = [
+  'id',
+  'active',
+  'createdBy',
+  'updatedBy',
+  'deletedBy',
+  'createdAt',
+  'updatedAt',
+  'deletedAt'
+];
 
 const parseVar = str => {
   switch (str) {
@@ -30,18 +39,28 @@ export const search = (Model, params, excludeFields = []) => {
   if (!_.isEmpty(fields)) {
     _.map(fields, field => {
       const isId = field.slice(-2) === 'Id' || field === 'id';
-      if (_.toInteger(searchType) === SEARCH_TYPES.LIKE && !_.includes(staticFields, field) && !isId) {
+      if (
+        _.toInteger(searchType) === SEARCH_TYPES.LIKE &&
+        !_.includes(staticFields, field) &&
+        !isId
+      ) {
         where[Op.or].push({ [field]: { [Op.like]: `%${keyword}%` } });
       } else {
         where[Op.or].push({ [field]: isId ? splitStringToArray(keyword, ',') : keyword });
       }
     });
   } else {
-    const exclude = ['createdAt', 'updatedAt', 'deletedAt'].concat(_.isEmpty(excludeFields) ? [] : excludeFields);
+    const exclude = ['createdAt', 'updatedAt', 'deletedAt'].concat(
+      _.isEmpty(excludeFields) ? [] : excludeFields
+    );
     _.forOwn(Model.rawAttributes, (value, key) => {
       if (!_.includes(exclude, key)) {
         const isId = key.slice(-2) === 'Id';
-        if (_.toInteger(searchType) === SEARCH_TYPES.LIKE && !_.includes(staticFields, key) && !isId) {
+        if (
+          _.toInteger(searchType) === SEARCH_TYPES.LIKE &&
+          !_.includes(staticFields, key) &&
+          !isId
+        ) {
           where[Op.or].push({ [key]: { [Op.like]: `%${keyword}%` } });
         } else {
           where[Op.or].push({ [key]: keyword });

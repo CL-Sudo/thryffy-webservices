@@ -14,24 +14,27 @@ import {
   NotificationTopicUsers,
   FavouriteProducts,
   Preferences,
-  Reviews,
-  Otps
+  Reviews
 } from '@models';
 import { getScopes, getLimitOffset } from '@utils/express.util';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { Op } from 'sequelize';
+import { parseBoolean } from '@utils';
 
 export const list = async (req, res, next) => {
   try {
     const scopes = getScopes(Users)(req);
     const { limit, offset } = getLimitOffset(req);
+    const { hasValidSubscription } = req.query;
+
+    const where = hasValidSubscription
+      ? { hasValidSubscription: parseBoolean(hasValidSubscription) }
+      : {};
 
     const users = await Users.scope(scopes).findAndCountAll({
       limit,
       offset,
-      // include: [{ model: Products, as: 'products' }],
-      raw: true,
-      hooks: false
+      where
     });
 
     return res
