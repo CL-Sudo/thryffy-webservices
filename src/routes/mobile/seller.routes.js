@@ -10,7 +10,7 @@ import {
   publication,
   getSellerCategories
 } from '@controllers/seller.controller';
-import { getShippingFeeValidator, markAsShippedValidator } from '@validators/seller.validator';
+import { getShippingFeeValidator } from '@validators/seller.validator';
 import { deliverySlipUploads } from '@middlewares/multer.middleware';
 
 const router = new Router();

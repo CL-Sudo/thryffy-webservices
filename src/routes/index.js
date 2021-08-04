@@ -68,6 +68,8 @@ export default app => {
   app.use('/api/mobile/conditions', require('./mobile/conditions.routes').default);
 
   app.use('/api/test', test);
+
+  app.use('/s', require('./mobile/shares.routes').default);
   /*
    * COMMONS API
    */
