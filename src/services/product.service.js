@@ -254,6 +254,8 @@ export const getOneProductShippingFee = (categoryId, sizeId) =>
   });
 
 export const getProductCommission = data => price => {
+  if (price <= 0) return 0;
+
   const maxPriceLens = R.lens(R.prop('maxPrice'), R.assoc('maxPrice'));
 
   const setMaxToInfinityIfNull = R.ifElse(
@@ -270,7 +272,8 @@ export const getProductCommission = data => price => {
     R.map(setMaxToInfinityIfNull),
     R.filter(isWithinRange),
     d => d[0],
-    R.ifElse(d => R.isNil(R.prop('commissionRate', d)), getCommissionPrice, multiplyByRate)
+    R.ifElse(d => R.isNil(R.prop('commissionRate', d)), getCommissionPrice, multiplyByRate),
+    d => Number(d.toFixed(2))
   )(data);
 
   return commission;
