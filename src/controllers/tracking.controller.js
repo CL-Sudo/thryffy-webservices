@@ -30,9 +30,9 @@ export const getTrackingInfoByOrderId = async (req, res, next) => {
 
     if (!order) throw new Error('Invalid order id given');
 
-    if (id !== order.sellerId && id !== order.userId) {
-      throw new Error('Request declined');
-    }
+    // if (id !== order.sellerId && id !== order.userId) {
+    //   throw new Error('Request declined');
+    // }
 
     const trackingmorePayload = _.get(order, 'trackingmore.trackingmorePayload');
 
