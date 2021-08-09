@@ -4,6 +4,6 @@ import { shareProduct, shareProfile } from '@controllers/share.controller';
 const router = new Router();
 
 router.get('/product/:productId', shareProduct);
-router.get('/profile/:userId', shareProfile);
+router.get('/users/:userId', shareProfile);
 
 export default router;
