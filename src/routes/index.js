@@ -25,6 +25,7 @@ export default app => {
   app.use('/api/tracking', adminAuth, require('./tracking.routes').default);
   app.use('/api/comments', adminAuth, require('./comments.routes').default);
   app.use('/api/reports', adminAuth, require('./reports.routes').default);
+  app.use('/api/packages', adminAuth, require('./packages.routes').default);
 
   /*
    * Private API

@@ -1,5 +1,4 @@
 import { check } from 'express-validator/check';
-import _ from 'lodash';
 import {
   Categories,
   SalesOrders,
@@ -32,16 +31,15 @@ export const addProductValidator = async (req, fields) =>
         where: { userId: id },
         include: [{ model: Packages, as: 'package' }]
       });
+
+      const listingCount = await Products.count({
+        where: { userId: req.user.id, published: true, isVerify: true }
+      });
+
       if (!subscription) {
-        const listingCount = await Products.count({ where: { userId: req.user.id } });
         if (listingCount >= 30)
           throw new Error('You cannot list more than 30 items as a free user.');
-      }
-
-      if (
-        _.get(subscription, 'listingCount', 0) >=
-        parsePackageMaxListing(_.get(subscription, 'package.listing', 0))
-      ) {
+      } else if (listingCount >= parsePackageMaxListing(subscription.package.listing)) {
         throw new Error(
           `You are allowed to list ${subscription.package.listing} item only, upgrade to list more item.`
         );

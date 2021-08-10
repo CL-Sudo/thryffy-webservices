@@ -31,52 +31,6 @@ import { sendCloudMessage } from '@services/notification.service';
 
 import { DELIVERY } from '@templates/notification.template';
 
-/**
- *
- * @param {Number} packageId packageId to be subscribed
- * @param {Number} userId subscriber userId
- */
-const decideExpiryDate = async (packageId, userId) => {
-  try {
-    const sub = await Subscriptions.findOne({
-      where: { userId }
-    });
-
-    const subExpiryDate = moment(sub.expiryDate);
-    const now = moment();
-    const diff = now.diff(subExpiryDate, 'days');
-
-    switch (true) {
-      case packageId === sub.packageId && diff <= 0: {
-        const exp = moment(subExpiryDate)
-          .add(30, 'days')
-          .format('YYYY-MM-DD');
-
-        return Promise.resolve(exp);
-      }
-
-      case packageId === sub.packageId && diff > 0: {
-        const exp = moment()
-          .add(30, 'days')
-          .format('YYYY-MM-DD');
-        return Promise.resolve(exp);
-      }
-
-      case packageId !== sub.packageId: {
-        const exp = moment()
-          .add(30, 'days')
-          .format('YYYY-MM-DD');
-        return Promise.resolve(exp);
-      }
-
-      default:
-        throw new Error('Oops, something is wrong!');
-    }
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
 export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -226,20 +180,13 @@ export const subscribeCallback = async (req, res, next) => {
       const currentSubscription = await Subscriptions.findOne({ where: { userId } });
 
       if (currentSubscription) {
-        const expiryDate = await decideExpiryDate(packageId, userId);
         await currentSubscription.update({
-          packageId,
-          expiryDate
+          packageId
         });
       } else {
-        const productCount = await Products.count({ where: { userId } });
         await Subscriptions.create({
           packageId,
-          listingCount: productCount,
-          userId,
-          expiryDate: moment()
-            .add(1, 'months')
-            .format('YYYY-MM-DD')
+          userId
         });
       }
 
@@ -412,20 +359,13 @@ export const senangpayCallback = async (req, res, next) => {
         const currentSubscription = await Subscriptions.findOne({ where: { userId } });
 
         if (currentSubscription) {
-          const expiryDate = await decideExpiryDate(packageId, userId);
           await currentSubscription.update({
-            packageId,
-            expiryDate
+            packageId
           });
         } else {
-          const productCount = await Products.count({ where: { userId } });
           await Subscriptions.create({
             packageId,
-            listingCount: productCount,
-            userId,
-            expiryDate: moment()
-              .add(1, 'months')
-              .format('YYYY-MM-DD')
+            userId
           });
         }
 

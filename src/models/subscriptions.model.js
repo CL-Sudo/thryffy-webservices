@@ -13,10 +13,6 @@ const Subscriptions = SequelizeConnector.define(
     id: primaryKey,
     userId: foreignKey('user_id', 'users', { onDelete: 'CASCADE' }),
     packageId: foreignKey('package_id', 'packages', false),
-    listingCount: {
-      type: Sequelize.INTEGER,
-      field: 'listing_count'
-    },
     expiryDate: {
       type: Sequelize.DATE,
       field: 'expiry_date'

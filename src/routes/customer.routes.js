@@ -5,7 +5,8 @@ import {
   list,
   getCustomerProductRequest,
   deleteCustomer,
-  getOneCustomer
+  getOneCustomer,
+  updatePackage
 } from '@controllers/Admin/customers.controller';
 
 const controller = crud(Users);
@@ -23,5 +24,7 @@ router.route('/:id/products').get(getCustomerProductRequest);
 
 router.route('/activate/:id').patch(controller.activate);
 router.route('/deactivate/:id').patch(controller.deactivate);
+
+router.patch('/:userId/package', updatePackage);
 
 export default router;

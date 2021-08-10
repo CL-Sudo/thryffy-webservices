@@ -205,3 +205,22 @@ export const getOneCustomer = async (req, res, next) => {
     return next(e);
   }
 };
+
+export const updatePackage = async (req, res, next) => {
+  try {
+    const { packageId } = req.body;
+    const { userId } = req.params;
+
+    const subscription = await Subscriptions.findOne({ where: { userId } });
+
+    if (subscription) {
+      await subscription.update({ packageId });
+    } else {
+      await Subscriptions.create({ packageId, userId });
+    }
+
+    return res.status(200).json({ message: 'success' });
+  } catch (e) {
+    return next(e);
+  }
+};
