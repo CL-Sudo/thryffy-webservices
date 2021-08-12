@@ -3,8 +3,6 @@ import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
 import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
-import { Users } from '@models/users.model';
-
 import moment from 'moment';
 
 const Subscriptions = SequelizeConnector.define(

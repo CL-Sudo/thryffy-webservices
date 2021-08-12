@@ -34,7 +34,7 @@ export const addProductValidator = async (req, fields) =>
       });
 
       const listingCount = await Products.count({
-        where: { userId: req.user.id, published: true, isVerify: true }
+        where: { userId: req.user.id, isPublished: true, isVerify: true }
       });
 
       if (!subscription) {
