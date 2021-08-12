@@ -170,7 +170,7 @@ export const subscriptionRenewReminder = () =>
             include: [{ model: Users, as: 'user' }]
           });
 
-          const hasValidSubscription = await subscription.checkHasValidSubscription();
+          const hasValidSubscription = subscription.checkHasValidSubscription();
           await subscription.user.update({ hasValidSubscription });
         })
       );

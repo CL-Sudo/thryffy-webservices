@@ -34,28 +34,6 @@ const Subscriptions = SequelizeConnector.define(
     hooks: {
       beforeFind: query => {
         parseParanoidToIncludes(query);
-      },
-      afterCreate: async subscription => {
-        try {
-          const user = await Users.findOne({ where: { id: subscription.userId } });
-          const hasValidSubscription = await subscription.checkHasValidSubscription();
-          await user.update({
-            hasValidSubscription
-          });
-        } catch (e) {
-          throw e;
-        }
-      },
-      afterUpdate: async subscription => {
-        try {
-          const user = await Users.findOne({ where: { id: subscription.userId } });
-          const hasValidSubscription = await subscription.checkHasValidSubscription();
-          await user.update({
-            hasValidSubscription
-          });
-        } catch (e) {
-          throw e;
-        }
       }
     }
   }
@@ -63,15 +41,13 @@ const Subscriptions = SequelizeConnector.define(
 
 addScopesByAllFields(Subscriptions, []);
 
-Subscriptions.prototype.checkHasValidSubscription = async function() {
-  try {
-    const now = moment();
-    const diff = now.diff(this.expiryDate, 'seconds');
+Subscriptions.prototype.checkHasValidSubscription = function() {
+  const now = moment();
+  const diff = now.diff(this.expiryDate, 'seconds');
 
-    return diff <= 0;
-  } catch (e) {
-    throw e;
-  }
+  const isSubscriptionValid = diff <= 0;
+
+  return isSubscriptionValid;
 };
 
 export { Subscriptions };

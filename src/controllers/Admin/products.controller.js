@@ -8,6 +8,18 @@ import PublicationListener from '@listeners/publication.listener';
 import EVENT from '@constants/listener.constant';
 import { paginate } from '@utils/utils';
 
+const checkIsAbleToPublishProduct = async userId => {
+  try {
+    const productCount = await Products.scope('countedInListing').count({ where: { userId } });
+
+    const user = await Users.findOne({ where: { id: userId } });
+
+    return Promise.resolve(productCount < user.maxListing);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
 export const managePublication = async (req, res, next) => {
   try {
     const { isPublished } = req.body;
@@ -19,6 +31,13 @@ export const managePublication = async (req, res, next) => {
 
     if (product.isPublished === isPublished) {
       throw new Error(`This product has already been ${isPublished ? 'published' : 'unpublished'}`);
+    }
+
+    if (isPublished) {
+      const isAbleToPublishProduct = await checkIsAbleToPublishProduct(product.userId);
+      if (!isAbleToPublishProduct) {
+        throw new Error('This user has reached maximum listing quota.');
+      }
     }
 
     await product.update({ isPublished, updatedBy: userId });

@@ -197,7 +197,6 @@ export const subscribeCallback = async (req, res, next) => {
           { model: Packages, as: 'package' }
         ]
       });
-      await subscription.user.update({ hasValidSubscription: true });
 
       subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
     }
@@ -376,7 +375,6 @@ export const senangpayCallback = async (req, res, next) => {
             { model: Packages, as: 'package' }
           ]
         });
-        await subscription.user.update({ hasValidSubscription: true });
 
         subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
       }

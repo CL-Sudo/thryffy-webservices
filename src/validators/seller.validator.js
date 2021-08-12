@@ -12,10 +12,11 @@ import {
 } from '@models';
 import R from 'ramda';
 import { DELIVERY_STATUS } from '@constants';
+import { NON_MEMBER_MAX_LISTING } from '@constants/subscription.constant';
 
 const isEmpty = param => R.isNil(param) || R.length(R.toString(param)) === 0;
 
-const parsePackageMaxListing = listing => (listing === 0 ? Infinity : listing);
+// const parsePackageMaxListing = listing => (listing === 0 ? Infinity : listing);
 
 export const addProductValidator = async (req, fields) =>
   new Promise(async (resolve, reject) => {
@@ -37,9 +38,11 @@ export const addProductValidator = async (req, fields) =>
       });
 
       if (!subscription) {
-        if (listingCount >= 30)
-          throw new Error('You cannot list more than 30 items as a free user.');
-      } else if (listingCount >= parsePackageMaxListing(subscription.package.listing)) {
+        if (listingCount >= NON_MEMBER_MAX_LISTING)
+          throw new Error(
+            `You cannot list more than ${NON_MEMBER_MAX_LISTING} items as a free user.`
+          );
+      } else if (listingCount >= user.maxListing) {
         throw new Error(
           `You are allowed to list ${subscription.package.listing} item only, upgrade to list more item.`
         );

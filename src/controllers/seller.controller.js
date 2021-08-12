@@ -62,6 +62,18 @@ const parseImagesToPersist = fields => {
   return result;
 };
 
+const checkIsAbleToPublishProduct = async userId => {
+  try {
+    const productCount = await Products.scope('countedInListing').count({ where: { userId } });
+
+    const user = await Users.findOne({ where: { id: userId } });
+
+    return Promise.resolve(productCount < user.maxListing);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+};
+
 export const addProduct = async (req, res, next) => {
   const transaction = await Sequelize.transaction();
   const form = formidable({ multiple: true });
@@ -573,6 +585,8 @@ export const publication = async (req, res, next) => {
     const { productId } = req.params;
     const { isPublished } = req.body;
 
+    const user = await Users.findOne({ where: { id: userId } });
+
     const product = await Products.findOne({ where: { id: productId } });
 
     if (!product) {
@@ -582,8 +596,21 @@ export const publication = async (req, res, next) => {
     if (product.userId !== userId) {
       throw new Error(`Product ${productId} does not to user ${userId}`);
     }
+    if (product.isPublished === isPublished) {
+      throw new Error(`This product has already been ${isPublished ? 'published' : 'unpublished'}`);
+    }
+
+    if (isPublished) {
+      const isAbleToAddProduct = await checkIsAbleToPublishProduct(userId);
+      if (!isAbleToAddProduct) {
+        throw new Error(
+          `You have listed the maximum of ${user.maxListing} items. Upgrade your membership to continue.`
+        );
+      }
+    }
 
     await product.update({ isPublished });
+
     return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);

@@ -27,6 +27,7 @@ import { NotificationSettings } from '@models/notification_settings.model';
 import R from 'ramda';
 import * as _ from 'lodash';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
+import { NON_MEMBER_MAX_LISTING } from '@constants/subscription.constant';
 import Subscriptions from './subscriptions.model';
 import Packages from './packages.model';
 
@@ -236,6 +237,12 @@ const Users = SequelizeConnector.define(
         return this.getDataValue('isFollowed');
       }
     },
+    maxListing: {
+      type: Sequelize.VIRTUAL,
+      get() {
+        return this.getDataValue('maxListing');
+      }
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -340,6 +347,7 @@ const Users = SequelizeConnector.define(
               await instance.getTotalView();
               await instance.getMemberType();
               await instance.getMembershipExpiryDate();
+              await instance.getMaxListing();
             })
           );
         }
@@ -544,6 +552,45 @@ Users.prototype.getMembershipExpiryDate = async function() {
   }
 };
 
+Users.prototype.getMaxListing = async function() {
+  try {
+    await this.updateSubscriptionValidity();
+
+    const subscription = await Subscriptions.findOne({
+      where: { userId: this.id },
+      include: [{ model: Packages, as: 'package' }]
+    });
+
+    const maxListing =
+      subscription && this.hasValidSubscription
+        ? subscription.package.listing
+        : NON_MEMBER_MAX_LISTING;
+
+    this.setDataValue('maxListing', maxListing);
+
+    return maxListing;
+  } catch (e) {
+    throw e;
+  }
+};
+
+Users.prototype.updateSubscriptionValidity = async function() {
+  try {
+    const subscription = await Subscriptions.findOne({
+      where: { userId: this.id }
+    });
+
+    const now = new Date();
+
+    const hasValidSubscription = _.get(subscription, 'expiryDate', now) > now;
+
+    await this.update({ hasValidSubscription });
+    this.setDataValue('hasValidSubscription', hasValidSubscription);
+  } catch (e) {
+    throw e;
+  }
+};
+
 Users.prototype.getExtraFields = async function() {
   await this.getReviewCount();
   await this.getAverageRating();
@@ -552,6 +599,7 @@ Users.prototype.getExtraFields = async function() {
   await this.getTotalLike();
   await this.getFollowerCount();
   await this.getFollowingCount();
+  await this.getMaxListing();
 };
 
 export { Users };

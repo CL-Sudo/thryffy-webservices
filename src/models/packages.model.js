@@ -11,7 +11,13 @@ const Packages = SequelizeConnector.define(
       type: Sequelize.STRING(50)
     },
     listing: {
-      type: Sequelize.INTEGER
+      type: Sequelize.INTEGER,
+      get() {
+        if (this.getDataValue('listing') === 0) {
+          return 999999999999999;
+        }
+        return this.getDataValue('listing');
+      }
     },
     price: {
       type: Sequelize.DECIMAL(10, 2)

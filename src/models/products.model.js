@@ -187,6 +187,19 @@ const Products = SequelizeConnector.define(
         //   }
         // },
         order: [['createdAt', 'DESC']]
+      },
+      countedInListing: {
+        where: {
+          isPublished: true,
+          isVerify: true
+        }
+      },
+      visibleByPublic: {
+        where: {
+          isPublished: true,
+          isVerify: true,
+          isPurchased: false
+        }
       }
     },
     hooks: {
