@@ -604,7 +604,7 @@ export const publication = async (req, res, next) => {
       const isAbleToAddProduct = await checkIsAbleToPublishProduct(userId);
       if (!isAbleToAddProduct) {
         throw new Error(
-          `You have listed the maximum of ${user.maxListing} items. Upgrade your membership to continue.`
+          `You have listed the maximum of ${user.maxListing} item(s). Upgrade your membership to continue.`
         );
       }
     }
