@@ -660,7 +660,9 @@ export const getProductCommission = async (req, res, next) => {
     const commissions = await Commissions.findAll();
     const freeCommissionCampaign = await CommissionFreeCampaigns.scope('runningCampaign').findOne();
 
-    const commission = freeCommissionCampaign ? calculateProductCommission(commissions)(price) : 0;
+    const commission = freeCommissionCampaign
+      ? 0
+      : calculateProductCommission(commissions)(Number(price));
 
     return res.status(200).json({
       message: 'success',
