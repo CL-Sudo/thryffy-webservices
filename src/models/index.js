@@ -42,3 +42,4 @@ export * from './followings.model';
 export * from './delivery_statuses.model';
 export * from './otps.model';
 export * from './delivery_slips.model';
+export * from './commission_free_campaigns.model';

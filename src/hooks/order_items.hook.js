@@ -1,10 +1,18 @@
-import { OrderItems, SalesOrders, ShippingFees, Products, Commissions, CartItems } from '@models';
+import {
+  OrderItems,
+  SalesOrders,
+  ShippingFees,
+  Products,
+  Commissions,
+  CommissionFreeCampaigns
+} from '@models';
 
 import { getProductCommission } from '@services/product.service';
 
 import PARCEL_TYPES from '@constants/parcel_types.constant';
 
 import R from 'ramda';
+import { Op } from 'sequelize';
 
 OrderItems.addHook('afterBulkCreate', 'getParcelType', async (results, options) => {
   try {
@@ -44,6 +52,7 @@ OrderItems.addHook('afterBulkCreate', 'getParcelType', async (results, options) 
 OrderItems.addHook('afterBulkCreate', 'getCommission', async (results, options) => {
   try {
     const { transaction } = options;
+    const now = new Date();
 
     const order = await SalesOrders.findOne({
       where: { id: results[0].salesOrderId },
@@ -61,13 +70,26 @@ OrderItems.addHook('afterBulkCreate', 'getCommission', async (results, options) 
       ]
     });
 
-    const rates = await Commissions.findAll({});
+    const rates = await Commissions.findAll();
 
-    const commission = R.pipe(
-      R.map(R.path(['product', 'originalPrice'])),
-      R.map(getProductCommission(rates)),
-      R.sum
-    )(items);
+    const commissionFreeCampaigns = await CommissionFreeCampaigns.findOne({
+      where: {
+        startDate: {
+          [Op.lte]: now
+        },
+        endDate: {
+          [Op.gte]: now
+        }
+      }
+    });
+
+    const commission = commissionFreeCampaigns
+      ? 0
+      : R.pipe(
+          R.map(R.path(['product', 'originalPrice'])),
+          R.map(getProductCommission(rates)),
+          R.sum
+        )(items);
 
     await order.update({ commission }, { transaction });
   } catch (e) {

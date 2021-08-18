@@ -26,6 +26,12 @@ export default app => {
   app.use('/api/comments', adminAuth, require('./comments.routes').default);
   app.use('/api/reports', adminAuth, require('./reports.routes').default);
   app.use('/api/packages', adminAuth, require('./packages.routes').default);
+  app.use('/api/commissions', adminAuth, require('./commissions.routes').default);
+  app.use(
+    '/api/free-commission-campaigns',
+    adminAuth,
+    require('./commission_free_campaign.routes').default
+  );
 
   /*
    * Private API

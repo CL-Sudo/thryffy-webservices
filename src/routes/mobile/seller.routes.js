@@ -8,7 +8,8 @@ import {
   getSellerReviews,
   updateProduct,
   publication,
-  getSellerCategories
+  getSellerCategories,
+  getProductCommission
 } from '@controllers/seller.controller';
 import { getShippingFeeValidator } from '@validators/seller.validator';
 import { deliverySlipUploads } from '@middlewares/multer.middleware';
@@ -20,6 +21,7 @@ router.put('/product/:productId', updateProduct);
 router.patch('/product/:productId/publication', publication);
 router.get('/shipping-fee', getShippingFeeValidator, getProductShippingFee);
 router.patch('/mark-as-shipped', deliverySlipUploads, markAsShipped);
+router.get('/product-commission', getProductCommission);
 
 router.get('/:sellerId/products', getProducts);
 router.get('/:sellerId/details', getSellerDetail);

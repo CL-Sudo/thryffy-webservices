@@ -10,6 +10,7 @@ import {
   getParanoid,
   getClientTimezone
 } from '@utils/express.util';
+import { requestValidator } from '@validators/index';
 
 export const read = (
   Model,
@@ -81,6 +82,7 @@ export const readOne = (Model, req, { paranoid, include, scopes, attributes, whe
 const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   create: async (req, res, next) => {
     try {
+      requestValidator(req);
       const { id } = req.authData;
       const createBody = { ...req.body, createdBy: id };
       const result = await Model.create(createBody);
@@ -119,6 +121,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   },
   update: async (req, res, next) => {
     try {
+      requestValidator(req);
       const { id, query = {} } = req.params;
       const scopes = getScopes(Model)(req);
       const col = await Model.scope(scopes).findOne({
@@ -146,6 +149,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   },
   destroy: async (req, res, next) => {
     try {
+      requestValidator(req);
       const { id, query = {} } = req.params;
       const result = await Model.findOne({
         where: { ...query, ..._.get(req, 'query.where', {}), id }
@@ -163,6 +167,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   },
   restore: async (req, res, next) => {
     try {
+      requestValidator(req);
       const { id, query = {} } = req.params;
       const obj = await Model.findOne({ where: { ...query, id }, paranoid: false });
       await obj.restore();

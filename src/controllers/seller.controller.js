@@ -7,7 +7,8 @@ import {
   getProductBrandId,
   updateProductImages,
   getOneProductShippingFee,
-  getChildIds
+  getChildIds,
+  getProductCommission as calculateProductCommission
 } from '@services';
 import { isJSON, paginate, listDiff, parseImageWithIndex } from '@utils';
 import {
@@ -22,7 +23,9 @@ import {
   Conditions,
   Brands,
   Categories,
-  DeliverySlips
+  DeliverySlips,
+  Commissions,
+  CommissionFreeCampaigns
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -645,6 +648,26 @@ export const getSellerCategories = async (req, res, next) => {
     });
 
     return res.status(200).json({ message: 'success', payload: categories });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const getProductCommission = async (req, res, next) => {
+  try {
+    const { price } = req.query;
+
+    const commissions = await Commissions.findAll();
+    const freeCommissionCampaign = await CommissionFreeCampaigns.scope('runningCampaign').findOne();
+
+    const commission = freeCommissionCampaign ? calculateProductCommission(commissions)(price) : 0;
+
+    return res.status(200).json({
+      message: 'success',
+      payload: {
+        commission
+      }
+    });
   } catch (e) {
     return next(e);
   }
