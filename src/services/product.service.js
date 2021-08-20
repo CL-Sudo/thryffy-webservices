@@ -1,4 +1,5 @@
 import R from 'ramda';
+import * as _ from 'lodash';
 import S3 from '@configs/s3.config';
 import { uploadFileToS3, deleteObjectFromS3 } from '@tools/s3';
 import { Galleries, Products, Brands, Categories, ShippingFees, Sizes } from '@models';
@@ -273,7 +274,7 @@ export const getProductCommission = data => price => {
     R.filter(isWithinRange),
     d => d[0],
     R.ifElse(d => R.isNil(R.prop('commissionRate', d)), getCommissionPrice, multiplyByRate),
-    d => Number(d.toFixed(2))
+    d => Number(_.round(d, 2))
   )(data);
 
   return commission;
