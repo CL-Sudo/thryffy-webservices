@@ -100,11 +100,11 @@ export const getProductListRequest = async (req, res, next) => {
               }
             : null
         },
-        { model: Sizes, as: 'size', required: false },
-        { model: Categories, as: 'category', required: false },
-        { model: Users, as: 'seller', required: false },
-        { model: Galleries, as: 'photos', required: false },
-        { model: ProductColors, as: 'colors', required: false }
+        // { model: Sizes, as: 'size', required: false, attributes: [''] },
+        { model: Categories, as: 'category', required: false, attributes: ['title'] },
+        { model: Users, as: 'seller', required: false, attributes: ['email'] },
+        { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] },
+        // { model: ProductColors, as: 'colors', required: false,  }
       ],
       distinct: true,
       order: [['createdAt', 'DESC']]
