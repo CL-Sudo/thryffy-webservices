@@ -123,6 +123,18 @@ const Products = SequelizeConnector.define(
           }
         ]
       },
+      productList: {
+        attributes: { exclude: defaultExcludeFields },
+        include: [
+          { model: Brands, as: 'brand', attributes: ['title'] },
+          { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
+          {
+            model: Categories,
+            as: 'category',
+            attributes: ['default']
+          }
+        ]
+      },
       productPage(productId) {
         return {
           where: { id: productId },

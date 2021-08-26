@@ -108,12 +108,7 @@ export const getCuratedList = async (req, res, next) => {
       }
     });
 
-    const data = await Products.findAndCountAll({
-      attributes: { exclude: defaultExcludeFields },
-      include: [
-        { model: Brands, as: 'brand', attributes: ['title'] },
-        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
-      ],
+    const data = await Products.scope('productList').findAndCountAll({
       where,
       limit: Number(limit) || null,
       offset: Number(offset) || null
@@ -143,17 +138,7 @@ export const getCuratedList = async (req, res, next) => {
 export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const data = await Products.findAndCountAll({
-      attributes: { exclude: defaultExcludeFields },
-      include: [
-        { model: Brands, as: 'brand', attributes: ['title'] },
-        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
-        {
-          model: Categories,
-          as: 'category',
-          attributes: ['default']
-        }
-      ],
+    const data = await Products.scope('productList').findAndCountAll({
       where: {
         isPublished: true
       },
