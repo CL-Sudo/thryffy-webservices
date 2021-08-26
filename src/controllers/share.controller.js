@@ -7,6 +7,8 @@ export const shareProduct = async (req, res, next) => {
 
     const deeplink = `thryffy://product/${productId}`;
 
+    const timeout = _.toLower(platform) === 'ios' ? 3000 : 1000;
+
     const downloadLink = _.cond([
       [
         _.curry(_.eq)('android'),
@@ -23,7 +25,7 @@ export const shareProduct = async (req, res, next) => {
           window.location.href = "${deeplink}";
           setTimeout(function() {
             window.location.href = "${downloadLink}";
-          }, 1000);
+          }, ${timeout});
         </script>
       `;
 
@@ -38,6 +40,7 @@ export const shareProfile = async (req, res, next) => {
     const { userId } = req.params;
     const { platform } = req.query;
     const deeplink = `thryffy://users/${userId}`;
+    const timeout = _.toLower(platform) === 'ios' ? 3000 : 1000;
 
     const downloadLink = _.cond([
       [
@@ -55,7 +58,7 @@ export const shareProfile = async (req, res, next) => {
           window.location.href = "${deeplink}";
           setTimeout(function() {
             window.location.href = "${downloadLink}";
-          }, 1000);
+          }, ${timeout});
         </script>
       `;
 
