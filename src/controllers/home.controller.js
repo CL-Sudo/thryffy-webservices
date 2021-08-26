@@ -144,6 +144,11 @@ export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
     const data = await Products.findAndCountAll({
+      attributes: { exclude: defaultExcludeFields },
+      include: [
+        { model: Brands, as: 'brand', attributes: ['title'] },
+        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
+      ],
       where: {
         isPublished: true
       },
