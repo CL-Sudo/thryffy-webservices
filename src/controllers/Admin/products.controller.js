@@ -86,7 +86,7 @@ export const getProductListRequest = async (req, res, next) => {
     const { limit, offset } = getLimitOffset(req);
     const scopes = getScopes(Products)(req);
 
-    const products = await Products.scope(scopes).findAll({
+    const data = await Products.scope(scopes).findAndCountAll({
       include: [
         {
           model: Brands,
@@ -100,21 +100,21 @@ export const getProductListRequest = async (req, res, next) => {
               }
             : null
         },
-        // { model: Sizes, as: 'size', required: false, attributes: [''] },
         { model: Categories, as: 'category', required: false, attributes: ['title'] },
         { model: Users, as: 'seller', required: false, attributes: ['email'] },
-        { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] },
-        // { model: ProductColors, as: 'colors', required: false,  }
+        { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] }
       ],
       distinct: true,
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
     });
 
     return res.status(200).json({
       message: 'Success',
       payload: {
-        count: products.length,
-        rows: paginate(limit)(offset)(products)
+        count: data.count,
+        rows: data.rows
       }
     });
   } catch (e) {

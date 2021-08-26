@@ -1,8 +1,9 @@
 import R from 'ramda';
 import { shuffle } from 'lodash';
-import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
+import { Preferences, Products, Banners, FeatureItems, Sizes, Categories, Brands } from '@models';
 import { paginate } from '@utils';
 import { Op } from 'sequelize';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 export const getBannersList = async (req, res, next) => {
   try {
@@ -107,12 +108,21 @@ export const getCuratedList = async (req, res, next) => {
       }
     });
 
-    const products = await Products.scope('default').findAll({
-      where
+    const data = await Products.findAndCountAll({
+      attributes: { exclude: defaultExcludeFields },
+      include: [
+        { model: Brands, as: 'brand', attributes: ['title'] },
+        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
+      ],
+      where,
+      limit: Number(limit) || null,
+      offset: Number(offset) || null
     });
 
+    // paginate(limit)(offset)
+
     const rows = await Promise.all(
-      paginate(limit)(offset)(shuffle(products)).map(async row => {
+      shuffle(data.rows).map(async row => {
         await row.getExtraFields(id);
         return row;
       })
@@ -121,7 +131,7 @@ export const getCuratedList = async (req, res, next) => {
     return res.status(200).json({
       message: 'success',
       payload: {
-        count: products.length,
+        count: data.count,
         rows
       }
     });
@@ -133,18 +143,19 @@ export const getCuratedList = async (req, res, next) => {
 export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const products = await Products.findAll({
+    const data = await Products.findAndCountAll({
       where: {
         isPublished: true
       },
-      limit: 1000,
+      limit: Number(limit) || null,
+      offset: Number(offset) || null,
       order: [['createdAt', 'DESC']]
     });
     return res.status(200).json({
       message: 'success',
       payload: {
-        count: products.length,
-        rows: paginate(limit)(offset)(shuffle(products))
+        count: data.count,
+        rows: shuffle(data.rows)
       }
     });
   } catch (e) {

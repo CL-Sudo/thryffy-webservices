@@ -69,38 +69,11 @@ export const discoverList = async (req, res, next) => {
       }
     ];
 
-    // const assignPrice = R.ifElse(
-    //   R.always(!R.isNil(maxPrice) && !R.isNil(minPrice)),
-    //   R.append({
-    //     displayPrice: {
-    //       [Op.and]: [
-    //         {
-    //           [Op.gte]: minPrice
-    //         },
-    //         {
-    //           [Op.lte]: maxPrice
-    //         }
-    //       ]
-    //     }
-    //   }),
-    //   R.identity
-    // );
-
-    // const assignCond = R.ifElse(R.always(R.isNil(condition)), R.identity, R.append({ condition }));
-
-    // const assignSize = R.ifElse(R.always(R.isNil(size)), R.identity, R.append({ size }));
-
     const assignTitle = param => {
       if (R.isNil(keyword)) {
         return param;
       }
-      // return R.append(
-      //   Sequelize.literal(
-      //     `MATCH (products.title, products.description) AGAINST ('${parseKeywordForNLP(
-      //       keyword
-      //     )}' IN NATURAL LANGUAGE MODE)`
-      //   )
-      // )(param);
+
       return R.append({
         [Op.or]: [
           {
@@ -118,12 +91,6 @@ export const discoverList = async (req, res, next) => {
         ]
       })(param);
     };
-
-    // const assignOrder = R.ifElse(
-    //   R.always(R.equals('RELEVANCE', order)),
-    //   R.identity,
-    //   R.assoc('order', [['displayPrice', order]])
-    // );
 
     const where = R.pipe(assignTitle)(initWhere);
 
