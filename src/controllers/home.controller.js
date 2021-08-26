@@ -147,7 +147,12 @@ export const publicCuratedList = async (req, res, next) => {
       attributes: { exclude: defaultExcludeFields },
       include: [
         { model: Brands, as: 'brand', attributes: ['title'] },
-        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } }
+        { model: Sizes, as: 'size', attributes: { exclude: defaultExcludeFields } },
+        {
+          model: Categories,
+          as: 'category',
+          attributes: ['default']
+        }
       ],
       where: {
         isPublished: true
