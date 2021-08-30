@@ -91,11 +91,14 @@ Notifications.addHook('afterFind', async findResult => {
 Notifications.addHook('afterCreate', 'addProductImagePath', async instance => {
   try {
     if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.PRODUCT) {
-      const gallery = await Galleries.findOne({
-        where: { productId: instance.notifiableId, index: 0 }
+      const gallery = await Galleries.findAll({
+        limit: 1,
+        where: { productId: instance.notifiableId }
       });
 
-      await instance.update({ image: gallery.filePath });
+      if (!_.isEmpty(gallery)) {
+        await instance.update({ image: _.get(gallery, '[0].filePath', null) });
+      }
     }
 
     if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER) {

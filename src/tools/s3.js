@@ -48,6 +48,7 @@ export const uploadToS3 = (
 
 export const deleteObjectFromS3 = (filePath, publicBucket = false) =>
   new Promise((resolve, reject) => {
+    if (!filePath) resolve();
     const bucket = publicBucket ? s3BucketPublic : s3Bucket;
     bucket.deleteObject({ Key: filePath }, (error, data) => {
       if (error !== null) return reject(error);

@@ -122,7 +122,7 @@ export const deleteProductImages = async imageIds =>
       await Promise.all(
         imageIds.map(async id => {
           const image = await Galleries.findOne({ where: { id } });
-          await deleteObjectFromS3(parsePathForDeleting(image.filePath));
+          await deleteObjectFromS3(parsePathForDeleting(_.get(image, 'filePath', null)));
           await image.destroy({ force: true });
         })
       );
@@ -177,7 +177,7 @@ export const setThumbnail = (productId, index) =>
         }
       });
       const product = await Products.findOne({ where: { id: productId } });
-      await product.update({ thumbnail: image.filePath });
+      await product.update({ thumbnail: _.get(image, 'filePath', null) });
       return resolve();
     } catch (e) {
       return reject(e);

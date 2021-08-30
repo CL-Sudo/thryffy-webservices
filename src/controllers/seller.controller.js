@@ -298,7 +298,7 @@ export const updateProduct = async (req, res, next) => {
         sizeId,
         conditionId,
         price: originalPrice,
-        thumbnailIndex
+        thumbnailIndex = 0
       } = fields;
 
       const extraCharges = await getOneProductShippingFee(categoryId, sizeId);

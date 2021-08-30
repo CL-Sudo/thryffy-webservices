@@ -43,30 +43,26 @@ export const remindSellerToShipParcel = async () => {
                   message = MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_12_HOURS(order.parcelName);
                 }
 
-                await Sequelize.transaction(async transaction => {
-                  const notification = await Notifications.create(
-                    {
-                      notifierId: order.seller.id,
-                      notifiableId: order.id,
-                      notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
-                      title: message,
-                      type: NOTIFICATION_CONSTANT.REMIND_SELLER_TO_SHIP_PARCEL,
-                      deeplink: `thryffy://orders/seller/${order.id}`
-                    },
-                    { transaction }
-                  );
-
-                  const data = await Notifications.findOne({
-                    where: { id: notification.id },
-                    transaction
-                  });
-
-                  await sendCloudMessage({
-                    title: message,
-                    token: order.seller.deviceToken,
-                    data
-                  });
+                // await Sequelize.transaction(async transaction => {
+                const notification = await Notifications.create({
+                  notifierId: order.seller.id,
+                  notifiableId: order.id,
+                  notifiableType: NOTIFIABLE_TYPE.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
+                  title: message,
+                  type: NOTIFICATION_CONSTANT.REMIND_SELLER_TO_SHIP_PARCEL,
+                  deeplink: `thryffy://orders/seller/${order.id}`
                 });
+
+                const data = await Notifications.findOne({
+                  where: { id: notification.id }
+                });
+
+                await sendCloudMessage({
+                  title: message,
+                  token: order.seller.deviceToken,
+                  data
+                });
+                // });
 
                 await order.increment('shippingReminderCount');
                 return resolve();
