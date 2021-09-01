@@ -93,7 +93,8 @@ Notifications.addHook('afterCreate', 'addProductImagePath', async (instance, { t
     if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.PRODUCT) {
       const gallery = await Galleries.findAll({
         limit: 1,
-        where: { productId: instance.notifiableId }
+        where: { productId: instance.notifiableId },
+        transaction
       });
 
       if (!_.isEmpty(gallery)) {
@@ -103,6 +104,7 @@ Notifications.addHook('afterCreate', 'addProductImagePath', async (instance, { t
 
     if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER) {
       const order = await SalesOrders.findOne({
+        transaction,
         where: { id: instance.notifiableId },
         include: [
           {
