@@ -7,7 +7,7 @@ import MODEL_CONSTANT from '@constants/model.constant';
 import { sendCloudMessage } from '@services/notification.service';
 import Notifications from '@models/notifications.model';
 
-Products.addHook('afterCreate', 'remindFollowers', async instance => {
+Products.addHook('afterCreate', 'remindFollowers', async (instance, { transaction }) => {
   try {
     const operations = [];
 
@@ -16,26 +16,33 @@ Products.addHook('afterCreate', 'remindFollowers', async instance => {
       include: [
         { model: Users, as: 'follower' },
         { model: Users, as: 'seller' }
-      ]
+      ],
+      transaction
     });
 
     followings.forEach(following => {
       operations.push(
         new Promise(async (resolve, reject) => {
           try {
-            const notification = await Notifications.create({
-              title: PRODUCT.NEW_PRODUCT_ADDED(
-                following.seller.username || following.seller.fullName
-              ),
-              type: NOTIFICATION_TYPE.NEW_ITEM_ADDED,
-              notifierId: following.follower.id,
-              actorId: following.seller.id,
-              notifiableId: instance.id,
-              notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT,
-              deeplink: `thryffy://users/${following.seller.id}`
-            });
+            const notification = await Notifications.create(
+              {
+                title: PRODUCT.NEW_PRODUCT_ADDED(
+                  following.seller.username || following.seller.fullName
+                ),
+                type: NOTIFICATION_TYPE.NEW_ITEM_ADDED,
+                notifierId: following.follower.id,
+                actorId: following.seller.id,
+                notifiableId: instance.id,
+                notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.PRODUCT,
+                deeplink: `thryffy://users/${following.seller.id}`
+              },
+              { transaction }
+            );
 
-            const data = await Notifications.findOne({ where: { id: notification.id } });
+            const data = await Notifications.findOne({
+              where: { id: notification.id },
+              transaction
+            });
 
             await sendCloudMessage({
               title: PRODUCT.NEW_PRODUCT_ADDED(

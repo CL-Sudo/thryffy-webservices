@@ -81,7 +81,7 @@ const curateProductsToBeUnpublished = (products, numberOfProductsToBeUnpublished
   return R.flatten(productsToBeUnpublished);
 };
 
-Subscriptions.addHook('afterCreate', 'updateExpiryDate', async subscription => {
+Subscriptions.addHook('afterCreate', 'updateExpiryDate', async (instance, { transaction }) => {
   try {
     await Subscriptions.update(
       {
@@ -89,23 +89,24 @@ Subscriptions.addHook('afterCreate', 'updateExpiryDate', async subscription => {
           .add(1, 'months')
           .format('YYYY-MM-DD HH:mm:ss')
       },
-      { where: { id: subscription.id }, hooks: false }
+      { where: { id: instance.id }, hooks: false, transaction }
     );
   } catch (e) {
     throw e;
   }
 });
 
-Subscriptions.addHook('afterUpdate', 'updateExpiryDate', async subscription => {
+Subscriptions.addHook('afterUpdate', 'updateExpiryDate', async (instance, { transaction }) => {
   try {
-    const { packageId, userId } = subscription;
-    if (subscription.previous('packageId') !== packageId) {
+    const { packageId, userId } = instance;
+    if (instance.previous('packageId') !== packageId) {
       const expiryDate = await decideExpiryDate(packageId, userId);
+
       await Subscriptions.update(
         {
           expiryDate
         },
-        { where: { id: subscription.id }, hooks: false }
+        { where: { id: instance.id }, hooks: false, transaction }
       );
     }
   } catch (e) {
@@ -113,40 +114,55 @@ Subscriptions.addHook('afterUpdate', 'updateExpiryDate', async subscription => {
   }
 });
 
-Subscriptions.addHook('afterCreate', 'updateSubscriptionValidity', async subscription => {
-  try {
-    const user = await Users.findOne({ where: { id: subscription.userId } });
-    const hasValidSubscription = subscription.checkHasValidSubscription();
-    await user.update({
-      hasValidSubscription
-    });
-  } catch (e) {
-    throw e;
+Subscriptions.addHook(
+  'afterCreate',
+  'updateSubscriptionValidity',
+  async (instance, { transaction }) => {
+    try {
+      const user = await Users.findOne({ where: { id: instance.userId }, transaction });
+      const hasValidSubscription = instance.checkHasValidSubscription();
+      await user.update(
+        {
+          hasValidSubscription
+        },
+        { transaction }
+      );
+    } catch (e) {
+      throw e;
+    }
   }
-});
+);
 
-Subscriptions.addHook('afterUpdate', 'updateSubscriptionValidity', async subscription => {
-  try {
-    const user = await Users.findOne({ where: { id: subscription.userId } });
-    const hasValidSubscription = subscription.checkHasValidSubscription();
-    await user.update({
-      hasValidSubscription
-    });
-  } catch (e) {
-    throw e;
+Subscriptions.addHook(
+  'afterUpdate',
+  'updateSubscriptionValidity',
+  async (instance, { transaction }) => {
+    try {
+      const user = await Users.findOne({ where: { id: instance.userId }, transaction });
+      const hasValidSubscription = instance.checkHasValidSubscription();
+      await user.update(
+        {
+          hasValidSubscription
+        },
+        { transaction }
+      );
+    } catch (e) {
+      throw e;
+    }
   }
-});
+);
 
-Subscriptions.addHook('afterUpdate', 'manageListings', async subscription => {
+Subscriptions.addHook('afterUpdate', 'manageListings', async (instance, { transaction }) => {
   try {
-    const { packageId, userId } = subscription;
+    const { packageId, userId } = instance;
 
-    if (subscription.previous('packageId') !== packageId) {
+    if (instance.previous('packageId') !== packageId) {
       const products = await Products.scope('countedInListing').findAll({
-        where: { userId }
+        where: { userId },
+        transaction
       });
 
-      const subscriptionPackage = await Packages.findOne({ where: { id: packageId } });
+      const subscriptionPackage = await Packages.findOne({ where: { id: packageId }, transaction });
 
       if (products.length > subscriptionPackage.listing) {
         const diff = products.length - subscriptionPackage.listing;
@@ -155,7 +171,7 @@ Subscriptions.addHook('afterUpdate', 'manageListings', async subscription => {
 
         await Products.update(
           { isPublished: false },
-          { where: { id: productsToBeUnpublished.map(o => o.id) } }
+          { where: { id: productsToBeUnpublished.map(o => o.id) }, transaction }
         );
       }
     }
