@@ -206,6 +206,8 @@ export const subscribeCallback = async (req, res, next) => {
 };
 
 export const trackingMoreWebHook = async (req, res, next) => {
+  // eslint-disable-next-line no-console
+  console.log(`\n...Trackingmore Webhook Running...\n`);
   try {
     const { tracking_number: deliveryTrackingNo, status } = req.body.data;
     const { trackinfo } = req.body.data.origin_info;
@@ -236,6 +238,7 @@ export const trackingMoreWebHook = async (req, res, next) => {
           R.toUpper(trackinfo[0].checkpoint_status) === 'DELIVERED'
         ) {
           await order.update({ deliveryStatus: DELIVERY_STATUS.DELIVERED }, { transaction });
+
           const notification = await Notifications.create(
             {
               title: DELIVERY.COMPLETED(order.orderRef),
@@ -247,7 +250,6 @@ export const trackingMoreWebHook = async (req, res, next) => {
             },
             { transaction }
           );
-
           const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
           await sendCloudMessage({
@@ -282,8 +284,13 @@ export const trackingMoreWebHook = async (req, res, next) => {
       });
     }
 
+    // eslint-disable-next-line no-console
+    console.log(`\n***Trackingmore Webhook Done***\n`);
+
     return res.status(200).json({ message: 'success' });
   } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log(`\n!!!Trackingmore Webhook ERROR!!!\n`);
     return next(e);
   }
 };

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-new */
 import { CronJob } from 'cron';
 import { subscriptionRenewReminder } from '@services/subscription.service';

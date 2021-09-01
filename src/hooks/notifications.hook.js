@@ -88,7 +88,7 @@ Notifications.addHook('afterFind', async findResult => {
   }
 });
 
-Notifications.addHook('afterCreate', 'addProductImagePath', async instance => {
+Notifications.addHook('afterCreate', 'addProductImagePath', async (instance, { transaction }) => {
   try {
     if (instance.notifiableType === MODEL.POLYMORPHISM.NOTIFICATIONS.PRODUCT) {
       const gallery = await Galleries.findAll({
@@ -97,7 +97,7 @@ Notifications.addHook('afterCreate', 'addProductImagePath', async instance => {
       });
 
       if (!_.isEmpty(gallery)) {
-        await instance.update({ image: _.get(gallery, '[0].filePath', null) });
+        await instance.update({ image: _.get(gallery, '[0].filePath', null) }, { transaction });
       }
     }
 
@@ -119,7 +119,7 @@ Notifications.addHook('afterCreate', 'addProductImagePath', async instance => {
       });
 
       const image = _.get(order, 'orderItems[0].product.thumbnail', null);
-      await instance.update({ image });
+      await instance.update({ image }, { transaction });
     }
   } catch (e) {
     throw e;
