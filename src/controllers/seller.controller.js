@@ -446,7 +446,12 @@ export const getProducts = async (req, res, next) => {
       })(param);
     };
 
-    const where = R.pipe(filterTitle)({ userId: sellerId, isPublished: true, isPurchased: false });
+    const where = R.pipe(filterTitle)({
+      userId: sellerId,
+      isPublished: true,
+      isPurchased: false,
+      isVerify: true
+    });
 
     const childIds = categoryId ? await getChildIds(categoryId) : null;
 
@@ -508,7 +513,7 @@ export const getProducts = async (req, res, next) => {
 
     const sorter = productArr => {
       if (R.toUpper(order) === 'RELEVANCE') {
-        return _.shuffle(productArr);
+        return productArr;
       }
 
       if (R.toUpper(order) === 'ASC') {
