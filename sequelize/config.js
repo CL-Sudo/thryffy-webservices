@@ -44,5 +44,13 @@ module.exports = {
     host: process.env.PRODUCTION_DB_HOST,
     dialect: process.env.PRODUCTION_DB_DRIVER,
     operatorsAliases: Sequelize.Op
+  },
+  staging: {
+    username: process.env.STAGING_DB_USER,
+    password: process.env.STAGING_DB_PASSWORD,
+    database: process.env.STAGING_DB_NAME,
+    host: process.env.STAGING_DB_HOST,
+    dialect: process.env.STAGING_DB_DRIVER,
+    operatorsAliases: Sequelize.Op
   }
 };

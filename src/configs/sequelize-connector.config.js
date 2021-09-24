@@ -6,6 +6,10 @@ Dotenv.config();
 
 const nodeEnv = _.toUpper(process.env.NODE_ENV) || 'DEV';
 
+console.log(`*******************************`);
+console.log(`      NODE_ENV %s`, nodeEnv);
+console.log(`*******************************`);
+
 const SequelizeConnector = new Sequelize(
   process.env[`${[nodeEnv]}_DB_NAME`] || '',
   process.env[`${[nodeEnv]}_DB_USER`],

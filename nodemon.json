@@ -1,16 +1,7 @@
 {
   "restartable": "rs",
-  "ignore": [
-    ".git",
-    "node_modules/**/node_modules"
-  ],
+  "ignore": [".git", "node_modules/**/node_modules"],
   "verbose": true,
-  "watch": [
-    "src",
-    "./index.js"
-  ],
-  "env": {
-    "NODE_ENV": "DEV"
-  },
+  "watch": ["src", "./index.js"],
   "ext": "js json"
 }
