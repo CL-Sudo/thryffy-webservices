@@ -40,6 +40,7 @@ const SalesOrders = SequelizeConnector.define(
   'SalesOrders',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { allowNull: true, onDelete: 'SET NULL' }),
     shippingFeeId: foreignKey('shipping_fee_id', 'shipping_fees', false),
     userId: foreignKey('user_id', 'users', false),
     sellerId: foreignKey('seller_id', 'users', false),

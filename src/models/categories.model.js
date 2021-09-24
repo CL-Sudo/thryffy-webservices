@@ -16,6 +16,7 @@ const Categories = SequelizeConnector.define(
   'Categories',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { onDelete: 'SET NULL' }),
     parentId: {
       ...foreignKey('parent_id', 'categories', { onDelete: 'CASCADE' }),
       defaultValue: null

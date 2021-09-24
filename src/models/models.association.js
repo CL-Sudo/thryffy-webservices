@@ -1,6 +1,11 @@
 import * as Models from '@models';
 
 /**
+ * Admins
+ */
+Models.Admins.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
+
+/**
  * Users
  */
 Models.Users.hasMany(Models.Addresses, {
@@ -85,6 +90,7 @@ Models.Users.belongsToMany(Models.Users, {
   as: 'followers',
   through: Models.Followings
 });
+Models.Users.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
 
 /**
  * Addresses
@@ -109,6 +115,7 @@ Models.SalesOrders.hasOne(Models.DeliveryStatuses, {
   as: 'trackingmore'
 });
 Models.SalesOrders.hasMany(Models.DeliverySlips, { foreignKey: 'orderId', as: 'deliverySlips' });
+Models.SalesOrders.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
 
 /**
  * OrderItems
@@ -121,6 +128,7 @@ Models.OrderItems.belongsTo(Models.Products, { foreignKey: 'productId', as: 'pro
  */
 Models.Products.hasOne(Models.OrderItems, { foreignKey: 'productId', as: 'item' });
 Models.Products.belongsTo(Models.Categories, { foreignKey: 'categoryId', as: 'category' });
+Models.Products.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
 Models.Products.belongsToMany(Models.Users, {
   foreignKey: 'productId',
   through: Models.FavouriteProducts,
@@ -143,6 +151,7 @@ Models.Products.hasMany(Models.Comments, { foreignKey: 'productId', as: 'comment
 /**
  * Categories
  */
+Models.Categories.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
 Models.Categories.hasMany(Models.Products, { foreignKey: 'categoryId', as: 'products' });
 Models.Categories.hasMany(Models.Categories, { foreignKey: 'parentId', as: 'subCategories' });
 Models.Categories.belongsTo(Models.Categories, { foreignKey: 'parentId', as: 'parentCategory' });
@@ -346,3 +355,45 @@ Models.DeliverySlips.belongsTo(Models.SalesOrders, { foreignKey: 'orderId', as: 
  */
 Models.Followings.belongsTo(Models.Users, { foreignKey: 'followerId', as: 'follower' });
 Models.Followings.belongsTo(Models.Users, { foreignKey: 'sellerId', as: 'seller' });
+
+/**
+ * Banners
+ */
+Models.Banners.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
+
+/**
+ * Brands
+ */
+Models.Brands.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
+
+/**
+ * CommissionFreeCampaigns
+ */
+Models.CommissionFreeCampaigns.belongsTo(Models.Countries, {
+  foreignKey: 'countryId',
+  as: 'country'
+});
+
+/**
+ * Commissions
+ */
+Models.Commissions.belongsTo(Models.Countries, {
+  foreignKey: 'countryId',
+  as: 'country'
+});
+
+/**
+ * NotificationTopics
+ */
+Models.NotificationTopics.belongsTo(Models.Countries, {
+  foreignKey: 'countryId',
+  as: 'country'
+});
+
+/**
+ * Packages
+ */
+Models.Packages.belongsTo(Models.Countries, {
+  foreignKey: 'countryId',
+  as: 'country'
+});

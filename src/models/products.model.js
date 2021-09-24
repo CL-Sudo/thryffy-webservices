@@ -23,6 +23,7 @@ const Products = SequelizeConnector.define(
   'Products',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { onDelete: 'SET NULL' }),
     userId: foreignKey('user_id', 'users', false),
     categoryId: foreignKey('category_id', 'categories', false),
     brandId: foreignKey('brand_id', 'brands', false),

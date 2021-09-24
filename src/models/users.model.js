@@ -5,7 +5,8 @@ import {
   BY_RECORDER,
   primaryKey,
   active,
-  defaultExcludeFields
+  defaultExcludeFields,
+  foreignKey
 } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
@@ -35,6 +36,7 @@ const Users = SequelizeConnector.define(
   'Users',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { onDelete: 'SET NULL' }),
     identityType: {
       type: Sequelize.STRING(40),
       field: 'identity_type'

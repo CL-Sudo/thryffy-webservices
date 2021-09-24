@@ -1,6 +1,6 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, foreignKey, primaryKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 import { hashPassword, comparePassword } from '@tools/bcrypt';
 
@@ -8,6 +8,7 @@ const Admins = SequelizeConnector.define(
   'Admins',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { onDelete: 'SET NULL' }),
     role: {
       type: Sequelize.STRING(30),
       allowNull: false
