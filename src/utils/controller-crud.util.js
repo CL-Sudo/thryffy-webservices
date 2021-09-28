@@ -147,7 +147,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
       return next(e);
     }
   },
-  destroy: async (req, res, next) => {
+  destroy: ({ force } = { force: false }) => async (req, res, next) => {
     try {
       requestValidator(req);
       const { id, query = {} } = req.params;
@@ -157,8 +157,10 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
 
       if (!result) return next(new Error('Data not exists'));
       await sequelize.transaction(async transaction => {
-        await result.destroy({ transaction });
-        await result.update({ deletedBy: req.authData.id }, { transaction });
+        await result.destroy({ force, transaction });
+        if (!force) {
+          await result.update({ deletedBy: req.authData.id }, { transaction });
+        }
       });
       return res.status(200).json({ message: 'Delete success' });
     } catch (e) {

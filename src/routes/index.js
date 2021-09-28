@@ -32,6 +32,7 @@ export default app => {
     adminAuth,
     require('./commission_free_campaign.routes').default
   );
+  app.use('/api/countries', adminAuth, require('./country.routes').default);
 
   /*
    * Private API

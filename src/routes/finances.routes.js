@@ -10,7 +10,7 @@ router.route('/').get(controller.read);
 router
   .route('/:id')
   .get(controller.readOne)
-  .delete(controller.destroy)
+  .delete(controller.destroy())
   .put(controller.update);
 
 export default router;

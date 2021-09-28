@@ -122,7 +122,7 @@ export const deleteProductImages = async imageIds =>
       await Promise.all(
         imageIds.map(async id => {
           const image = await Galleries.findOne({ where: { id } });
-          await deleteObjectFromS3(parsePathForDeleting(_.get(image, 'filePath', null)));
+          await deleteObjectFromS3(_.get(image, 'filePath', null));
           await image.destroy({ force: true });
         })
       );

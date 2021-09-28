@@ -21,7 +21,7 @@ router
 router
   .route('/:id')
   .get(controller.readOne)
-  .delete(controller.destroy)
+  .delete(controller.destroy())
   .put(updateProduct);
 
 router.route('/:productId/publications').patch(managePublication);

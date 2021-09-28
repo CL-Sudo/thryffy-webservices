@@ -13,6 +13,6 @@ const router = new Router();
 router
   .route('/:id')
   .get(list)
-  .delete(controller.destroy);
+  .delete(controller.destroy());
 
 export default router;

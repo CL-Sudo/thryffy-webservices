@@ -90,7 +90,7 @@ Models.Users.belongsToMany(Models.Users, {
   as: 'followers',
   through: Models.Followings
 });
-Models.Users.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
+// Models.Users.belongsTo(Models.Countries, { foreignKey: 'countryId', as: 'country' });
 
 /**
  * Addresses

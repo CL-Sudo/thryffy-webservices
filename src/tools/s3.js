@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 // import uuid from 'uuid/v4';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime-types';
+import { parsePathForDeleting } from '@utils/s3.util';
 
 dotenv.config();
 // // For dev purposes only
@@ -50,7 +51,7 @@ export const deleteObjectFromS3 = (filePath, publicBucket = false) =>
   new Promise((resolve, reject) => {
     if (!filePath) resolve();
     const bucket = publicBucket ? s3BucketPublic : s3Bucket;
-    bucket.deleteObject({ Key: filePath }, (error, data) => {
+    bucket.deleteObject({ Key: parsePathForDeleting(filePath) }, (error, data) => {
       if (error !== null) return reject(error);
       return resolve(data);
     });

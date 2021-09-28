@@ -14,7 +14,7 @@ router
 
 router
   .route('/:id')
-  .delete(controller.destroy)
+  .delete(controller.destroy({ force: true }))
   .get(controller.readOne);
 
 export default router;

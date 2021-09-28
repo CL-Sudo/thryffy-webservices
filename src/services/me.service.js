@@ -23,7 +23,7 @@ export const deleteExistingProfilePicture = async userId =>
       const { AWS_S3_URL } = process.env;
       const user = await Users.findOne({ where: { id: userId } });
       if (user.profilePicture) {
-        await tools.deleteObjectFromS3(user.profilePicture.replace(`${AWS_S3_URL}/`, ''));
+        await tools.deleteObjectFromS3(user.profilePicture);
         user.update({ profilePicture: null });
       }
       return resolve();

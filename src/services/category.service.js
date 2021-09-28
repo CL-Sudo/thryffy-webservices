@@ -28,7 +28,7 @@ export const deleteThumbnail = categoryId =>
     try {
       const category = await Categories.findOne({ where: { id: categoryId } });
       if (category.thumbnail) {
-        await deleteObjectFromS3(category.thumbnail.replace(`${S3.AWS_S3_URL}/`, ''));
+        await deleteObjectFromS3(category.thumbnail);
         category.update({ thumbnail: null });
       }
       return resolve();

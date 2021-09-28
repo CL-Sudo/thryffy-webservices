@@ -17,7 +17,7 @@ router
 router
   .route('/:id')
   .get(controller.readOne)
-  .delete(controller.destroy)
+  .delete(controller.destroy({ force: true }))
   .put(
     updateValidator,
     (req, _, done) => {

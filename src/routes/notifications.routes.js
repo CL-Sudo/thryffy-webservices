@@ -18,6 +18,6 @@ router
 router
   .route('/:id')
   .get(controller.readOne)
-  .delete(controller.destroy);
+  .delete(controller.destroy({ force: true }));
 
 export default router;

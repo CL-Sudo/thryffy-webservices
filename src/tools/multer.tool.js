@@ -51,7 +51,7 @@ const parseFieldName = (fieldName, key) => {
 
 const parseIndex = (fieldName, key) => {
   const index = Number(fieldName.replace(`${key}[`, '').replace(']', ''));
-  return index;
+  return index || 0;
 };
 
 export const uploadFiles = async (files = [], keys = []) => {
@@ -70,7 +70,7 @@ export const uploadFiles = async (files = [], keys = []) => {
             try {
               if (key === parseFieldName(file.fieldname, key)) {
                 const uploaded = await uploadToS3(
-                  'files',
+                  'files/',
                   file.buffer,
                   `.${mime.extension(file.mimetype)}`
                 );

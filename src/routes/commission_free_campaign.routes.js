@@ -16,6 +16,6 @@ router
   .route('/:id')
   .get(controller.readOne)
   .put(createValidator, controller.update)
-  .delete(controller.destroy);
+  .delete(controller.destroy());
 
 export default router;
