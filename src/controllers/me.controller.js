@@ -13,7 +13,8 @@ import {
   Subscriptions,
   Packages,
   Otps,
-  Notifications
+  Notifications,
+  Countries
 } from '@models';
 
 import { hashPassword } from '@tools/bcrypt';
@@ -21,7 +22,11 @@ import { hashPassword } from '@tools/bcrypt';
 import formidable from 'formidable';
 
 import { uploadProfilePicture, deleteExistingProfilePicture } from '@services';
-import { sendCloudMessage, subscribeTokenToTopic } from '@services/notification.service';
+import {
+  generateTopicName,
+  sendCloudMessage,
+  subscribeTokenToTopic
+} from '@services/notification.service';
 
 import { paginate } from '@utils';
 import { generateOTP as getOtp } from '@utils/auth.util';
@@ -561,10 +566,16 @@ export const updateDeviceToken = async (req, res, next) => {
   try {
     const { id } = req.user;
     const { deviceToken } = req.body;
-    const user = await Users.findOne({ where: { id } });
+    const user = await Users.findOne({
+      where: { id },
+      include: [{ model: Countries, as: 'country' }]
+    });
     await user.update({ deviceToken });
 
-    await subscribeTokenToTopic(deviceToken, NOTIFICATION_CONSTANT.MARKETING);
+    await subscribeTokenToTopic(
+      deviceToken,
+      generateTopicName(NOTIFICATION_CONSTANT.MARKETING, user.country.name)
+    );
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {

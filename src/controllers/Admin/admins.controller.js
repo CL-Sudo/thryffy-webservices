@@ -46,7 +46,7 @@ export const updateAdmin = async (req, res, next) => {
       throw new Error('Only Super Admins are allowed to do this operation.');
     }
 
-    const { email, username, password = null } = req.body;
+    const { email, username, password = null, countryId } = req.body;
 
     if (!R.isNil(password) && password.length < 4)
       throw new Error('Must contain at least 4 characters');
@@ -69,8 +69,8 @@ export const updateAdmin = async (req, res, next) => {
     }
 
     const updateObj = password
-      ? { email, username, password: hashPassword(password), updatedBy: id }
-      : { email, username, updatedBy: id };
+      ? { email, username, password: hashPassword(password), updatedBy: id, countryId }
+      : { email, username, updatedBy: id, countryId };
 
     await admin.update(updateObj);
     await admin.reload();

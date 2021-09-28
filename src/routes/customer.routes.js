@@ -1,5 +1,5 @@
 import Router from 'express';
-import { crud } from '@utils/controller-crud.util';
+import { byCountryFilter, crud } from '@utils/controller-crud.util';
 import { Users } from '@models';
 import {
   list,
@@ -22,8 +22,8 @@ router
 
 router.route('/:id/products').get(getCustomerProductRequest);
 
-router.route('/activate/:id').patch(controller.activate);
-router.route('/deactivate/:id').patch(controller.deactivate);
+router.route('/activate/:id').patch(byCountryFilter(controller.activate));
+router.route('/deactivate/:id').patch(byCountryFilter(controller.deactivate));
 
 router.patch('/:userId/package', updatePackage);
 

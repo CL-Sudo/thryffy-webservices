@@ -256,6 +256,9 @@ const Users = SequelizeConnector.define(
     },
     scopes: {
       search: params => search(Users, params, []),
+      byCountry(countryId) {
+        return { where: { countryId } };
+      },
       cart(productIds) {
         return {
           attributes: ['id', 'fullName', 'username', 'profilePicture'],

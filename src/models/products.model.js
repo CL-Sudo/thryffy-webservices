@@ -213,6 +213,9 @@ const Products = SequelizeConnector.define(
           isVerify: true,
           isPurchased: false
         }
+      },
+      byCountry(countryId) {
+        return { where: { countryId } };
       }
     },
     hooks: {

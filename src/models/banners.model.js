@@ -22,7 +22,12 @@ const Banners = SequelizeConnector.define(
     tableName: 'banners',
     underscored: false,
     scopes: {
-      search: params => search(Banners, params, [])
+      search: params => search(Banners, params, []),
+      byCountry(countryId) {
+        return {
+          where: { countryId }
+        };
+      }
     },
     hooks: {
       beforeFind: query => {

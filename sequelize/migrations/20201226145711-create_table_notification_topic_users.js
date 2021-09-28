@@ -9,5 +9,5 @@ module.exports = {
       ...BY_RECORDER
     }),
 
-  down: async queryInterface => queryInterface.dropTable('notification_topic_users')
+  down: async queryInterface => Promise.resolve()
 };

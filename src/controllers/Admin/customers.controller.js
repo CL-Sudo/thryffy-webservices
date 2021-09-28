@@ -11,7 +11,6 @@ import {
   CartItems,
   Enquiries,
   Followings,
-  NotificationTopicUsers,
   FavouriteProducts,
   Preferences,
   Reviews
@@ -31,7 +30,10 @@ export const list = async (req, res, next) => {
       ? { hasValidSubscription: parseBoolean(hasValidSubscription) }
       : {};
 
-    const users = await Users.scope(scopes).findAndCountAll({
+    const users = await Users.scope([
+      ...scopes,
+      { method: ['byCountry', req.user.countryId] }
+    ]).findAndCountAll({
       limit,
       offset,
       where
@@ -51,7 +53,10 @@ export const getCustomerProductRequest = async (req, res, next) => {
     const scopes = getScopes(Products)(req);
     const { limit, offset } = getLimitOffset(req);
 
-    const products = await Products.scope(scopes).findAndCountAll({
+    const products = await Products.scope([
+      ...scopes
+      // { method: ['byCountry', req.user.countryId] }
+    ]).findAndCountAll({
       where: { userId: customerId },
       limit,
       offset,
@@ -69,6 +74,15 @@ export const deleteCustomer = async (req, res, next) => {
     const { id: customerId } = req.params;
 
     await Sequelize.transaction(async transaction => {
+      const user = await Users.scope([{ method: ['byProduct', req.user.countryId] }]).findOne({
+        where: { id: customerId },
+        transaction
+      });
+
+      if (!user) {
+        throw new Error('Customer not found');
+      }
+
       const orders = await SalesOrders.findAll({
         where: { userId: customerId },
         paranoid: false,
@@ -154,12 +168,6 @@ export const deleteCustomer = async (req, res, next) => {
 
       await Notifications.destroy({ where: { notifierId: customerId }, force: true, transaction });
 
-      await NotificationTopicUsers.destroy({
-        where: { userId: customerId },
-        force: true,
-        transaction
-      });
-
       await Addresses.destroy({ where: { userId: customerId }, force: true, transaction });
 
       await FavouriteProducts.destroy({ where: { userId: customerId }, force: true, transaction });
@@ -169,8 +177,6 @@ export const deleteCustomer = async (req, res, next) => {
       await Reviews.destroy({ where: { sellerId: customerId }, force: true, transaction });
 
       await Products.update({ userId: null }, { where: { userId: customerId }, transaction });
-
-      const user = await Users.findOne({ where: { id: customerId }, transaction });
 
       await user.destroy({ force: true, transaction });
     });
@@ -184,7 +190,7 @@ export const deleteCustomer = async (req, res, next) => {
 export const getOneCustomer = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const user = await Users.findOne({
+    const user = await Users.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
       where: { id },
       include: [
         {

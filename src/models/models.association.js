@@ -74,11 +74,6 @@ Models.Users.hasOne(Models.NotificationSettings, {
   onDelete: 'CASCADE',
   hooks: true
 });
-Models.Users.belongsToMany(Models.NotificationTopics, {
-  foreignKey: 'userId',
-  through: Models.NotificationTopicUsers,
-  as: 'notificationTopics'
-});
 
 Models.Users.belongsToMany(Models.Users, {
   foreignKey: 'followerId',
@@ -318,18 +313,6 @@ Models.Conditions.hasMany(Models.Preferences, {
  */
 Models.NotificationSettings.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 
-Models.NotificationTopics.belongsToMany(Models.Users, {
-  foreignKey: 'topicId',
-  through: Models.NotificationTopicUsers,
-  as: 'subsribers'
-});
-
-Models.NotificationTopicUsers.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
-Models.NotificationTopicUsers.belongsTo(Models.NotificationTopics, {
-  foreignKey: 'topicId',
-  as: 'topic'
-});
-
 Models.Comments.belongsTo(Models.Products, { foreignKey: 'productId', as: 'product' });
 Models.Comments.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 
@@ -383,17 +366,17 @@ Models.Commissions.belongsTo(Models.Countries, {
 });
 
 /**
- * NotificationTopics
+ * Packages
  */
-Models.NotificationTopics.belongsTo(Models.Countries, {
+Models.Packages.belongsTo(Models.Countries, {
   foreignKey: 'countryId',
   as: 'country'
 });
 
 /**
- * Packages
+ * Marketing Notifications
  */
-Models.Packages.belongsTo(Models.Countries, {
+Models.MarketingNotifications.belongsTo(Models.Countries, {
   foreignKey: 'countryId',
   as: 'country'
 });

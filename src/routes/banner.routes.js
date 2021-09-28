@@ -1,5 +1,5 @@
 import Router from 'express';
-import { crud } from '@utils/controller-crud.util';
+import { byCountryFilter, crud } from '@utils/controller-crud.util';
 import { Banners } from '@models';
 import { create } from '@controllers/Admin/banner.controller';
 
@@ -9,7 +9,7 @@ const router = new Router();
 
 router
   .route('/')
-  .get(controller.read)
+  .get(byCountryFilter(controller.read))
   .post(create);
 
 router

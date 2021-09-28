@@ -1,8 +1,8 @@
-import { NotificationSettings, Users } from '@models';
+import { Countries, NotificationSettings, Users } from '@models';
 
-import { unsubscribeTokensFromTopic } from '@services/notification.service';
+import { generateTopicName, unsubscribeTokensFromTopic } from '@services/notification.service';
 
-import NOTIFICATION_TYPE from '@constants/notification.constant';
+import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 
 export const getOne = async (req, res, next) => {
   try {
@@ -23,7 +23,7 @@ export const update = async (req, res, next) => {
 
     const notificationSetting = await NotificationSettings.findOne({
       where: { userId: id },
-      include: [{ model: Users, as: 'user' }]
+      include: [{ model: Users, as: 'user', include: [{ model: Countries, as: 'country' }] }]
     });
 
     await notificationSetting.update({ ...req.body });
@@ -32,7 +32,7 @@ export const update = async (req, res, next) => {
     if (!req.body.isPromotionAllowed) {
       await unsubscribeTokensFromTopic(
         notificationSetting.user.deviceToken,
-        NOTIFICATION_TYPE.MARKETING
+        generateTopicName(NOTIFICATION_CONSTANT.MARKETING, notificationSetting.user.country.name)
       );
     }
 

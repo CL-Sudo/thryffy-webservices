@@ -1,12 +1,13 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, primaryKey, foreignKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
 const MarketingNotifications = SequelizeConnector.define(
   'MarketingNotifications',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { onDelete: 'SET NULL' }),
     title: {
       type: Sequelize.STRING
     },
@@ -22,7 +23,12 @@ const MarketingNotifications = SequelizeConnector.define(
   {
     tableName: 'marketing_notifications',
     scopes: {
-      search: params => search(MarketingNotifications, params, [])
+      search: params => search(MarketingNotifications, params, []),
+      byCountry(countryId) {
+        return {
+          where: { countryId }
+        };
+      }
     },
     hooks: {
       beforeFind: query => {

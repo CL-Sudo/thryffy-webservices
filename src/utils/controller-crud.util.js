@@ -43,7 +43,7 @@ export const read = (
         order: order || getOrder(Model)(req),
         distinct,
         paranoid,
-        where,
+        where: where ? JSON.parse(where) : {},
         timezone,
         ...extra
       });
@@ -97,13 +97,14 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   },
   read: async (req, res, next) => {
     try {
-      const { extra, where, customInclude, defaultScope } = req.query;
+      const { extra, where, customInclude, defaultScope, scopes } = req.query;
       const payload = await read(Model, req, {
         paranoid: paranoid ? getParanoid(req) : paranoid,
         extra,
         where,
         customInclude,
-        defaultScope
+        defaultScope,
+        scopes
       });
       return res.status(200).json({ message: 'Success', payload });
     } catch (e) {
@@ -113,7 +114,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   readOne: async (req, res, next) => {
     try {
       const { where } = req.query;
-      const payload = await readOne(Model, req, { where });
+      const payload = await readOne(Model, req, { where: { ...JSON.parse(where || '{}') } });
       return res.status(200).json({ message: 'Success', payload });
     } catch (e) {
       return next(e);
@@ -152,7 +153,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
       requestValidator(req);
       const { id, query = {} } = req.params;
       const result = await Model.findOne({
-        where: { ...query, ..._.get(req, 'query.where', {}), id }
+        where: { ...JSON.parse(query.where || '{}'), id }
       });
 
       if (!result) return next(new Error('Data not exists'));
@@ -181,7 +182,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   activate: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const row = await Model.findOne({ where: { id } });
+      const row = await Model.findOne({ where: { id, ...JSON.parse(req.query.where || '{}') } });
       if (!row) throw new Error('Data not exists');
       await row.update({ active: true });
       return res.status(200).json({ message: 'Record was successfully activated' });
@@ -192,7 +193,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   deactivate: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const row = await Model.findOne({ where: { id } });
+      const row = await Model.findOne({ where: { id, ...JSON.parse(req.query.where || '{}') } });
       if (!row) throw new Error('Data not exists');
       await row.update({ active: false });
       return res.status(200).json({ message: 'Record was successfully deactivated' });
@@ -306,6 +307,14 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
     }
   }
 });
+
+export const byCountryFilter = controller => (req, res, next) => {
+  const originalWhereObj = JSON.parse(req.query.where || '{}');
+
+  const newWhereObj = JSON.stringify(_.merge({ countryId: req.user.countryId }, originalWhereObj));
+  req.query.where = newWhereObj;
+  return controller(req, res, next);
+};
 
 export { crud };
 export default crud;

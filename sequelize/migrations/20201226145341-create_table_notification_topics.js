@@ -11,5 +11,5 @@ module.exports = {
       ...BY_RECORDER
     }),
 
-  down: async queryInterface => queryInterface.dropTable('notification_topics')
+  down: async queryInterface => Promise.resolve()
 };

@@ -1,13 +1,7 @@
 import formidable from 'formidable';
 import R from 'ramda';
 
-import {
-  Notifications,
-  Users,
-  MarketingNotifications,
-  NotificationTopicUsers,
-  NotificationTopics
-} from '@models';
+import { Notifications, Users, MarketingNotifications, NotificationSettings } from '@models';
 
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import NOTIFICATION from '@constants/notification.constant';
@@ -23,6 +17,7 @@ import S3_CONFIG from '@configs/s3.config';
 import { parsePathForDBStoring } from '@utils/s3.util';
 
 import { sendCloudMessage } from '@services/notification.service';
+import { Op } from 'sequelize';
 
 export const get = async (req, res, next) => {
   try {
@@ -53,10 +48,12 @@ export const create = async (req, res, next) => {
       const { id } = req.user;
       const { image } = files;
       const { title, description } = fields;
+      const deviceTokens = [];
+      const operations = [];
 
       const marketingNotificationId = await sequelize.transaction(async transaction => {
         const marketingNotification = await MarketingNotifications.create(
-          { ...fields, createdBy: id },
+          { ...fields, createdBy: id, countryId: req.user.countryId },
           { transaction }
         );
 
@@ -68,33 +65,33 @@ export const create = async (req, res, next) => {
           );
         }
 
-        const userIds = R.pipe(
-          R.filter(instance => instance.user.notificationSetting.isPromotionAllowed),
-          R.map(instance => instance.userId)
-        )(
-          await NotificationTopicUsers.findAll({
-            transaction,
-            include: [
-              {
-                model: Users,
-                as: 'user'
-              },
-              {
-                model: NotificationTopics,
-                as: 'topic',
-                where: { title: NOTIFICATION.TOPIC.MARKETING }
-              }
-            ]
-          })
-        );
+        const users = await Users.scope([{ method: ['byCountry', req.user.countryId] }]).findAll({
+          attributes: ['id', 'deviceToken'],
+          include: [
+            {
+              model: NotificationSettings,
+              as: 'notificationSetting',
+              where: { isPromotionAllowed: true }
+            }
+          ],
+          where: {
+            deviceToken: {
+              [Op.ne]: null
+            }
+          },
+          transaction
+        });
 
-        const createObj = R.map(instance => ({
-          title,
-          description,
-          notifierId: instance,
-          image: marketingNotification.image,
-          type: NOTIFICATION.TOPIC.MARKETING
-        }))(userIds);
+        const createObj = R.map(instance => {
+          deviceTokens.push(instance.deviceToken);
+          return {
+            title,
+            description,
+            notifierId: instance.id,
+            image: marketingNotification.image,
+            type: NOTIFICATION.TOPIC.MARKETING
+          };
+        })(users);
 
         await Notifications.bulkCreate(createObj, { transaction });
 
@@ -105,14 +102,20 @@ export const create = async (req, res, next) => {
         where: { id: marketingNotificationId }
       });
 
-      await sendCloudMessage({
-        title: fields.title,
-        message: fields.description,
-        topic: NOTIFICATION.TOPIC.MARKETING,
-        data: {
-          image: payload.image
-        }
+      deviceTokens.forEach(token => {
+        operations.push(
+          sendCloudMessage({
+            title: fields.title,
+            message: fields.description,
+            token,
+            data: {
+              image: payload.image
+            }
+          })
+        );
       });
+
+      await Promise.all(operations);
 
       return res.status(200).json({ message: 'success', payload });
     } catch (e) {

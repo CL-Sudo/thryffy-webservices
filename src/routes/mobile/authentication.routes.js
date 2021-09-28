@@ -3,9 +3,9 @@ import * as Controllers from '@controllers/authentication.controller';
 import passport from 'passport';
 import * as Configs from '@configs';
 import * as validators from '@validators';
-import { Users } from '@models';
+import { Countries, Users } from '@models';
 
-import { unsubscribeTokensFromTopic } from '@services/notification.service';
+import { generateTopicName, unsubscribeTokensFromTopic } from '@services/notification.service';
 
 import NOTIFICATION from '@constants/notification.constant';
 
@@ -24,8 +24,13 @@ router.post('/forgot-password/verify-otp', Controllers.verifyForgotPasswordOTP);
 router.post('/logout', mobileAuth, async (req, res, next) => {
   try {
     const { id } = req.user;
-    const user = await Users.findOne({ where: { id } });
-    await unsubscribeTokensFromTopic(user.deviceToken, NOTIFICATION.TOPIC.MARKETING);
+    const user = await Users.findOne({
+      where: { id }
+    });
+    await unsubscribeTokensFromTopic(
+      user.deviceToken,
+      generateTopicName(NOTIFICATION.TOPIC.MARKETING, user.countryId)
+    );
     await user.update({ deviceToken: null });
     return res.status(200).json({ message: 'Logout successfuly' });
   } catch (e) {
