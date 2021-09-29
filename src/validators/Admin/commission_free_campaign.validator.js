@@ -11,6 +11,7 @@ export const createValidator = [
       if (endDate < req.body.startDate) {
         throw new Error('End Date must be greater than start Date');
       }
+      req.body.countryId = req.user.countryId;
       return Promise.resolve();
     })
 ];

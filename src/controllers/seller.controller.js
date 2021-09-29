@@ -666,7 +666,10 @@ export const getProductCommission = async (req, res, next) => {
       { method: ['byCountry', req.user.countryId] }
     ]).findAll();
 
-    const freeCommissionCampaign = await CommissionFreeCampaigns.scope('runningCampaign').findOne();
+    const freeCommissionCampaign = await CommissionFreeCampaigns.scope([
+      'runningCampaign',
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne();
 
     const commission = freeCommissionCampaign
       ? 0

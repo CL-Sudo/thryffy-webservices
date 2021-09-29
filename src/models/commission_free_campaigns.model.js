@@ -35,6 +35,11 @@ const CommissionFreeCampaigns = SequelizeConnector.define(
             [Op.gte]: new Date()
           }
         }
+      },
+      byCountry(countryId) {
+        return {
+          where: { countryId }
+        };
       }
     },
     hooks: {

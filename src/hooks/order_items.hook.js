@@ -72,16 +72,10 @@ OrderItems.addHook('afterBulkCreate', 'getCommission', async (results, options) 
 
     const rates = await Commissions.scope([{ method: ['byCountry', order.countryId] }]).findAll();
 
-    const commissionFreeCampaigns = await CommissionFreeCampaigns.findOne({
-      where: {
-        startDate: {
-          [Op.lte]: now
-        },
-        endDate: {
-          [Op.gte]: now
-        }
-      }
-    });
+    const commissionFreeCampaigns = await CommissionFreeCampaigns.scope([
+      { method: ['byCountry', order.countryId] },
+      'runningCampaign'
+    ]).findOne();
 
     const commission = commissionFreeCampaigns
       ? 0
