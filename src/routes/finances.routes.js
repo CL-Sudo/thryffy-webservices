@@ -1,16 +1,16 @@
 import Router from 'express';
-import { crud } from '@utils/controller-crud.util';
+import { byCountryFilter, crud } from '@utils/controller-crud.util';
 import { SalesOrders } from '@models';
 
 const controller = crud(SalesOrders);
 const router = new Router();
 
-router.route('/').get(controller.read);
+router.route('/').get(byCountryFilter(controller.read));
 
 router
   .route('/:id')
-  .get(controller.readOne)
-  .delete(controller.destroy())
-  .put(controller.update);
+  .get(byCountryFilter(controller.readOne))
+  .delete(byCountryFilter(controller.destroy()))
+  .put(byCountryFilter(controller.update));
 
 export default router;

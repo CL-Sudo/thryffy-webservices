@@ -126,7 +126,8 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
       const { id, query = {} } = req.params;
       const scopes = getScopes(Model)(req);
       const col = await Model.scope(scopes).findOne({
-        where: { ...query, ..._.get(req, 'query.where', {}), id, deletedAt: null }
+        // where: { ...query, ..._.get(req, 'query.where', {}), id, deletedAt: null }
+        where: { ...JSON.parse(_.get(query, 'where', '{}')), id, deletedAt: null }
       });
       if (!col) return next(new Error('Record not found'));
 
@@ -153,7 +154,7 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
       requestValidator(req);
       const { id, query = {} } = req.params;
       const result = await Model.findOne({
-        where: { ...JSON.parse(query.where || '{}'), id }
+        where: { ...JSON.parse(_.get(query, 'where', '{}')), id }
       });
 
       if (!result) return next(new Error('Data not exists'));

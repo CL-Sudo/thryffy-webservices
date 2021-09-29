@@ -194,6 +194,7 @@ export const pay = async (req, res, next) => {
 
       const saleOrder = await SalesOrders.create(
         {
+          countryId: req.user.countryId,
           userId,
           sellerId: product.userId,
           addressId,
