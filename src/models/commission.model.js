@@ -31,7 +31,12 @@ const Commissions = SequelizeConnector.define(
     tableName: 'commissions',
     underscored: false,
     scopes: {
-      search: params => search(Commissions, params, [])
+      search: params => search(Commissions, params, []),
+      byCountry(countryId) {
+        return {
+          where: { countryId }
+        };
+      }
     },
     hooks: {
       beforeFind: query => {

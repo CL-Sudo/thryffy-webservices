@@ -70,7 +70,7 @@ OrderItems.addHook('afterBulkCreate', 'getCommission', async (results, options) 
       ]
     });
 
-    const rates = await Commissions.findAll();
+    const rates = await Commissions.scope([{ method: ['byCountry', order.countryId] }]).findAll();
 
     const commissionFreeCampaigns = await CommissionFreeCampaigns.findOne({
       where: {

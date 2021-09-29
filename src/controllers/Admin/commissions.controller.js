@@ -8,7 +8,9 @@ export const addCommissionRate = async (req, res, next) => {
     requestValidator(req);
     const { minPrice, maxPrice, commissionRate } = req.body;
 
-    const commission = await Commissions.findOne({
+    const commission = await Commissions.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({
       raw: true,
       where: {
         [Op.or]: [
@@ -32,7 +34,9 @@ export const addCommissionRate = async (req, res, next) => {
       }
     });
 
-    const commissionWithInfinity = await Commissions.findOne({
+    const commissionWithInfinity = await Commissions.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({
       raw: true,
       where: {
         maxPrice: null,
@@ -63,7 +67,7 @@ export const addCommissionRate = async (req, res, next) => {
       throw new Error('Commission rate cannot be greater than 1');
     }
 
-    await Commissions.create(req.body);
+    await Commissions.create({ ...req.body, countryId: req.user.countryId });
 
     return res.status(200).json({
       message: 'success'
@@ -80,7 +84,9 @@ export const updateCommissionRate = async (req, res, next) => {
     const { minPrice, maxPrice, commissionRate } = req.body;
     const { id } = req.params;
 
-    const commission = await Commissions.findOne({
+    const commission = await Commissions.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({
       raw: true,
       where: {
         id: {
@@ -107,7 +113,9 @@ export const updateCommissionRate = async (req, res, next) => {
       }
     });
 
-    const commissionWithInfinity = await Commissions.findOne({
+    const commissionWithInfinity = await Commissions.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({
       raw: true,
       where: {
         id: {
@@ -141,19 +149,16 @@ export const updateCommissionRate = async (req, res, next) => {
       throw new Error('Commission rate cannot be greater than 1');
     }
 
-    await Commissions.update(req.body, { where: { id } });
+    const commissionToBeUpdated = await Commissions.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({ where: { id } });
 
-    return res.status(200).json({ message: 'success' });
-  } catch (e) {
-    return next(e);
-  }
-};
+    if (!commissionToBeUpdated) {
+      throw new Error('Commission not found.');
+    }
 
-export const destroy = async (req, res, next) => {
-  try {
-    const { id } = req.params;
+    await commissionToBeUpdated.update(req.body);
 
-    await Commissions.destroy({ where: { id }, force: true });
     return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);

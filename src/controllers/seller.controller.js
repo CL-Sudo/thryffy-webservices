@@ -662,7 +662,10 @@ export const getProductCommission = async (req, res, next) => {
   try {
     const { price } = req.query;
 
-    const commissions = await Commissions.findAll();
+    const commissions = await Commissions.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findAll();
+
     const freeCommissionCampaign = await CommissionFreeCampaigns.scope('runningCampaign').findOne();
 
     const commission = freeCommissionCampaign
