@@ -9,7 +9,9 @@ export const subscribe = async (req, res, next) => {
     const { id } = req.user;
     const { packageId } = req.body;
 
-    const pkg = await Packages.findOne({ where: { id: packageId } });
+    const pkg = await Packages.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: packageId }
+    });
     const user = await Users.findOne({ where: { id } });
 
     const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;

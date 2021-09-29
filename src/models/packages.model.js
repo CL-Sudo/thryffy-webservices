@@ -30,7 +30,12 @@ const Packages = SequelizeConnector.define(
     tableName: 'packages',
     underscored: false,
     scopes: {
-      search: params => search(Packages, params, [])
+      search: params => search(Packages, params, []),
+      byCountry(countryId) {
+        return {
+          where: { countryId }
+        };
+      }
     },
     hooks: {
       beforeFind: query => {
