@@ -6,7 +6,7 @@ export const payValidator = [
   check('productIds')
     .exists()
     .withMessage('Required')
-    .custom(async productIds => {
+    .custom(async (productIds, { req }) => {
       const idsLength = R.length(productIds);
 
       if (R.type(productIds) !== 'Array') {
@@ -17,7 +17,9 @@ export const payValidator = [
         throw new Error('Empty array is not accepted');
       }
 
-      const products = await Products.findAndCountAll({ where: { id: productIds } });
+      const products = await Products.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findAndCountAll({ where: { id: productIds } });
       if (products.count !== idsLength) {
         throw new Error('Invalid productIds given, product(s) not found');
       }
@@ -75,7 +77,7 @@ export const checkoutValidator = [
   check('productIds')
     .exists()
     .withMessage('Required')
-    .custom(async productIds => {
+    .custom(async (productIds, { req }) => {
       const idsLength = R.length(productIds);
 
       if (R.type(productIds) !== 'Array') {
@@ -86,7 +88,9 @@ export const checkoutValidator = [
         throw new Error('Empty array is not accepted');
       }
 
-      const products = await Products.findAndCountAll({ where: { id: productIds } });
+      const products = await Products.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findAndCountAll({ where: { id: productIds } });
       if (products.count !== idsLength) {
         throw new Error('Invalid productIds given, product(s) not found');
       }
@@ -123,10 +127,12 @@ export const saveForLaterValidator = [
     .withMessage('Required')
     .custom(async (productId, { req }) => {
       const { id } = req.user;
-      const product = await Products.findOne({
-        raw: true,
-        where: { id: productId }
-      });
+      const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne(
+        {
+          raw: true,
+          where: { id: productId }
+        }
+      );
 
       if (R.isNil(product)) throw new Error('Invalid productId given.');
 

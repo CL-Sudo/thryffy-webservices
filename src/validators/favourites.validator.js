@@ -9,10 +9,12 @@ export const moveToBagValidator = [
     .withMessage('Required')
     .custom(async (productId, { req }) => {
       const { id } = req.user;
-      const product = await Products.findOne({
-        raw: true,
-        where: { id: productId }
-      });
+      const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne(
+        {
+          raw: true,
+          where: { id: productId }
+        }
+      );
       if (R.isNil(product)) throw new Error('Invalid productId given.');
 
       if (product.userId === id) throw new Error('You cannot add your own product to bag');

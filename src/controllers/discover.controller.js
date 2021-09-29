@@ -136,7 +136,9 @@ export const discoverList = async (req, res, next) => {
       include
     };
 
-    const products = await Products.findAll(filter);
+    const products = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findAll(
+      filter
+    );
 
     const filterByPrice = R.ifElse(
       R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),

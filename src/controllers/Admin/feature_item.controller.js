@@ -4,7 +4,9 @@ export const create = async (req, res, next) => {
   try {
     const { productId } = req.body;
 
-    const product = await Products.findOne({ where: { id: productId } });
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: productId }
+    });
     if (!product) throw new Error('Invalid productId given');
 
     const featureItem = await FeatureItems.findOne({ where: { productId } });

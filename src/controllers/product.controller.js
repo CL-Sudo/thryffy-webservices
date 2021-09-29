@@ -30,7 +30,7 @@ export const addFavouriteProduct = async (req, res, next) => {
     const { productId } = req.body;
     const { id } = req.user;
 
-    const product = await Products.findOne({
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
       raw: true,
       where: { id: productId }
     });
@@ -66,11 +66,16 @@ export const youMayAlsoLike = async (req, res, next) => {
     const { productId } = req.params;
     const { limit, offset } = req.query;
 
-    const product = await Products.findOne({ where: { id: productId } });
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: productId }
+    });
 
     if (!product) throw new Error('Invalid productId given.');
 
-    const recommedations = await Products.scope('default').findAll({
+    const recommedations = await Products.scope([
+      'default',
+      { method: ['byCountry', req.user.countryId] }
+    ]).findAll({
       where: {
         isPublished: true,
         categoryId: product.categoryId

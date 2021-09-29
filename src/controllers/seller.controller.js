@@ -119,6 +119,7 @@ export const addProduct = async (req, res, next) => {
 
           const product = await Products.create(
             {
+              countryId: req.user.countryId,
               userId: isAdmin ? sellerId : id,
               categoryId,
               title,
@@ -281,7 +282,9 @@ export const updateProduct = async (req, res, next) => {
       const { productId } = req.params;
       const isAdmin = type === USER_TYPE.ADMIN;
 
-      const existingProduct = await Products.findOne({ where: { id: productId } });
+      const existingProduct = await Products.scope([
+        { method: ['byProduct', req.user.countryId] }
+      ]).findOne({ where: { id: productId } });
       if (!existingProduct) throw new Error('Invalid productId given.');
 
       // const imagesToPersist = R.ifElse(
@@ -334,20 +337,17 @@ export const updateProduct = async (req, res, next) => {
         }
 
         const product = await Products.findOne({ where: { id: productId } });
-        await product.update(
-          {
-            title,
-            description,
-            brandId,
-            categoryId,
-            sizeId,
-            conditionId,
-            originalPrice,
-            markupPrice: extraCharges.markupPrice,
-            updatedBy: isAdmin ? id : product.userId
-          },
-          { where: { id: productId } }
-        );
+        await product.update({
+          title,
+          description,
+          brandId,
+          categoryId,
+          sizeId,
+          conditionId,
+          originalPrice,
+          markupPrice: extraCharges.markupPrice,
+          updatedBy: isAdmin ? id : product.userId
+        });
 
         await updateProductImages(productId, parseImagesToPersist(fields));
         await saveProductImages(product.id, files);

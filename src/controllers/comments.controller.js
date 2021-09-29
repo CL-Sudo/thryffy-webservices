@@ -39,7 +39,9 @@ export const list = async (req, res, next) => {
     const { productId } = req.params;
     const { limit, offset } = req.query;
 
-    const product = await Products.findOne({ where: { id: productId } });
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: productId }
+    });
     if (!product) throw new Error('Invalid productId given');
 
     const comments = await Comments.findAll({

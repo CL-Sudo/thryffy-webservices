@@ -26,7 +26,9 @@ export const managePublication = async (req, res, next) => {
     const { productId } = req.params;
     const { id: userId } = req.user;
 
-    const product = await Products.findOne({ where: { id: productId } });
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: productId }
+    });
     if (!product) throw new Error('Product not found');
 
     if (product.isPublished === isPublished) {
@@ -55,8 +57,10 @@ export const managePublication = async (req, res, next) => {
 export const verifyProductRequest = async (req, res, next) => {
   try {
     const { productId } = req.params;
-    const product = await Products.findOne({ where: { id: productId } });
-    if (!product) throw new Error('Product has not found.');
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: productId }
+    });
+    if (!product) throw new Error('Product not found.');
 
     await product.update({ isVerify: true });
 
@@ -69,8 +73,10 @@ export const verifyProductRequest = async (req, res, next) => {
 export const unVerifyProductRequest = async (req, res, next) => {
   try {
     const { productId } = req.params;
-    const product = await Products.findOne({ where: { id: productId } });
-    if (!product) throw new Error('Product has not found.');
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: productId }
+    });
+    if (!product) throw new Error('Product not found.');
 
     await product.update({ isVerify: false });
 
@@ -86,7 +92,10 @@ export const getProductListRequest = async (req, res, next) => {
     const { limit, offset } = getLimitOffset(req);
     const scopes = getScopes(Products)(req);
 
-    const data = await Products.scope(scopes).findAndCountAll({
+    const data = await Products.scope([
+      ...scopes,
+      { method: ['byCountry', req.user.countryId] }
+    ]).findAndCountAll({
       include: [
         {
           model: Brands,

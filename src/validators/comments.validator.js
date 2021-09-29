@@ -9,7 +9,9 @@ export const createValidator = [
     .withMessage('Required')
     .custom(async (productId, { req }) => {
       try {
-        const product = await Products.findOne({
+        const product = await Products.scope([
+          { method: ['byCountry', req.user.countryId] }
+        ]).findOne({
           where: { id: productId },
           include: [
             { model: OrderItems, as: 'item', include: [{ model: SalesOrders, as: 'order' }] }

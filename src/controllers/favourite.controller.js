@@ -74,7 +74,7 @@ export const add = async (req, res, next) => {
     const { id } = req.user;
     // const { limit, offset } = req.query;
 
-    const product = await Products.findOne({
+    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
       raw: true,
       where: { id: productId }
     });

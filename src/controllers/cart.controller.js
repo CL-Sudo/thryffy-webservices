@@ -61,7 +61,9 @@ export const add = async (req, res, next) => {
 
     const checkProductIdValidity = async () => {
       try {
-        const product = await Products.findOne({
+        const product = await Products.scope([
+          { method: ['byCountry', req.user.countryId] }
+        ]).findOne({
           raw: true,
           where: { id: productId }
         });
