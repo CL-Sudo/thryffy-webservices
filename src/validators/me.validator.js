@@ -94,12 +94,12 @@ export const getOneAddressValidator = [
 
 export const updatePreferencesValidator = [
   check('categoryId')
-    .custom(async (categoryId = []) => {
+    .custom(async (categoryId = [], { req }) => {
       if (categoryId.length === 0) return Promise.resolve();
       const processedCategoryId = R.pipe(R.uniq)(categoryId);
 
       const categoryIdsInDB = R.map(R.prop('id'))(
-        await Categories.findAll({
+        await Categories.scope([{ method: ['byCountry', req.user.countryId] }]).findAll({
           attributes: ['id'],
           raw: true
         })

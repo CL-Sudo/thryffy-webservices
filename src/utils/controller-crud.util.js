@@ -183,7 +183,9 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   activate: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const row = await Model.findOne({ where: { id, ...JSON.parse(req.query.where || '{}') } });
+      const row = await Model.findOne({
+        where: { id, ...JSON.parse(_.get(req, 'query.where', '{}')) }
+      });
       if (!row) throw new Error('Data not exists');
       await row.update({ active: true });
       return res.status(200).json({ message: 'Record was successfully activated' });
@@ -194,7 +196,9 @@ const crud = (Model, { paranoid = true, includeParanoid = true } = {}) => ({
   deactivate: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const row = await Model.findOne({ where: { id, ...JSON.parse(req.query.where || '{}') } });
+      const row = await Model.findOne({
+        where: { id, ...JSON.parse(_.get(req, 'query.where', '{}')) }
+      });
       if (!row) throw new Error('Data not exists');
       await row.update({ active: false });
       return res.status(200).json({ message: 'Record was successfully deactivated' });

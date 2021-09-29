@@ -646,7 +646,9 @@ export const getSellerCategories = async (req, res, next) => {
 
     const categoryIds = products.map(instance => instance.category.id);
 
-    const categories = await Categories.findAndCountAll({
+    const categories = await Categories.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findAndCountAll({
       where: { id: categoryIds },
       limit: Number(limit) || null,
       offset: Number(offset) || null

@@ -86,6 +86,11 @@ const Categories = SequelizeConnector.define(
             through: { attributes: [] }
           }
         ]
+      },
+      byCountry(countryId) {
+        return {
+          where: { countryId }
+        };
       }
     },
     hooks: {

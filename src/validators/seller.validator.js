@@ -72,7 +72,9 @@ export const addProductValidator = async (req, fields) =>
       if (isEmpty(price)) throw new Error('price: Required');
       if (isEmpty(thumbnailIndex)) throw new Error('thumbnailIndex: Required');
 
-      const category = await Categories.findOne({ raw: true, where: { id: categoryId } });
+      const category = await Categories.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findOne({ raw: true, where: { id: categoryId } });
       if (!category) throw new Error('Invalid categoryId given');
 
       const condition = await Conditions.findOne({ where: { id: conditionId } });
@@ -161,8 +163,10 @@ export const getShippingFeeValidator = [
     .exists()
     .isLength({ min: 1 })
     .withMessage('Required')
-    .custom(async categoryId => {
-      const category = await Categories.findOne({ where: { id: categoryId } });
+    .custom(async (categoryId, { req }) => {
+      const category = await Categories.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findOne({ where: { id: categoryId } });
       if (!category) throw new Error('Invalid categoryId given.');
 
       return Promise.resolve();

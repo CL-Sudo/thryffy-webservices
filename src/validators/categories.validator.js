@@ -48,7 +48,7 @@ export const listValidator = [
   check('offset').customSanitizer(offset => (offset ? Number(offset) : null))
 ];
 
-export const createValidator = async fields =>
+export const createValidator = async (req, fields) =>
   new Promise(async (resolve, reject) => {
     try {
       const { title, parentId } = fields;
@@ -57,7 +57,12 @@ export const createValidator = async fields =>
       if (isEmpty(title)) throw new Error('title is required.');
       if (isEmpty(parentId)) throw new Error('parentId is required.');
 
-      const parent = await Categories.findOne({ raw: true, where: { id: parentId } });
+      const parent = await Categories.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findOne({
+        raw: true,
+        where: { id: parentId }
+      });
       if (!parent) throw new Error('Invalid parentId given.');
 
       fields.title = removeRepeatedWhiteSpace(fields.title.trim());

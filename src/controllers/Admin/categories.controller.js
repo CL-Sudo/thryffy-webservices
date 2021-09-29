@@ -8,8 +8,12 @@ export const create = async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
     try {
-      await createValidator(fields);
-      const category = await Categories.create({ ...fields, createdBy: req.user.id });
+      await createValidator(req, fields);
+      const category = await Categories.create({
+        ...fields,
+        createdBy: req.user.id,
+        countryId: req.user.countryId
+      });
 
       const hasThumbnailProperty = Object.prototype.hasOwnProperty.call(files, 'thumbnail');
       if (hasThumbnailProperty) {
@@ -35,10 +39,14 @@ export const update = async (req, res, next) => {
     try {
       const { id } = req.params;
 
-      await createValidator(fields);
+      await createValidator(req, fields);
 
-      const category = await Categories.findOne({ where: { id } });
+      const category = await Categories.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findOne({ where: { id } });
+
       if (!category) throw new Error('Invalid category id given.');
+
       await category.update({ ...fields, updatedBy: req.user.id });
 
       if (Object.prototype.hasOwnProperty.call(files, 'thumbnail')) {

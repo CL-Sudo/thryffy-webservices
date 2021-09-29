@@ -14,7 +14,10 @@ export const home = async (req, res, next) => {
     requestValidator(req);
     const { type } = req.query;
 
-    const categories = await Categories.scope({ method: ['home', type] }).findOne();
+    const categories = await Categories.scope([
+      { method: ['home', type] },
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne();
 
     await Promise.all(
       R.map(async category => {
