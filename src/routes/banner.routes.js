@@ -14,7 +14,7 @@ router
 
 router
   .route('/:id')
-  .delete(controller.destroy({ force: true }))
-  .get(controller.readOne);
+  .delete(byCountryFilter(controller.destroy({ force: true })))
+  .get(byCountryFilter(controller.readOne));
 
 export default router;

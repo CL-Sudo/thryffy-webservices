@@ -10,18 +10,26 @@ export const create = async (req, res, next) => {
     requestValidator(req);
     const { email, password, username } = req.body;
 
-    const existingAdminByEmail = await Admins.findOne({ where: { email } });
+    const existingAdminByEmail = await Admins.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({ where: { email } });
     if (existingAdminByEmail)
       throw new Error('Email not available. Please register with another email.');
 
-    const existingAdminByUsername = await Admins.findOne({ where: { username } });
+    const existingAdminByUsername = await Admins.scope([
+      { method: ['byCountry', req.user.countryId] }
+    ]).findOne({ where: { username } });
     if (existingAdminByUsername) {
       throw new Error('Username not available. Please register with another username.');
     }
 
     if (!password) throw new Error('Password is required.');
 
-    const admin = await Admins.create({ ...req.body, role: ADMIN_ROLE.OPERATOR });
+    const admin = await Admins.create({
+      ...req.body,
+      role: ADMIN_ROLE.OPERATOR,
+      countryId: req.user.countryId
+    });
 
     const payload = Object.assign(admin.dataValues, { type: USER_TYPE.ADMIN });
     delete payload.password;
@@ -40,7 +48,9 @@ export const updateAdmin = async (req, res, next) => {
     const { id } = req.user;
     const { id: adminId } = req.params;
 
-    const superadmin = await Admins.findOne({ where: { id } });
+    const superadmin = await Admins.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id }
+    });
 
     if (superadmin.role !== ADMIN_ROLE.SUPER_ADMIN) {
       throw new Error('Only Super Admins are allowed to do this operation.');
@@ -51,19 +61,25 @@ export const updateAdmin = async (req, res, next) => {
     if (!R.isNil(password) && password.length < 4)
       throw new Error('Must contain at least 4 characters');
 
-    const admin = await Admins.findOne({ where: { id: adminId } });
+    const admin = await Admins.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+      where: { id: adminId }
+    });
     if (!admin) throw new Error('Invalid adminId given');
 
     const currentEmail = admin.email;
     const currentUsername = admin.username;
 
     if (email !== currentEmail) {
-      const adminByEmail = await Admins.findOne({ where: { email } });
+      const adminByEmail = await Admins.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findOne({ where: { email } });
       if (adminByEmail && adminByEmail.id !== id) throw new Error('Email is not available.');
     }
 
     if (username !== currentUsername) {
-      const adminByUsername = await Admins.findOne({ where: { username } });
+      const adminByUsername = await Admins.scope([
+        { method: ['byCountry', req.user.countryId] }
+      ]).findOne({ where: { username } });
       if (adminByUsername && adminByUsername.id !== id)
         throw new Error('Username is not available.');
     }
@@ -90,7 +106,7 @@ export const adminChangePassword = async (req, res, next) => {
     const { password, confirmPassword, currentPassword } = req.body;
 
     const admin = await Admins.unscoped().findOne({
-      where: { id }
+      where: { id, countryId: req.user.countryId }
     });
 
     const validPassword = await admin.comparePassword(currentPassword);
@@ -101,7 +117,7 @@ export const adminChangePassword = async (req, res, next) => {
       throw new Error('New passwords does not match.');
     }
 
-    admin.update({
+    await admin.update({
       password: hashPassword(password)
     });
 

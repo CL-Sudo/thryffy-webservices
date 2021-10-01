@@ -16,7 +16,10 @@ const Brands = SequelizeConnector.define(
     tableName: 'brands',
     underscored: false,
     scopes: {
-      search: params => search(Brands, params, [])
+      search: params => search(Brands, params, []),
+      byCountry(countryId) {
+        return { where: { countryId } };
+      }
     },
     hooks: {
       beforeFind: query => {

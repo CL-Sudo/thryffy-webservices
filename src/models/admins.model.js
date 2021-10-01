@@ -49,7 +49,10 @@ const Admins = SequelizeConnector.define(
     underscored: false,
     defaultScope: { attributes: { exclude: ['password'] } },
     scopes: {
-      search: params => search(Admins, params, [])
+      search: params => search(Admins, params, []),
+      byCountry(countryId) {
+        return { where: { countryId } };
+      }
       // attributes: { exclude: ['password'] }
     },
     hooks: {

@@ -1,4 +1,4 @@
-import { Products, Brands, Sizes, Categories, ProductColors, Galleries, Users } from '@models';
+import { Products, Brands, Categories, Galleries, Users } from '@models';
 import { getLimitOffset, getScopes } from '@utils/express.util';
 import { Op } from 'sequelize';
 import * as _ from 'lodash';
@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import PublicationListener from '@listeners/publication.listener';
 
 import EVENT from '@constants/listener.constant';
-import { paginate } from '@utils/utils';
 
 const checkIsAbleToPublishProduct = async userId => {
   try {

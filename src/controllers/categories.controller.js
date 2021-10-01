@@ -10,9 +10,7 @@ export const list = async (req, res, next) => {
 
     const getChildren = async () => {
       try {
-        const parentObject = await Categories.scope([
-          { method: ['byCountry', req.user.countryId] }
-        ]).findOne({
+        const parentObject = await Categories.findOne({
           where: {
             title: {
               [Op.like]: `%${parent}%`
@@ -20,13 +18,30 @@ export const list = async (req, res, next) => {
           }
         });
 
-        const children = await Categories.scope([
-          { method: ['byCountry', req.user.countryId] }
-        ]).findAndCountAll({
+        // const parentObject = await Categories.scope([
+        //   { method: ['byCountry', req.user.countryId] }
+        // ]).findOne({
+        //   where: {
+        //     title: {
+        //       [Op.like]: `%${parent}%`
+        //     }
+        //   }
+        // });
+
+        const children = await Categories.findAndCountAll({
           where: { parentId: parentObject.id },
           limit,
           offset
         });
+
+        // const children = await Categories.scope([
+        //   { method: ['byCountry', req.user.countryId] }
+        // ]).findAndCountAll({
+        //   where: { parentId: parentObject.id },
+        //   limit,
+        //   offset
+        // });
+
         return Promise.resolve(children);
       } catch (e) {
         return Promise.reject(e);
@@ -36,14 +51,23 @@ export const list = async (req, res, next) => {
     const getCategories = async children => {
       try {
         if (R.isNil(childId)) return Promise.resolve(children);
-        const childArr = await Categories.scope([
-          { method: ['byCountry', req.user.countryId] }
-        ]).findAndCountAll({
+
+        const childArr = await Categories.findAndCountAll({
           where: { parentId: childId },
           include: [{ model: Sizes, as: 'sizes' }],
           limit,
           offset
         });
+
+        // const childArr = await Categories.scope([
+        //   { method: ['byCountry', req.user.countryId] }
+        // ]).findAndCountAll({
+        //   where: { parentId: childId },
+        //   include: [{ model: Sizes, as: 'sizes' }],
+        //   limit,
+        //   offset
+        // });
+
         return Promise.resolve(childArr);
       } catch (e) {
         return Promise.reject(e);
@@ -64,9 +88,11 @@ export const list = async (req, res, next) => {
 export const getDefaultSize = async (req, res, next) => {
   try {
     const { categoryId } = req.params;
-    const category = await Categories.scope([
-      { method: ['byCountry', req.user.countryId] }
-    ]).findOne({ where: { id: categoryId } });
+    const category = await Categories.findOne({ where: { id: categoryId } });
+
+    // const category = await Categories.scope([
+    //   { method: ['byCountry', req.user.countryId] }
+    // ]).findOne({ where: { id: categoryId } });
 
     if (!category) throw new Error('Invalid categoryId given');
 

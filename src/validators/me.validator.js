@@ -99,10 +99,7 @@ export const updatePreferencesValidator = [
       const processedCategoryId = R.pipe(R.uniq)(categoryId);
 
       const categoryIdsInDB = R.map(R.prop('id'))(
-        await Categories.scope([{ method: ['byCountry', req.user.countryId] }]).findAll({
-          attributes: ['id'],
-          raw: true
-        })
+        await Categories.scope([{ method: ['byCountry', req.user.countryId] }]).findAll()
       );
 
       const removedCategoryIds = R.without(processedCategoryId)(categoryIdsInDB);
@@ -115,13 +112,13 @@ export const updatePreferencesValidator = [
     .customSanitizer(categoryId => R.uniq(categoryId)),
 
   check('brandId')
-    .custom(async (brandId = []) => {
+    .custom(async (brandId = [], { req }) => {
       if (brandId.length === 0) return Promise.resolve();
 
       const processedBrandId = R.pipe(R.uniq)(brandId);
 
       const brandIdsInDB = R.map(R.prop('id'))(
-        await Brands.findAll({
+        await Brands.scope([{ method: ['byCountry', req.user.countryId] }]).findAll({
           attributes: ['id'],
           raw: true
         })

@@ -442,6 +442,13 @@ export const getProducts = async (req, res, next) => {
             `)
             ]
           }
+          // {
+          //   brand_id: [
+          //     Sequelize.literal(`
+          //     SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${req.user.countryId}'
+          //   `)
+          //   ]
+          // }
         ]
       })(param);
     };
@@ -646,13 +653,18 @@ export const getSellerCategories = async (req, res, next) => {
 
     const categoryIds = products.map(instance => instance.category.id);
 
-    const categories = await Categories.scope([
-      { method: ['byCountry', req.user.countryId] }
-    ]).findAndCountAll({
+    const categories = await Categories.findAndCountAll({
       where: { id: categoryIds },
       limit: Number(limit) || null,
       offset: Number(offset) || null
     });
+    // const categories = await Categories.scope([
+    //   { method: ['byCountry', req.user.countryId] }
+    // ]).findAndCountAll({
+    //   where: { id: categoryIds },
+    //   limit: Number(limit) || null,
+    //   offset: Number(offset) || null
+    // });
 
     return res.status(200).json({ message: 'success', payload: categories });
   } catch (e) {

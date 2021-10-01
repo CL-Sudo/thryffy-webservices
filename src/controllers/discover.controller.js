@@ -15,8 +15,8 @@ export const home = async (req, res, next) => {
     const { type } = req.query;
 
     const categories = await Categories.scope([
-      { method: ['home', type] },
-      { method: ['byCountry', req.user.countryId] }
+      { method: ['home', type] }
+      // { method: ['byCountry', req.user.countryId] }
     ]).findOne();
 
     await Promise.all(
@@ -91,6 +91,13 @@ export const discoverList = async (req, res, next) => {
             `)
             ]
           }
+          // {
+          //   brand_id: [
+          //     Sequelize.literal(`
+          //     SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${req.user.countryId}'
+          //   `)
+          //   ]
+          // }
         ]
       })(param);
     };
@@ -139,9 +146,10 @@ export const discoverList = async (req, res, next) => {
       include
     };
 
-    const products = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findAll(
-      filter
-    );
+    const products = await Products.findAll(filter);
+    // const products = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findAll(
+    //   filter
+    // );
 
     const filterByPrice = R.ifElse(
       R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),
@@ -201,6 +209,12 @@ export const searchBrand = async (req, res, next) => {
         limit,
         offset
       });
+      // const brands = await Brands.scope([
+      //   { method: ['byCountry', req.user.countryId] }
+      // ]).findAndCountAll({
+      //   limit,
+      //   offset
+      // });
       return res.status(200).json({
         message: 'success',
         payload: brands
@@ -218,6 +232,19 @@ export const searchBrand = async (req, res, next) => {
       limit,
       offset
     });
+    // const brands = await Brands.scope([
+    //   { method: ['byCountry', req.user.countryId] }
+    // ]).findAndCountAll({
+    //   attributes: ['id', 'title'],
+    //   where: {
+    //     title: {
+    //       [Op.like]: `%${normaliseBrand(keyword)}%`
+    //     }
+    //   },
+    //   order: [['title', 'ASC']],
+    //   limit,
+    //   offset
+    // });
 
     return res.status(200).json({
       message: 'success',
