@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import PublicationListener from '@listeners/publication.listener';
 
 import EVENT from '@constants/listener.constant';
-import { paginate } from '@utils/utils';
 
 const checkIsAbleToPublishProduct = async userId => {
   try {
@@ -86,33 +85,63 @@ export const getProductListRequest = async (req, res, next) => {
     const { limit, offset } = getLimitOffset(req);
     const scopes = getScopes(Products)(req);
 
-    const data = await Products.scope(scopes).findAll({
+    if (brandName) {
+      const brands = await Brands.findAll({
+        attributes: ['id', 'title'],
+        raw: true,
+        where: {
+          title: {
+            [Op.like]: `%${brandName}%`
+          }
+        },
+        distinct: true
+      });
+
+      const data = await Products.scope(scopes).findAndCountAll({
+        where: { brandId: _.map(brands, 'id') },
+        include: [
+          {
+            model: Brands,
+            as: 'brand'
+          },
+          { model: Categories, as: 'category', required: false, attributes: ['title'] },
+          { model: Users, as: 'seller', required: false, attributes: ['email'] },
+          { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit,
+        offset
+      });
+
+      return res.status(200).json({
+        message: 'Success',
+        payload: {
+          count: data.count,
+          rows: data.rows
+        }
+      });
+    }
+
+    const data = await Products.scope(scopes).findAndCountAll({
       include: [
         {
           model: Brands,
-          as: 'brand',
-          required: !_.isEmpty(brandName),
-          where: !_.isEmpty(brandName)
-            ? {
-                title: {
-                  [Op.like]: `%${brandName}%`
-                }
-              }
-            : null
+          as: 'brand'
         },
         { model: Categories, as: 'category', required: false, attributes: ['title'] },
         { model: Users, as: 'seller', required: false, attributes: ['email'] },
         { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] }
       ],
-      distinct: true,
+      limit,
+      offset,
       order: [['createdAt', 'DESC']]
     });
 
     return res.status(200).json({
       message: 'Success',
       payload: {
-        count: data.length,
-        rows: paginate(limit)(offset)(data)
+        count: data.count,
+        rows: data.rows
       }
     });
   } catch (e) {
