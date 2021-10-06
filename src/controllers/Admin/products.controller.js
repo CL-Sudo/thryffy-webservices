@@ -128,6 +128,7 @@ export const getProductListRequest = async (req, res, next) => {
     }
 
     const data = await Products.scope(scopes).findAndCountAll({
+      distinct: true,
       include: [
         {
           model: Brands,
