@@ -115,10 +115,7 @@ export const getProductListRequest = async (req, res, next) => {
 
       return res.status(200).json({
         message: 'Success',
-        payload: {
-          count: data.count,
-          rows: data.rows
-        }
+        payload: data
       });
     }
 
