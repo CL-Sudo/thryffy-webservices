@@ -113,9 +113,14 @@ export const getProductListRequest = async (req, res, next) => {
         offset
       });
 
+      const productCount = await Products.count();
+
       return res.status(200).json({
         message: 'Success',
-        payload: data
+        payload: {
+          count: productCount,
+          rows: data.rows
+        }
       });
     }
 
