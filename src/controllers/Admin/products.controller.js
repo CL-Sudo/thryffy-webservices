@@ -1,4 +1,4 @@
-import { Products, Brands, Sizes, Categories, ProductColors, Galleries, Users } from '@models';
+import { Products, Brands, Categories, Galleries, Users } from '@models';
 import { getLimitOffset, getScopes } from '@utils/express.util';
 import { Op } from 'sequelize';
 import * as _ from 'lodash';
@@ -86,7 +86,7 @@ export const getProductListRequest = async (req, res, next) => {
     const { limit, offset } = getLimitOffset(req);
     const scopes = getScopes(Products)(req);
 
-    const data = await Products.scope(scopes).findAndCountAll({
+    const data = await Products.scope(scopes).findAll({
       include: [
         {
           model: Brands,
@@ -105,16 +105,14 @@ export const getProductListRequest = async (req, res, next) => {
         { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] }
       ],
       distinct: true,
-      order: [['createdAt', 'DESC']],
-      limit,
-      offset
+      order: [['createdAt', 'DESC']]
     });
 
     return res.status(200).json({
       message: 'Success',
       payload: {
-        count: data.count,
-        rows: data.rows
+        count: data.length,
+        rows: paginate(limit)(offset)(data)
       }
     });
   } catch (e) {
