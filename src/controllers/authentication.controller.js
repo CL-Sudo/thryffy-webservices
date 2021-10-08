@@ -157,82 +157,46 @@ export const mobileSignIn = async (req, res, next) => {
 
     return passport.authenticate(
       'mobile-login',
-      async (err, user, info) => {
+      async (err, usr, info) => {
         try {
           if (err) return next(err);
-          if (!user) return next(new Error(info.message));
+          if (!usr) return next(new Error(info.message));
 
-          if (!user.isVerified) {
+          if (!usr.isVerified) {
             const otp = generateOTP();
             await Users.update(
               { otp, otpValidity: moment().add(10, 'minutes') },
-              { where: { id: user.id } }
+              { where: { id: usr.id } }
             );
-            await sendSMS(user.completePhoneNumber, SMSVerifcation(otp));
+            await sendSMS(usr.completePhoneNumber, SMSVerifcation(otp));
             return res.status(202).json({
               message: 'user not verified'
             });
           }
 
-          const userData = async () => {
-            try {
-              const data = await Users.findOne({
-                where: { id: user.id }
-              });
-              return Promise.resolve(data);
-            } catch (e) {
-              return Promise.reject(e);
-            }
-          };
-
-          const isUserActivated = R.ifElse(R.prop('active'), R.identity, () => {
-            throw new Error('User is not activated');
+          const user = await Users.findOne({
+            include: ['country'],
+            where: { id: usr.id }
           });
 
-          const getRefreshToken = u => {
-            const refreshToken = generateRefreshToken();
-            u.update({ refreshToken });
-            return u;
-          };
+          const refreshToken = generateRefreshToken();
+          await user.update({ refreshToken });
 
-          const logUserActivity = u => {
-            try {
-              u.update({ lastLogin: new Date() });
-              u.update({ loginFrequency: u.loginFrequency + 1 });
-              u.reload();
-              return u;
-            } catch (e) {
-              return Promise.reject(e);
-            }
-          };
+          await user.update({
+            refreshToken,
+            lastLogin: new Date(),
+            loginFrequency: user.loginFrequency + 1
+          });
 
-          const getJWT = async u => {
-            try {
-              const jwt = await generateJWT(assignUserType({ id: u.id })(USER_TYPE.CUSTOMER));
-              const omit = R.omit(['refreshToken', 'tac']);
-              return Promise.resolve({
-                user: assignUserType(omit(u.dataValues))(USER_TYPE.CUSTOMER),
-                token: `Bearer ${jwt}`,
-                refreshToken: u.refreshToken
-              });
-            } catch (e) {
-              return Promise.reject(e);
-            }
-          };
+          const jwt = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
 
-          const payload = await R.compose(
-            await getJWT,
-            logUserActivity,
-            getRefreshToken,
-            isUserActivated
-          )(await userData());
+          const token = `Bearer ${jwt}`;
+
           return res.status(200).json({
             message: 'success',
-            payload: {
-              ...payload.user
-            },
-            token: payload.token,
-            refreshToken: payload.refreshToken
+            payload: { ...user.get(), type: USER_TYPE.CUSTOMER },
+            token,
+            refreshToken
           });
         } catch (e) {
           return next(e);
@@ -263,7 +227,7 @@ export const mobileRevoke = async (req, res, next) => {
           }
           const payload = await Users.findOne({
             where: { id: loggedInUser.id },
-            include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+            include: ['notificationSetting', 'country']
           });
 
           if (!payload.active) {
@@ -273,13 +237,12 @@ export const mobileRevoke = async (req, res, next) => {
           if (!payload.isVerified) {
             return next(new Error('Account is not verified'));
           }
-          const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
-          const token = await generateJWT(withType);
+          const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
           const rf = payload.get('refreshToken');
 
           return res.json({
             message: 'Logged in successfully',
-            payload: R.omit(['refreshToken'])(withType),
+            payload: { ...payload.get(), type: USER_TYPE.CUSTOMER },
             token: `Bearer ${token}`,
             refreshToken: rf
           });
@@ -288,7 +251,7 @@ export const mobileRevoke = async (req, res, next) => {
         if (user) {
           const payload = await Users.findOne({
             where: { id: user.id },
-            include: [{ model: NotificationSettings, as: 'notificationSetting' }]
+            include: ['notificationSetting', 'country']
           });
           if (!payload.active) {
             throw new Error('This account is not active');

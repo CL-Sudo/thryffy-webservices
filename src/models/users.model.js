@@ -73,22 +73,17 @@ const Users = SequelizeConnector.define(
     state: {
       type: Sequelize.STRING(100)
     },
-    country: {
-      type: Sequelize.STRING(100)
-    },
     location: {
       type: Sequelize.VIRTUAL,
       set(location) {
         const splitted = R.map(R.trim, R.split(',')(location));
         const state = splitted[0];
-        const country = R.last(splitted);
         this.setDataValue('state', state);
-        this.setDataValue('country', country);
       },
       get() {
-        const { state, country } = this;
-        if (!state && !country) return null;
-        return `${state}, ${country}`;
+        const { state } = this;
+        if (!state) return null;
+        return `${state}`;
       }
     },
     phoneCountryCode: {
