@@ -100,21 +100,17 @@ export const getCuratedList = async (req, res, next) => {
       assignCondition,
       assignSize
     )({
-      distinct: true,
-      isPublished: true,
-      isPurchased: false,
       userId: {
         [Op.ne]: id
       }
     });
 
-    const data = await Products.scope('productList').findAndCountAll({
+    const data = await Products.scope(['productList', 'visibleByPublic']).findAndCountAll({
+      distinct: true,
       where,
       limit: Number(limit) || null,
       offset: Number(offset) || null
     });
-
-    // paginate(limit)(offset)
 
     const rows = await Promise.all(
       shuffle(data.rows).map(async row => {
