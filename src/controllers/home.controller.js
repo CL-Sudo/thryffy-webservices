@@ -100,6 +100,7 @@ export const getCuratedList = async (req, res, next) => {
       assignCondition,
       assignSize
     )({
+      distinct: true,
       isPublished: true,
       isPurchased: false,
       userId: {
@@ -137,10 +138,8 @@ export const getCuratedList = async (req, res, next) => {
 export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const data = await Products.scope('productList').findAndCountAll({
-      where: {
-        isPublished: true
-      },
+    const data = await Products.scope(['productList', 'visibleByPublic']).findAndCountAll({
+      distinct: true,
       limit: Number(limit) || null,
       offset: Number(offset) || null,
       order: [['createdAt', 'DESC']]
