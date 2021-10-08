@@ -99,6 +99,7 @@ export const getProductListRequest = async (req, res, next) => {
 
       const data = await Products.scope(scopes).findAndCountAll({
         where: { brandId: _.map(brands, 'id') },
+        distinct: true,
         include: [
           {
             model: Brands,
@@ -113,6 +114,10 @@ export const getProductListRequest = async (req, res, next) => {
         offset
       });
 
+      const productCount = await Products.count();
+
+      console.log('################', productCount)
+
       return res.status(200).json({
         message: 'Success',
         payload: {
@@ -123,6 +128,7 @@ export const getProductListRequest = async (req, res, next) => {
     }
 
     const data = await Products.scope(scopes).findAndCountAll({
+      distinct: true,
       include: [
         {
           model: Brands,
