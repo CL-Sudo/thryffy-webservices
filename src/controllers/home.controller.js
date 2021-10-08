@@ -106,7 +106,7 @@ export const getCuratedList = async (req, res, next) => {
     });
 
     const data = await Products.scope(['productList', 'visibleByPublic']).findAndCountAll({
-      distinct: true,
+      // distinct: true,
       where,
       limit: Number(limit) || null,
       offset: Number(offset) || null
