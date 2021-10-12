@@ -25,7 +25,7 @@ const Banners = SequelizeConnector.define(
       search: params => search(Banners, params, []),
       byCountry(countryId) {
         return {
-          where: { countryId }
+          where: { countryId: countryId || null }
         };
       }
     },

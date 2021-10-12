@@ -331,6 +331,11 @@ const SalesOrders = SequelizeConnector.define(
           ],
           order: [['createdAt', 'DESC']]
         };
+      },
+      byCountry(countryId) {
+        return {
+          where: { countryId: countryId || null }
+        };
       }
     },
     hooks: {

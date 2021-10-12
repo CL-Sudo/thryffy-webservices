@@ -18,7 +18,7 @@ const Brands = SequelizeConnector.define(
     scopes: {
       search: params => search(Brands, params, []),
       byCountry(countryId) {
-        return { where: { countryId } };
+        return { where: { countryId: countryId || null } };
       }
     },
     hooks: {

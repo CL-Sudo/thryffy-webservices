@@ -26,7 +26,7 @@ const MarketingNotifications = SequelizeConnector.define(
       search: params => search(MarketingNotifications, params, []),
       byCountry(countryId) {
         return {
-          where: { countryId }
+          where: { countryId: countryId || null }
         };
       }
     },

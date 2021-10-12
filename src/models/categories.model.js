@@ -89,7 +89,7 @@ const Categories = SequelizeConnector.define(
       },
       byCountry(countryId) {
         return {
-          where: { countryId }
+          where: { countryId: countryId || null }
         };
       }
     },

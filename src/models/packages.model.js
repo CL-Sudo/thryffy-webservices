@@ -33,7 +33,7 @@ const Packages = SequelizeConnector.define(
       search: params => search(Packages, params, []),
       byCountry(countryId) {
         return {
-          where: { countryId }
+          where: { countryId: countryId || null }
         };
       }
     },

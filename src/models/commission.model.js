@@ -34,7 +34,7 @@ const Commissions = SequelizeConnector.define(
       search: params => search(Commissions, params, []),
       byCountry(countryId) {
         return {
-          where: { countryId }
+          where: { countryId: countryId || null }
         };
       }
     },
