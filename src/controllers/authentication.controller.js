@@ -175,7 +175,7 @@ export const mobileSignIn = async (req, res, next) => {
           }
 
           const user = await Users.findOne({
-            include: ['country'],
+            include: ['country', 'notificationSetting'],
             where: { id: usr.id }
           });
 
@@ -188,7 +188,11 @@ export const mobileSignIn = async (req, res, next) => {
             loginFrequency: user.loginFrequency + 1
           });
 
-          const jwt = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
+          const jwt = await generateJWT({
+            id: user.id,
+            type: USER_TYPE.CUSTOMER,
+            countryId: user.countryId
+          });
 
           const token = `Bearer ${jwt}`;
 
@@ -237,7 +241,11 @@ export const mobileRevoke = async (req, res, next) => {
           if (!payload.isVerified) {
             return next(new Error('Account is not verified'));
           }
-          const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
+          const token = await generateJWT({
+            id: user.id,
+            type: USER_TYPE.CUSTOMER,
+            countryId: user.countryId
+          });
           const rf = payload.get('refreshToken');
 
           return res.json({
@@ -259,7 +267,7 @@ export const mobileRevoke = async (req, res, next) => {
           if (!payload.isVerified) {
             return next(new Error('Account is not verified'));
           }
-          const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
+          const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER, countryId: user.countryId };
           const withType = assignUserType(payload.dataValues)(USER_TYPE.CUSTOMER);
           const token = await generateJWT(tokenPayload);
 
@@ -303,7 +311,8 @@ export const facebookCallback = async (req, res) => {
       }
 
       user = await Users.findOne({
-        where: { facebookId }
+        where: { facebookId },
+        include: ['country', 'notificationSetting']
       });
     }
 
@@ -313,7 +322,11 @@ export const facebookCallback = async (req, res) => {
     await user.increment('loginFrequency');
     await user.reload();
 
-    const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
+    const token = await generateJWT({
+      id: user.id,
+      type: USER_TYPE.CUSTOMER,
+      countryId: user.countryId
+    });
 
     return res.status(200).send(`
       <script>
@@ -360,7 +373,8 @@ export const googleCallback = async (req, res) => {
         await createGoogleUserAccount(req.user);
       }
       user = await Users.findOne({
-        where: { googleId }
+        where: { googleId },
+        include: ['notificationSetting', 'country']
       });
       // await sendMail(user.email, '', '', { verificationUrl: 'deeplink goes here' }, EMAIL_VERIFICATION);
     }
@@ -368,9 +382,12 @@ export const googleCallback = async (req, res) => {
     const refreshToken = generateRefreshToken();
     await user.update({ refreshToken, lastLogin: new Date() });
     await user.increment('loginFrequency');
-    await user.reload();
 
-    const token = await generateJWT({ id: user.id, type: USER_TYPE.CUSTOMER });
+    const token = await generateJWT({
+      id: user.id,
+      type: USER_TYPE.CUSTOMER,
+      countryId: user.countryId
+    });
 
     return res.status(200).send(`
         <script>
@@ -445,7 +462,7 @@ export const verifyOTP = async (req, res, next) => {
       );
 
       const omit = R.omit(['password', 'refreshToken']);
-      const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER };
+      const tokenPayload = { id: user.id, type: USER_TYPE.CUSTOMER, countryId: user.countryId };
       const jwt = await generateJWT(tokenPayload);
       const processedPayload = R.pipe(
         omit,

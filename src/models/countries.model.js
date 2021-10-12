@@ -17,6 +17,10 @@ const Countries = SequelizeConnector.define(
     flag: {
       type: Sequelize.TEXT
     },
+    currencySymbol: {
+      field: 'currency_symbol',
+      type: Sequelize.STRING(5)
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
@@ -44,7 +48,7 @@ const Countries = SequelizeConnector.define(
   }
 );
 
-addScopesByAllFields(Countries, []);
+// addScopesByAllFields(Countries, []);
 
 export { Countries };
 export default Countries;

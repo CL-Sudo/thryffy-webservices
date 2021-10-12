@@ -9,7 +9,8 @@ export const create = async (req, res, next) => {
       const country = await Countries.create(
         {
           name: req.body.name,
-          code: req.body.code
+          code: _.toUpper(req.body.code),
+          currencySymbol: req.body.currencySymbol
         },
         { transaction }
       );
@@ -39,7 +40,8 @@ export const update = async (req, res, next) => {
       await country.update(
         {
           name: req.body.name,
-          code: req.body.code
+          code: _.toUpper(req.body.code),
+          currencySymbol: req.body.currencySymbol
         },
         { transaction }
       );

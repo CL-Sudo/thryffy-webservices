@@ -59,6 +59,7 @@
     "file-type": "^14.1.4",
     "flatted": "^2.0.1",
     "formidable": "^1.2.2",
+    "geoip-lite": "^1.4.2",
     "handlebars": "^4.7.6",
     "helmet": "^3.13.0",
     "json2csv": "^4.3.3",

@@ -215,7 +215,7 @@ const Products = SequelizeConnector.define(
         }
       },
       byCountry(countryId) {
-        return { where: { countryId } };
+        return { where: { countryId: countryId || null } };
       }
     },
     hooks: {

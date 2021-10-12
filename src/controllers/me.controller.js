@@ -1,5 +1,6 @@
 import R from 'ramda';
 import moment from 'moment';
+import * as _ from 'lodash';
 
 import { requestValidator } from '@validators';
 import {
@@ -846,6 +847,20 @@ export const addCreditCard = async (req, res, next) => {
       callbackUrl
     });
     return res.status(200).json({ message: 'success', payload: response.data });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const updateCountry = async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    const country = await Countries.findOne({ where: { code: _.toUpper(code) } });
+    if (!country) {
+      throw new Error('Invalid code given, country not found.');
+    }
+    await Users.update({ countryId: country.id }, { where: { id: req.user.id } });
+    return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
   }

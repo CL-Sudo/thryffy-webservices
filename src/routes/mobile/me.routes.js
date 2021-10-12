@@ -49,4 +49,6 @@ router.post('/verify-otp', controllers.verifyOTP);
 
 router.post('/add-credit-card', controllers.addCreditCard);
 
+router.patch('/countries', controllers.updateCountry);
+
 export default router;
