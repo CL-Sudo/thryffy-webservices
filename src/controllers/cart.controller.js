@@ -12,7 +12,7 @@ import R from 'ramda';
 import { PAYMENT_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
-import { paginate } from '@utils';
+import { getCountryId, paginate } from '@utils';
 
 import Billplz from '@services/billplz.service';
 
@@ -59,11 +59,11 @@ export const add = async (req, res, next) => {
     const { id } = req.user;
     const { productId } = req.body;
 
+    const countryId = await getCountryId(req);
+
     const checkProductIdValidity = async () => {
       try {
-        const product = await Products.scope([
-          { method: ['byCountry', req.user.countryId] }
-        ]).findOne({
+        const product = await Products.scope([{ method: ['byCountry', countryId] }]).findOne({
           raw: true,
           where: { id: productId }
         });
@@ -187,6 +187,8 @@ export const pay = async (req, res, next) => {
     const { id: userId } = req.user;
     const { productIds, addressId } = req.body;
 
+    const countryId = await getCountryId(req);
+
     const { subTotal, tax, total, shippingFeeId } = await services.getPriceSummary(productIds);
 
     const orderId = await Sequelize.transaction(async transaction => {
@@ -194,7 +196,7 @@ export const pay = async (req, res, next) => {
 
       const saleOrder = await SalesOrders.create(
         {
-          countryId: req.user.countryId,
+          countryId,
           userId,
           sellerId: product.userId,
           addressId,

@@ -3,7 +3,7 @@ import { Products, Users } from '@models';
 
 import { requestValidator } from '@validators';
 
-import { paginate } from '@utils';
+import { getCountryId, paginate } from '@utils';
 
 export const create = async (req, res, next) => {
   try {
@@ -39,7 +39,9 @@ export const list = async (req, res, next) => {
     const { productId } = req.params;
     const { limit, offset } = req.query;
 
-    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+    const countryId = await getCountryId(req);
+
+    const product = await Products.scope([{ method: ['byCountry', countryId] }]).findOne({
       where: { id: productId }
     });
     if (!product) throw new Error('Invalid productId given');

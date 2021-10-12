@@ -10,7 +10,7 @@ import {
   getChildIds,
   getProductCommission as calculateProductCommission
 } from '@services';
-import { isJSON, paginate, listDiff, parseImageWithIndex } from '@utils';
+import { isJSON, paginate, listDiff, parseImageWithIndex, getCountryId } from '@utils';
 import {
   Products,
   ProductColors,
@@ -78,6 +78,7 @@ const checkIsAbleToPublishProduct = async userId => {
 };
 
 export const addProduct = async (req, res, next) => {
+  const countryId = await getCountryId(req);
   const transaction = await Sequelize.transaction();
   const form = formidable({ multiple: true });
   form.parse(req, async (err, fields, files) => {
@@ -119,7 +120,7 @@ export const addProduct = async (req, res, next) => {
 
           const product = await Products.create(
             {
-              countryId: req.user.countryId,
+              countryId,
               userId: isAdmin ? sellerId : id,
               categoryId,
               title,
@@ -272,6 +273,7 @@ export const markAsShipped = async (req, res, next) => {
 };
 
 export const updateProduct = async (req, res, next) => {
+  const countryId = await getCountryId(req);
   const form = formidable({ multiple: true });
   form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
@@ -282,9 +284,9 @@ export const updateProduct = async (req, res, next) => {
       const { productId } = req.params;
       const isAdmin = type === USER_TYPE.ADMIN;
 
-      const existingProduct = await Products.scope([
-        { method: ['byProduct', req.user.countryId] }
-      ]).findOne({ where: { id: productId } });
+      const existingProduct = await Products.scope([{ method: ['byProduct', countryId] }]).findOne({
+        where: { id: productId }
+      });
       if (!existingProduct) throw new Error('Invalid productId given.');
 
       // const imagesToPersist = R.ifElse(
@@ -421,6 +423,8 @@ export const getProducts = async (req, res, next) => {
       offset = 0
     } = req.query;
 
+    const countryId = await getCountryId(req);
+
     const id = _.get(req, 'user.id', null);
 
     const filterTitle = param => {
@@ -435,20 +439,20 @@ export const getProducts = async (req, res, next) => {
               [Op.like]: `%${keyword}%`
             }
           },
-          {
-            brand_id: [
-              Sequelize.literal(`
-              SELECT id FROM brands WHERE title LIKE '%${keyword}%'
-            `)
-            ]
-          }
           // {
           //   brand_id: [
           //     Sequelize.literal(`
-          //     SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${req.user.countryId}'
+          //     SELECT id FROM brands WHERE title LIKE '%${keyword}%'
           //   `)
           //   ]
           // }
+          {
+            brand_id: [
+              Sequelize.literal(`
+              SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${countryId}'
+            `)
+            ]
+          }
         ]
       })(param);
     };
@@ -637,6 +641,8 @@ export const getSellerCategories = async (req, res, next) => {
     const { limit, offset } = req.query;
     const { sellerId } = req.params;
 
+    const countryId = await getCountryId(req);
+
     const products = await Products.findAll({
       where: {
         isPurchased: false,
@@ -653,18 +659,19 @@ export const getSellerCategories = async (req, res, next) => {
 
     const categoryIds = products.map(instance => instance.category.id);
 
-    const categories = await Categories.findAndCountAll({
-      where: { id: categoryIds },
-      limit: Number(limit) || null,
-      offset: Number(offset) || null
-    });
-    // const categories = await Categories.scope([
-    //   { method: ['byCountry', req.user.countryId] }
-    // ]).findAndCountAll({
+    // const categories = await Categories.findAndCountAll({
     //   where: { id: categoryIds },
     //   limit: Number(limit) || null,
     //   offset: Number(offset) || null
     // });
+
+    const categories = await Categories.scope([
+      { method: ['byCountry', countryId] }
+    ]).findAndCountAll({
+      where: { id: categoryIds },
+      limit: Number(limit) || null,
+      offset: Number(offset) || null
+    });
 
     return res.status(200).json({ message: 'success', payload: categories });
   } catch (e) {
@@ -676,13 +683,13 @@ export const getProductCommission = async (req, res, next) => {
   try {
     const { price } = req.query;
 
-    const commissions = await Commissions.scope([
-      { method: ['byCountry', req.user.countryId] }
-    ]).findAll();
+    const countryId = await getCountryId(req);
+
+    const commissions = await Commissions.scope([{ method: ['byCountry', countryId] }]).findAll();
 
     const freeCommissionCampaign = await CommissionFreeCampaigns.scope([
       'runningCampaign',
-      { method: ['byCountry', req.user.countryId] }
+      { method: ['byCountry', countryId] }
     ]).findOne();
 
     const commission = freeCommissionCampaign

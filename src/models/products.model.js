@@ -214,6 +214,13 @@ const Products = SequelizeConnector.define(
           isPurchased: false
         }
       },
+      availableForSale: {
+        where: {
+          isPublished: true,
+          isVerify: true,
+          isPurchased: false
+        }
+      },
       byCountry(countryId) {
         return { where: { countryId: countryId || null } };
       }

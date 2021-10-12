@@ -54,8 +54,8 @@ export const getCustomerProductRequest = async (req, res, next) => {
     const { limit, offset } = getLimitOffset(req);
 
     const products = await Products.scope([
-      ...scopes
-      // { method: ['byCountry', req.user.countryId] }
+      ...scopes,
+      { method: ['byCountry', req.user.countryId] }
     ]).findAndCountAll({
       where: { userId: customerId },
       limit,

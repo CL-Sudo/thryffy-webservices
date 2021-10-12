@@ -1,7 +1,7 @@
 import { Products, FavouriteProducts } from '@models';
 import R from 'ramda';
 import _ from 'lodash';
-import { paginate } from '@utils';
+import { getCountryId, paginate } from '@utils';
 
 export const getOne = async (req, res, next) => {
   try {
@@ -30,7 +30,9 @@ export const addFavouriteProduct = async (req, res, next) => {
     const { productId } = req.body;
     const { id } = req.user;
 
-    const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+    const countryId = await getCountryId(req);
+
+    const product = await Products.scope([{ method: ['byCountry', countryId] }]).findOne({
       raw: true,
       where: { id: productId }
     });
@@ -66,30 +68,32 @@ export const youMayAlsoLike = async (req, res, next) => {
     const { productId } = req.params;
     const { limit, offset } = req.query;
 
-    const product = await Products.findOne({
-      where: { id: productId }
-    });
-    // const product = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+    const countryId = await getCountryId(req);
+
+    // const product = await Products.findOne({
     //   where: { id: productId }
     // });
+    const product = await Products.scope([{ method: ['byCountry', countryId] }]).findOne({
+      where: { id: productId }
+    });
 
     if (!product) throw new Error('Invalid productId given.');
 
-    const recommedations = await Products.findAll({
-      where: {
-        isPublished: true,
-        categoryId: product.categoryId
-      }
-    });
-    // const recommedations = await Products.scope([
-    //   'default',
-    //   { method: ['byCountry', req.user.countryId] }
-    // ]).findAll({
+    // const recommedations = await Products.findAll({
     //   where: {
     //     isPublished: true,
     //     categoryId: product.categoryId
     //   }
     // });
+    const recommedations = await Products.scope([
+      'default',
+      'availableForSale',
+      { method: ['byCountry', countryId] }
+    ]).findAll({
+      where: {
+        categoryId: product.categoryId
+      }
+    });
 
     const payload = _.shuffle(R.reject(p => p.id === Number(productId))(recommedations));
 

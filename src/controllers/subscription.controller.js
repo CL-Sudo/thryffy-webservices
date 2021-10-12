@@ -1,6 +1,7 @@
 import { Subscriptions, Packages, Users } from '@models';
 import { requestValidator } from '@validators';
 import Billplz from '@services/billplz.service';
+import { getCountryId } from '@utils/index';
 
 export const subscribe = async (req, res, next) => {
   try {
@@ -9,9 +10,16 @@ export const subscribe = async (req, res, next) => {
     const { id } = req.user;
     const { packageId } = req.body;
 
-    const pkg = await Packages.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
+    const countryId = await getCountryId(req);
+
+    const pkg = await Packages.scope([{ method: ['byCountry', countryId] }]).findOne({
       where: { id: packageId }
     });
+
+    if (!pkg) {
+      throw new Error('Invalid packageId given,, package not found');
+    }
+
     const user = await Users.findOne({ where: { id } });
 
     const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;

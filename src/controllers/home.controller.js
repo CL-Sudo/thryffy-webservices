@@ -1,14 +1,16 @@
 import R from 'ramda';
 import { shuffle } from 'lodash';
 import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
-import { paginate } from '@utils';
+import { getCountryId, paginate } from '@utils';
 import { Op } from 'sequelize';
 
 export const getBannersList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
 
-    const payload = await Banners.findAndCountAll({
+    const countryId = await getCountryId(req);
+
+    const payload = await Banners.scope([{ method: ['byCountry', countryId] }]).findAndCountAll({
       limit: Number(limit) || null,
       offset: Number(offset) || null
     });
@@ -24,12 +26,14 @@ export const getFeatureItemsList = async (req, res, next) => {
     const { limit, offset } = req.query;
     const id = R.pathOr('N/A', ['user', 'id'])(req);
 
+    const countryId = await getCountryId(req);
+
     const payload = await FeatureItems.findAll({
       include: [
         {
           model: Products,
           as: 'product',
-          where: { isPurchased: false, isPublished: true },
+          scope: ['availableForSale', { method: ['byCountry', countryId] }],
           include: [
             { model: Sizes, as: 'size' },
             { model: Categories, as: 'category' }
@@ -61,6 +65,8 @@ export const getCuratedList = async (req, res, next) => {
   try {
     const { id } = req.user;
     const { limit, offset } = req.query;
+
+    const countryId = await getCountryId(req);
 
     const preferences = await Preferences.findAll({ raw: true, where: { userId: id } });
 
@@ -107,7 +113,11 @@ export const getCuratedList = async (req, res, next) => {
       }
     });
 
-    const data = await Products.scope('productList').findAndCountAll({
+    const data = await Products.scope([
+      'productList',
+      'availableForSale',
+      { method: ['byCountry', countryId] }
+    ]).findAndCountAll({
       where,
       limit: Number(limit) || null,
       offset: Number(offset) || null
@@ -137,10 +147,7 @@ export const getCuratedList = async (req, res, next) => {
 export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const data = await Products.scope('productList').findAndCountAll({
-      where: {
-        isPublished: true
-      },
+    const data = await Products.scope(['productList', 'availableForSale']).findAndCountAll({
       limit: Number(limit) || null,
       offset: Number(offset) || null,
       order: [['createdAt', 'DESC']]

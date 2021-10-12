@@ -8,15 +8,18 @@ import { normaliseBrand } from '@utils/product.utils';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import { paginate } from '@utils/utils';
 import _ from 'lodash';
+import { getCountryId } from '@utils/index';
 
 export const home = async (req, res, next) => {
   try {
     requestValidator(req);
     const { type } = req.query;
 
+    const countryId = await getCountryId(req);
+
     const categories = await Categories.scope([
-      { method: ['home', type] }
-      // { method: ['byCountry', req.user.countryId] }
+      { method: ['home', type] },
+      { method: ['byCountry', countryId] }
     ]).findOne();
 
     await Promise.all(
@@ -53,6 +56,8 @@ export const discoverList = async (req, res, next) => {
 
     const id = R.pathOr('N/A', ['user', 'id'])(req);
 
+    const countryId = await getCountryId(req);
+
     const initWhere = [
       {},
       {
@@ -84,20 +89,20 @@ export const discoverList = async (req, res, next) => {
               [Op.like]: `%${keyword}%`
             }
           },
-          {
-            brand_id: [
-              Sequelize.literal(`
-              SELECT id FROM brands WHERE title LIKE '%${keyword}%'
-            `)
-            ]
-          }
           // {
           //   brand_id: [
           //     Sequelize.literal(`
-          //     SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${req.user.countryId}'
+          //     SELECT id FROM brands WHERE title LIKE '%${keyword}%'
           //   `)
           //   ]
           // }
+          {
+            brand_id: [
+              Sequelize.literal(`
+              SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${countryId}'
+            `)
+            ]
+          }
         ]
       })(param);
     };
@@ -146,10 +151,11 @@ export const discoverList = async (req, res, next) => {
       include
     };
 
-    const products = await Products.findAll(filter);
-    // const products = await Products.scope([{ method: ['byCountry', req.user.countryId] }]).findAll(
-    //   filter
-    // );
+    // const products = await Products.findAll(filter);
+    const products = await Products.scope([
+      'availableForSale',
+      { method: ['byCountry', countryId] }
+    ]).findAll(filter);
 
     const filterByPrice = R.ifElse(
       R.always(R.or(R.isNil(maxPrice), R.isNil(minPrice))),
@@ -204,37 +210,24 @@ export const searchBrand = async (req, res, next) => {
 
     const { keyword, limit, offset } = req.query;
 
+    const countryId = await getCountryId(req);
+
     if (!keyword) {
-      const brands = await Brands.findAndCountAll({
-        limit,
-        offset
-      });
-      // const brands = await Brands.scope([
-      //   { method: ['byCountry', req.user.countryId] }
-      // ]).findAndCountAll({
+      // const brands = await Brands.findAndCountAll({
       //   limit,
       //   offset
       // });
+      const brands = await Brands.scope([{ method: ['byCountry', countryId] }]).findAndCountAll({
+        limit,
+        offset
+      });
       return res.status(200).json({
         message: 'success',
         payload: brands
       });
     }
 
-    const brands = await Brands.findAndCountAll({
-      attributes: ['id', 'title'],
-      where: {
-        title: {
-          [Op.like]: `%${normaliseBrand(keyword)}%`
-        }
-      },
-      order: [['title', 'ASC']],
-      limit,
-      offset
-    });
-    // const brands = await Brands.scope([
-    //   { method: ['byCountry', req.user.countryId] }
-    // ]).findAndCountAll({
+    // const brands = await Brands.findAndCountAll({
     //   attributes: ['id', 'title'],
     //   where: {
     //     title: {
@@ -245,6 +238,17 @@ export const searchBrand = async (req, res, next) => {
     //   limit,
     //   offset
     // });
+    const brands = await Brands.scope([{ method: ['byCountry', countryId] }]).findAndCountAll({
+      attributes: ['id', 'title'],
+      where: {
+        title: {
+          [Op.like]: `%${normaliseBrand(keyword)}%`
+        }
+      },
+      order: [['title', 'ASC']],
+      limit,
+      offset
+    });
 
     return res.status(200).json({
       message: 'success',

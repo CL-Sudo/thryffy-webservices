@@ -7,7 +7,7 @@ const FeatureItems = SequelizeConnector.define(
   'FeatureItems',
   {
     id: primaryKey,
-    productId: foreignKey('product_id', 'products', false),
+    productId: foreignKey('product_id', 'products', { onDelete: 'CASCADE' }),
     ...AT_RECORDER,
     ...BY_RECORDER
   },
