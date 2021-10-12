@@ -1,5 +1,6 @@
 import Countries from '@models/countries.model';
 import geoip from 'geoip-lite';
+import * as _ from 'lodash';
 
 export * from './utils';
 export * from './auth.util';
@@ -20,7 +21,7 @@ export const getCountryId = async req => {
     return req.user.countryId;
   }
 
-  if (req.ip === '::1') {
+  if (req.ip === '::1' || _.includes(req.ip, '::ffff')) {
     const country = await Countries.findOne({ where: { code: 'MY' } });
     return country.id || null;
   }

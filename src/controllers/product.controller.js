@@ -73,7 +73,7 @@ export const youMayAlsoLike = async (req, res, next) => {
     // const product = await Products.findOne({
     //   where: { id: productId }
     // });
-    const product = await Products.scope([{ method: ['byCountry', countryId] }]).findOne({
+    const product = await Products.findOne({
       where: { id: productId }
     });
 

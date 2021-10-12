@@ -25,7 +25,7 @@ export const home = async (req, res, next) => {
     await Promise.all(
       R.map(async category => {
         await category.getListingCount();
-      }, categories.subCategories)
+      }, _.get(categories, 'subCategories', []))
     );
 
     return res.status(200).json({
