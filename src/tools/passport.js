@@ -62,11 +62,13 @@ passport.use(
 passport.use(
   'admin-login',
   new LocalStrategy(
-    { usernameField: 'email', passwordField: 'password' },
-    async (email, password, done) => {
+    { usernameField: 'email', passwordField: 'password', passReqToCallback: true },
+    async (req, email, password, done) => {
       try {
+        const { countryId } = req.body;
+
         const admin = await Admins.unscoped().findOne({
-          where: { email: _.toLower(email) }
+          where: { email: _.toLower(email), countryId }
         });
 
         if (!admin) return done(null, false, { message: "Admin account doesn't exist" });

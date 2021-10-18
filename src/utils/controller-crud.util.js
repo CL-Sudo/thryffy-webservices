@@ -69,8 +69,8 @@ export const readOne = (Model, req, { paranoid, include, scopes, attributes, whe
         attributes: attributes || getAttributes(req),
         paranoid: paranoid || getParanoid(req),
         order: order || getOrder(Model)(req),
-        timezone,
-        actionBy: req.authData.id
+        timezone
+        // actionBy: req.authData.id
       });
       if (!payload) return reject(new Error(`${Model.name} record not found`));
       return resolve(payload);

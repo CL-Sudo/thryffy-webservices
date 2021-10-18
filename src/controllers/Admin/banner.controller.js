@@ -12,6 +12,7 @@ export const create = async (req, res, next) => {
       if (Object.prototype.hasOwnProperty.call(files, 'banner')) {
         const uploaded = await uploadFileToS3(files.banner, S3.BANNER_URL);
         const payload = await Banners.create({
+          index: req.body.index,
           countryId: req.user.countryId,
           path: parsePathForDBStoring(uploaded.path)
         });
