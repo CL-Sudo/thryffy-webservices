@@ -48,7 +48,7 @@ const Countries = SequelizeConnector.define(
   }
 );
 
-// addScopesByAllFields(Countries, []);
+addScopesByAllFields(Countries, []);
 
 export { Countries };
 export default Countries;

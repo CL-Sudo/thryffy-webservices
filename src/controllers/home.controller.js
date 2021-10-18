@@ -3,6 +3,7 @@ import { shuffle } from 'lodash';
 import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
 import { getCountryId, paginate } from '@utils';
 import { Op } from 'sequelize';
+import * as _ from 'lodash';
 
 export const getBannersList = async (req, res, next) => {
   try {
@@ -28,12 +29,19 @@ export const getFeatureItemsList = async (req, res, next) => {
 
     const countryId = await getCountryId(req);
 
+    const productIds = await Products.scope([
+      'availableForSale',
+      { method: ['byCountry', countryId] }
+    ])
+      .findAll()
+      .then(instances => _.map(instances, 'id'));
+
     const payload = await FeatureItems.findAll({
+      where: { productId: productIds },
       include: [
         {
           model: Products,
           as: 'product',
-          scope: ['availableForSale', { method: ['byCountry', countryId] }],
           include: [
             { model: Sizes, as: 'size' },
             { model: Categories, as: 'category' }
@@ -147,7 +155,13 @@ export const getCuratedList = async (req, res, next) => {
 export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const data = await Products.scope(['productList', 'availableForSale']).findAndCountAll({
+
+    const countryId = await getCountryId(req);
+    const data = await Products.scope([
+      'productList',
+      'availableForSale',
+      { method: ['byCountry', countryId] }
+    ]).findAndCountAll({
       limit: Number(limit) || null,
       offset: Number(offset) || null,
       order: [['createdAt', 'DESC']]

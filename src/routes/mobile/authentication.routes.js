@@ -8,6 +8,7 @@ import { Countries, Users } from '@models';
 import { generateTopicName, unsubscribeTokensFromTopic } from '@services/notification.service';
 
 import NOTIFICATION from '@constants/notification.constant';
+import { getCountryId } from '@utils/index';
 
 const router = new Router();
 
@@ -54,10 +55,21 @@ router.get(
   },
   Controllers.facebookCallback
 );
-router.get(
-  '/google',
-  passport.authenticate('google', { scope: ['profile', 'email'], session: false })
-);
+
+router.get('/google', async (req, res, next) => {
+  try {
+    const countryId = await getCountryId(req);
+
+    return passport.authenticate('google', {
+      state: countryId,
+      scope: ['profile', 'email'],
+      session: false
+    })(req, res, next);
+  } catch (e) {
+    return next(e);
+  }
+});
+
 router.get(
   '/google/callback',
   passport.authenticate('google', { session: false }),

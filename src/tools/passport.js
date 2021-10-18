@@ -8,7 +8,7 @@ import _ from 'lodash';
 import R from 'ramda';
 import { getCookie } from '@utils/cookie.util';
 import * as Config from '@configs';
-import { Users, Admins } from '@models';
+import { Users, Admins, Countries } from '@models';
 import FacebookStrategy from 'passport-facebook';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { USER_TYPE } from '@constants';
@@ -20,12 +20,23 @@ const LocalStrategy = passportLocal.Strategy;
 passport.use(
   'mobile-login',
   new LocalStrategy(
-    { usernameField: 'email', passwordField: 'password' },
-    async (email, password, done) => {
+    { usernameField: 'email', passwordField: 'password', passReqToCallback: true },
+    async (req, email, password, done) => {
       try {
-        const userByEmail = await Users.unscoped().findOne({ where: { email: _.toLower(email) } });
+        const { countryCode } = req.body;
+
+        const country = await Countries.findOne({ where: { code: _.toUpper(countryCode) } });
+
+        if (!country) {
+          throw new Error(`Country code "${countryCode} not available`);
+        }
+
+        const userByEmail = await Users.unscoped().findOne({
+          where: { email: _.toLower(email), countryId: country.id }
+        });
+
         const userByUsername = await Users.unscoped().findOne({
-          where: { username: R.slice(1, R.Infinity)(email) }
+          where: { username: R.slice(1, R.Infinity)(email), countryId: country.id }
         });
 
         if (R.isNil(userByEmail) && R.isNil(userByUsername)) {
@@ -33,10 +44,7 @@ passport.use(
         }
 
         const user = userByEmail || userByUsername;
-        // if (_.toLower(process.env.NODE_ENV) !== 'dev') {
-        //   if (!user.isVerified)
-        //     return done(null, false, { message: `Please verify your email account` });
-        // }
+
         if (!user.active) return done(null, false, { message: 'This account is not active' });
 
         const validPassword = await user.comparePassword(password);
@@ -204,9 +212,10 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL}${process.env.GOOGLE_CALLBACK_URL}`
+      callbackURL: `${process.env.SERVER_URL}${process.env.GOOGLE_CALLBACK_URL}`,
+      passReqToCallback: true
     },
-    (token, tokenSecret, profile, done) => {
+    (req, token, tokenSecret, profile, done) => {
       try {
         return done(null, profile);
       } catch (error) {

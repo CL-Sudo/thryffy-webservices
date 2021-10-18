@@ -24,6 +24,7 @@ import * as validators from '@validators/discover.validator';
 import { getOne, youMayAlsoLike } from '@controllers/product.controller';
 
 import { getSellerDetail, getSellerCategories, getProducts } from '@controllers/seller.controller';
+import Countries from '@models/countries.model';
 
 const router = new Router();
 
@@ -55,5 +56,15 @@ router.all('/senangpay/redirect', senangpayRedirect);
 router.get('/seller/:sellerId/details', getSellerDetail);
 router.get('/seller/:sellerId/categories', getSellerCategories);
 router.get('/seller/:sellerId/products', getProducts);
+
+router.get('/country', async (req, res, next) => {
+  try {
+    const country = await Countries.findOne({ where: { code: req.query.countryCode || '' } });
+
+    res.status(200).json({ message: 'success', payload: country });
+  } catch (e) {
+    next(e);
+  }
+});
 
 export default router;

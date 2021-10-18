@@ -17,6 +17,7 @@ import { sendMail } from '@tools/sendgrid';
 import LISTENER_EVENT from '@constants/listener.constant';
 import EMAIL_TEMPLATE from '@templates/email.template';
 import AUTH_CONFIG from '@configs/auth.config';
+import { getCountryId } from '@utils/index';
 
 const assignUserType = user => type => R.assoc('type', type)(user);
 
@@ -52,7 +53,7 @@ const createFacebookUserAccount = provider =>
     }
   });
 
-const createGoogleUserAccount = async provider =>
+const createGoogleUserAccount = async (provider, countryId) =>
   new Promise(async (resolve, reject) => {
     const transaction = await sequelize.transaction();
     try {
@@ -60,6 +61,7 @@ const createGoogleUserAccount = async provider =>
       const email = _.get(provider, 'emails[0].value');
       const user = await Users.create(
         {
+          countryId,
           googleId,
           email,
           fullName: displayName,
@@ -356,23 +358,24 @@ export const facebookCallback = async (req, res) => {
 export const googleCallback = async (req, res) => {
   try {
     const { id: googleId } = req.user;
+    const { state: countryId } = req.query;
     const email = _.get(req, 'user.emails[0].value');
     let user = {};
 
-    user = await Users.findOne({
+    user = await Users.scope([{ method: ['byCountry', countryId] }]).findOne({
       where: { googleId }
     });
 
     if (_.isEmpty(user)) {
-      const existingUser = await Users.findOne({
+      const existingUser = await Users.scope([{ method: ['byCountry', countryId] }]).findOne({
         where: { email }
       });
       if (existingUser) {
         await existingUser.update({ googleId });
       } else {
-        await createGoogleUserAccount(req.user);
+        await createGoogleUserAccount(req.user, countryId);
       }
-      user = await Users.findOne({
+      user = await Users.scope([{ method: ['byCountry', countryId] }]).findOne({
         where: { googleId },
         include: ['notificationSetting', 'country']
       });
@@ -425,6 +428,8 @@ export const verifyOTP = async (req, res, next) => {
     await req.asyncValidationErrors();
     const { otp, email, username, password, phoneCountryCode, phoneNumber } = req.body;
 
+    const countryId = await getCountryId(req);
+
     const existingOTP = await Otps.findOne({ where: { phoneCountryCode, phoneNumber } });
 
     if (!existingOTP) {
@@ -451,6 +456,7 @@ export const verifyOTP = async (req, res, next) => {
       const user = await Users.create(
         {
           email,
+          countryId,
           password,
           phoneCountryCode,
           phoneNumber,

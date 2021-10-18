@@ -1,6 +1,6 @@
-import Countries from '@models/countries.model';
-import geoip from 'geoip-lite';
-import * as _ from 'lodash';
+import { Countries } from '@models';
+// import geoip from 'geoip-lite';
+// import * as _ from 'lodash';
 
 export * from './utils';
 export * from './auth.util';
@@ -21,14 +21,22 @@ export const getCountryId = async req => {
     return req.user.countryId;
   }
 
-  if (req.ip === '::1' || _.includes(req.ip, '::ffff')) {
-    const country = await Countries.findOne({ where: { code: 'MY' } });
-    return country.id || null;
+  const country = await Countries.findOne({ where: { code: req.query.countryCode || '' } });
+
+  if (!country) {
+    throw new Error('Invalid countryCode given.');
   }
 
-  const ipInfo = geoip.lookup(req.ip || '115.132.161.236');
+  return country.id;
 
-  return Countries.findOne({ where: { code: ipInfo.country } }).then(
-    result => result.get('id') || null
-  );
+  // if (req.ip === '::1' || _.includes(req.ip, '::ffff')) {
+  //   const country = await Countries.findOne({ where: { code: 'MY' } });
+  //   return country.id || null;
+  // }
+
+  // const ipInfo = geoip.lookup(req.ip || '115.132.161.236');
+
+  // return Countries.findOne({ where: { code: ipInfo.country } }).then(
+  //   result => result.get('id') || null
+  // );
 };

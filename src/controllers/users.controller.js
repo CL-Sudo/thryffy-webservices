@@ -1,15 +1,17 @@
 import { Users } from '@models';
 import { Op } from 'sequelize';
-import { paginate } from '@utils';
+import { getCountryId } from '@utils';
 import { requestValidator } from '@validators';
 
 export const search = async (req, res, next) => {
   try {
     requestValidator(req);
 
+    const countryId = await getCountryId(req);
+
     const { keyword, limit, offset } = req.query;
 
-    const users = await Users.findAll({
+    const result = await Users.scope([{ method: ['byCountry', countryId] }]).findAndCountAll({
       where: {
         [Op.or]: [
           {
@@ -23,15 +25,18 @@ export const search = async (req, res, next) => {
             }
           }
         ],
-        isVerified: true
-      }
+        isVerified: true,
+        active: true
+      },
+      limit: Number(limit) || null,
+      offset: Number(offset) || null
     });
 
     return res.status(200).json({
       message: 'success',
       payload: {
-        count: users.length,
-        rows: paginate(limit)(offset)(users)
+        count: result.count,
+        rows: result.rows
       }
     });
   } catch (e) {
