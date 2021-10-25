@@ -1,7 +1,9 @@
+const { COUNTRIES } = require('../../src/constants/countries.constant');
+
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     let [country] = await queryInterface.sequelize.query(
-      'SELECT id FROM countries WHERE code="MY"',
+      `SELECT id FROM countries WHERE code="${COUNTRIES.MALAYSIA.CODE}"`,
       {
         type: Sequelize.QueryTypes.SELECT
       }
@@ -11,7 +13,13 @@ module.exports = {
       if (!country) {
         const countryId = await queryInterface.bulkInsert(
           'countries',
-          [{ name: 'Malaysia', code: 'MY', currency_symbol: 'RM' }],
+          [
+            {
+              name: COUNTRIES.MALAYSIA.NAME,
+              code: COUNTRIES.MALAYSIA.CODE,
+              currency_symbol: COUNTRIES.MALAYSIA.CURRENCY_SYMBOL
+            }
+          ],
           { transaction }
         );
         country = { id: countryId };

@@ -6,7 +6,11 @@ import { requestValidator } from '@validators/index';
 export const addCommissionRate = async (req, res, next) => {
   try {
     requestValidator(req);
-    const { minPrice, maxPrice, commissionRate } = req.body;
+    const { minPrice, maxPrice, commissionRate, commissionPrice } = req.body;
+
+    if (commissionRate && commissionPrice) {
+      throw new Error('You cannot have commission rate and commission price at the same time.');
+    }
 
     const commission = await Commissions.scope([
       { method: ['byCountry', req.user.countryId] }

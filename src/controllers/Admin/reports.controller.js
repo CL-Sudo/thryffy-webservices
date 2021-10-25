@@ -137,7 +137,7 @@ export const exportOrderToExcel = async (req, res, next) => {
     worksheet.getRow(1).font = { bold: true };
 
     const dateRange = dateRangeQuery('createdAt')({ from, to });
-    const order = await SalesOrders.findAll({
+    const order = await SalesOrders.scope([{ method: ['byCountry', req.user.countryId] }]).findAll({
       where: { ...dateRange, deliveryStatus: DELIVERY_STATUS.COMPLETED },
       include: [
         { model: Users, as: 'seller' },
