@@ -58,56 +58,26 @@ export const discoverList = async (req, res, next) => {
 
     const countryId = await getCountryId(req);
 
-    const initWhere = [
-      {},
-      {
-        id: {
-          [Op.notIn]: [
-            Sequelize.literal(
-              `SELECT product_id FROM order_items
-              WHERE sales_order_id IN (
-                SELECT id FROM sales_orders
-                  WHERE
-                    payment_status = 'SUCCESS'
-              )`
-            )
-          ]
-        },
-        is_published: true
-      }
-    ];
-
-    const assignTitle = param => {
-      if (R.isNil(keyword)) {
-        return param;
-      }
-
-      return R.append({
-        [Op.or]: [
-          {
-            title: {
-              [Op.like]: `%${keyword}%`
-            }
-          },
-          // {
-          //   brand_id: [
-          //     Sequelize.literal(`
-          //     SELECT id FROM brands WHERE title LIKE '%${keyword}%'
-          //   `)
-          //   ]
-          // }
-          {
-            brand_id: [
-              Sequelize.literal(`
-              SELECT id FROM brands WHERE title LIKE '%${keyword}% AND country_id=${countryId}'
+    const where = {
+      ...(keyword
+        ? {
+            [Op.or]: [
+              {
+                title: {
+                  [Op.like]: `%${keyword}%`
+                }
+              },
+              {
+                brandId: [
+                  Sequelize.literal(`
+              SELECT id FROM brands WHERE title LIKE "%${keyword}%" AND country_id=${countryId}
             `)
+                ]
+              }
             ]
           }
-        ]
-      })(param);
+        : {})
     };
-
-    const where = R.pipe(assignTitle)(initWhere);
 
     const childIds = categoryId ? await getChildIds(categoryId) : null;
 
@@ -151,9 +121,9 @@ export const discoverList = async (req, res, next) => {
       include
     };
 
-    // const products = await Products.findAll(filter);
     const products = await Products.scope([
       'availableForSale',
+      req.user ? { method: ['excludeMyProducts', req.user.id] } : {},
       { method: ['byCountry', countryId] }
     ]).findAll(filter);
 
@@ -163,17 +133,7 @@ export const discoverList = async (req, res, next) => {
       R.filter(product => product.displayPrice >= minPrice && product.displayPrice <= maxPrice)
     );
 
-    const filterBySellerSubscription = R.ifElse(
-      product => !R.isNil(R.path(['seller', 'subscription'], product)),
-      R.filter(instance => instance.seller.subscription.expiryDate > new Date()),
-      R.identity
-    );
-
-    const filteredProducts = R.pipe(
-      filterBySellerSubscription,
-      R.filter(product => product.isPublished && !product.isPurchased),
-      filterByPrice
-    )(products);
+    const filteredProducts = R.pipe(filterByPrice)(products);
 
     const sorter = R.cond([
       [R.always(order === 'RELEVANCE'), _.shuffle],
@@ -213,10 +173,6 @@ export const searchBrand = async (req, res, next) => {
     const countryId = await getCountryId(req);
 
     if (!keyword) {
-      // const brands = await Brands.findAndCountAll({
-      //   limit,
-      //   offset
-      // });
       const brands = await Brands.scope([{ method: ['byCountry', countryId] }]).findAndCountAll({
         limit,
         offset
@@ -227,17 +183,6 @@ export const searchBrand = async (req, res, next) => {
       });
     }
 
-    // const brands = await Brands.findAndCountAll({
-    //   attributes: ['id', 'title'],
-    //   where: {
-    //     title: {
-    //       [Op.like]: `%${normaliseBrand(keyword)}%`
-    //     }
-    //   },
-    //   order: [['title', 'ASC']],
-    //   limit,
-    //   offset
-    // });
     const brands = await Brands.scope([{ method: ['byCountry', countryId] }]).findAndCountAll({
       attributes: ['id', 'title'],
       where: {

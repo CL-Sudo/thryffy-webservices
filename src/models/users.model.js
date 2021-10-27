@@ -27,6 +27,7 @@ import { NotificationSettings } from '@models/notification_settings.model';
 
 import R from 'ramda';
 import * as _ from 'lodash';
+import { Op } from 'sequelize';
 import { PAYMENT_STATUS, DELIVERY_STATUS } from '@constants';
 import { NON_MEMBER_MAX_LISTING } from '@constants/subscription.constant';
 import Subscriptions from './subscriptions.model';
@@ -315,6 +316,17 @@ const Users = SequelizeConnector.define(
             as: 'buyerReviews'
           }
         ]
+      },
+      excludeMe(userId) {
+        return {
+          where: userId
+            ? {
+                id: {
+                  [Op.ne]: userId
+                }
+              }
+            : {}
+        };
       }
     },
     hooks: {

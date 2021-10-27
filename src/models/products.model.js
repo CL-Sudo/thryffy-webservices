@@ -18,6 +18,7 @@ import { Brands } from '@models/brands.model';
 import { Sizes } from '@models/sizes.model';
 import { Conditions } from '@models/conditions.model';
 import R from 'ramda';
+import { Op } from 'sequelize';
 
 const Products = SequelizeConnector.define(
   'Products',
@@ -222,7 +223,18 @@ const Products = SequelizeConnector.define(
         }
       },
       byCountry(countryId) {
-        return { where: { countryId: countryId || null } };
+        return { where: { countryId } };
+      },
+      excludeMyProducts(userId) {
+        return {
+          where: userId
+            ? {
+                userId: {
+                  [Op.ne]: userId
+                }
+              }
+            : {}
+        };
       }
     },
     hooks: {

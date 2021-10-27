@@ -114,7 +114,7 @@ export const addProduct = async (req, res, next) => {
             if (!size) throw new Error('Invalid sizeId given');
           }
 
-          const brandId = await getProductBrandId(brand);
+          const brandId = await getProductBrandId(brand, countryId);
 
           const extraCharges = await getOneProductShippingFee(categoryId, sizeId);
 
@@ -319,7 +319,7 @@ export const updateProduct = async (req, res, next) => {
         colors
       );
 
-      const brandId = await getProductBrandId(brand);
+      const brandId = await getProductBrandId(brand, countryId);
 
       await Sequelize.transaction(async transaction => {
         if (colorsToBeAdded.length > 0) {

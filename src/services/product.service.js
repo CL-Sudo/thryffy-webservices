@@ -8,7 +8,6 @@ import { normaliseBrand } from '@utils/product.utils';
 import { Op } from 'sequelize';
 import Parcel from '@constants/parcel_types.constant';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
-import { parsePathForDeleting } from '@utils/s3.util';
 import SHIPPING from '@constants/shipping.constant';
 import CATEGORY from '@constants/category.constant';
 
@@ -188,11 +187,11 @@ export const setThumbnail = (productId, index) =>
  *
  * @param {String} brand
  */
-export const getProductBrandId = async brand =>
+export const getProductBrandId = async (brand, countryId) =>
   new Promise(async (resolve, reject) => {
     try {
       const normalisedBrand = normaliseBrand(brand);
-      const existingBrand = await Brands.findOne({
+      const existingBrand = await Brands.scope({ method: ['byCountry', countryId] }).findOne({
         where: {
           title: {
             [Op.like]: `%${normalisedBrand}%`
@@ -201,7 +200,7 @@ export const getProductBrandId = async brand =>
       });
 
       if (!existingBrand) {
-        const newBrand = await Brands.create({ title: normalisedBrand });
+        const newBrand = await Brands.create({ title: normalisedBrand, countryId });
         return resolve(newBrand.id);
       }
 
