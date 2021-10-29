@@ -8,6 +8,6 @@ export const COUNTRIES = {
   BRUNEI: {
     NAME: 'Brunei',
     CODE: 'BN',
-    CURRENCY_SYMBOL: '$'
+    CURRENCY_SYMBOL: 'B$'
   }
 };
