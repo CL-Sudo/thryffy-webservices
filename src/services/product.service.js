@@ -19,15 +19,21 @@ import CATEGORY from '@constants/category.constant';
 export const getShippingFee = async productIds =>
   new Promise(async (resolve, reject) => {
     try {
+      const product1 = await Products.findOne({ where: { id: productIds[0] } });
+
       if (productIds.length === 2) {
-        const shippingFee = await ShippingFees.findOne({
+        const shippingFee = await ShippingFees.scope([
+          { method: ['byCountry', product1.countryId] }
+        ]).findOne({
           where: { type: Parcel.TWO_ITEM_LARGE_PARCEL }
         });
         return resolve(shippingFee.dataValues);
       }
 
       if (productIds.length > 2) {
-        const shippingFee = await ShippingFees.findOne({
+        const shippingFee = await ShippingFees.scope([
+          { method: ['byCountry', product1.countryId] }
+        ]).findOne({
           where: { type: Parcel.THREE_ITEM_LARGE_PARCEL }
         });
         return resolve(shippingFee.dataValues);
@@ -58,15 +64,21 @@ export const getShippingFee = async productIds =>
 
       if (product.category.title === CATEGORY.SHOES && root.title !== CATEGORY.KIDS) {
         if (Number(product.size.uk) > SHIPPING.MAX_SHOES_SIZE_FOR_MEDIUM_PARCEL) {
-          const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.LARGE_PARCEL } });
+          const shippingFee = await ShippingFees.scope([
+            { method: ['byCountry', product.countryId] }
+          ]).findOne({ where: { type: Parcel.LARGE_PARCEL } });
           return resolve(shippingFee.dataValues);
         }
-        const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
+        const shippingFee = await ShippingFees.scope([
+          { method: ['byCountry', product1.countryId] }
+        ]).findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
         return resolve(shippingFee.dataValues);
       }
 
       if (product.category.title === CATEGORY.SHOES && root.title === CATEGORY.KIDS) {
-        const shippingFee = await ShippingFees.findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
+        const shippingFee = await ShippingFees.scope([
+          { method: ['byCountry', product1.countryId] }
+        ]).findOne({ where: { type: Parcel.MEDIUM_PARCEL } });
         return resolve(shippingFee.dataValues);
       }
 
@@ -236,14 +248,18 @@ export const getOneProductShippingFee = (categoryId, sizeId) =>
       const size = await Sizes.findOne({ where: { id: sizeId } });
 
       if (size.uk > SHIPPING.MAX_SHOES_SIZE_FOR_MEDIUM_PARCEL) {
-        const largeParcelShippingFee = await ShippingFees.findOne({
+        const largeParcelShippingFee = await ShippingFees.scope([
+          { method: ['byCountry', category.countryId] }
+        ]).findOne({
           where: { type: Parcel.LARGE_PARCEL }
         });
 
         return resolve(largeParcelShippingFee.dataValues);
       }
 
-      const mediumParcelShippingFee = await ShippingFees.findOne({
+      const mediumParcelShippingFee = await ShippingFees.scope([
+        { method: ['byCountry', category.countryId] }
+      ]).findOne({
         where: { type: Parcel.MEDIUM_PARCEL }
       });
 

@@ -1,12 +1,13 @@
 import { SequelizeConnector, Sequelize } from '@configs/sequelize-connector.config';
 import { addScopesByAllFields, search } from '@utils/sequelize-scopes.util';
-import { AT_RECORDER, BY_RECORDER, primaryKey } from '@constants/sequelize.constant';
+import { AT_RECORDER, BY_RECORDER, foreignKey, primaryKey } from '@constants/sequelize.constant';
 import { parseParanoidToIncludes } from '@utils/sequelize-hooks.util';
 
 const ShippingFees = SequelizeConnector.define(
   'ShippingFees',
   {
     id: primaryKey,
+    countryId: foreignKey('country_id', 'countries', { onDelete: 'SET NULL' }),
     price: {
       type: Sequelize.DECIMAL(10, 2)
     },
@@ -32,7 +33,10 @@ const ShippingFees = SequelizeConnector.define(
     tableName: 'shipping_fees',
     underscored: false,
     scopes: {
-      search: params => search(ShippingFees, params, [])
+      search: params => search(ShippingFees, params, []),
+      byCountry(countryId) {
+        return { where: { countryId } };
+      }
     },
     hooks: {
       beforeFind: query => {

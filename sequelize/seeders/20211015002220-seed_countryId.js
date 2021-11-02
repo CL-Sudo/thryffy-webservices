@@ -28,78 +28,85 @@ module.exports = {
         queryInterface.bulkUpdate(
           'banners',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'brands',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'commission_free_campaigns',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'commissions',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'marketing_notifications',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'packages',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'products',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'sales_orders',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'users',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'categories',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
           { transaction }
         ),
         queryInterface.bulkUpdate(
           'admins',
           { country_id: country.id },
-          {},
-          // { country_id: null },
+          // {},
+          { country_id: null },
+          { transaction }
+        ),
+        queryInterface.bulkUpdate(
+          'shipping_fees',
+          { country_id: country.id },
+          // {},
+          { country_id: null },
           { transaction }
         )
       ]);
