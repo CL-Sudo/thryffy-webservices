@@ -92,6 +92,7 @@
     "sequelize-hierarchy": "^2.0.4",
     "sequelize-slugify": "^0.7.0",
     "shortid": "^2.2.15",
+    "tookan-api": "^1.0.4",
     "tree-model": "^1.0.7",
     "twilio": "^3.42.2",
     "typy": "^3.3.0",

@@ -68,9 +68,9 @@ export const billplzCallback = async (req, res, next) => {
           const productIds = orderItems.map(instance => instance.product.id);
 
           await Promise.all(
-            orderItems.map(async instance => {
-              await instance.product.update({ isPurchased: true, soldAt: now }, transaction);
-            })
+            orderItems.map(instance =>
+              instance.product.update({ isPurchased: true, soldAt: now }, transaction)
+            )
           );
 
           const { seller } = order.orderItems[0].product;
