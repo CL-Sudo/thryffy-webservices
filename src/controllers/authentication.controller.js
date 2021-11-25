@@ -244,9 +244,9 @@ export const mobileRevoke = async (req, res, next) => {
             return next(new Error('Account is not verified'));
           }
           const token = await generateJWT({
-            id: user.id,
+            id: payload.id,
             type: USER_TYPE.CUSTOMER,
-            countryId: user.countryId
+            countryId: payload.countryId
           });
           const rf = payload.get('refreshToken');
 
