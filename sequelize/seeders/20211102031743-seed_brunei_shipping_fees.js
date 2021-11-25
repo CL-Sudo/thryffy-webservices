@@ -1,3 +1,4 @@
+const { BRUNEI_FEE } = require('@constants/shipping.constant');
 const { COUNTRIES } = require('../../src/constants/countries.constant');
 
 module.exports = {
@@ -10,20 +11,16 @@ module.exports = {
         }
       );
 
-      const shippingFees = await queryInterface.sequelize.query(`select * from shipping_fees`, {
-        type: Sequelize.QueryTypes.SELECT
-      });
-
       await queryInterface.bulkInsert(
         'shipping_fees',
-        shippingFees.map(instance => ({
-          country_id: brunei.id,
-          price: instance.price,
-          markup_price: instance.markup_price,
-          actual_price: instance.actual_price,
-          parcel_name: instance.parcel_name,
-          type: instance.type
-        })),
+        [
+          {
+            country_id: brunei.id,
+            price: BRUNEI_FEE.SHIPPING,
+            markup_price: 4,
+            actual_price: 8
+          }
+        ],
         { transaction }
       );
     });

@@ -9,3 +9,9 @@ export default {
 
   DISPLAY_SHIPPING_FEE_FOR_3_ITEMS: 4.0
 };
+
+export const BRUNEI_FEE = {
+  SHIPPING: 5.0,
+
+  TRANSACTION: 1.0
+};

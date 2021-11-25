@@ -2,6 +2,7 @@ import { Products, ShippingFees } from '@models';
 import R from 'ramda';
 import { getShippingFee } from '@services';
 import CHARGE from '@constants/shipping.constant';
+import { COUNTRIES } from '@constants/countries.constant';
 
 export const getPriceSummary = async productIds =>
   new Promise(async (resolve, reject) => {
@@ -87,7 +88,19 @@ export const getPriceSummary = async productIds =>
           // const { subTotal } = summaryObj;
           // const shippingFee = summaryObj.shippingFee.price;
 
-          const newTax = CHARGE.TRANSACTION_FEE;
+          let newTax = 0;
+
+          const product = await Products.findOne({
+            include: ['country'],
+            where: { id: productIds[0] }
+          });
+
+          if (product.country.code === COUNTRIES.MALAYSIA.CODE) {
+            newTax = CHARGE.TRANSACTION_FEE;
+          } else if (product.country.code === COUNTRIES.BRUNEI.CODE) {
+            newTax = 1 + 0.05 * summaryObj.total;
+          }
+
           // const newTax = (subTotal + shippingFee) * CHARGE.TAX_PERCENTAGE + CHARGE.TRANSACTION_FEE;
 
           const newTotal = R.add(newTax, total);

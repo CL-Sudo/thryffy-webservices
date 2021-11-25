@@ -10,6 +10,7 @@ import Parcel from '@constants/parcel_types.constant';
 import { defaultExcludeFields } from '@constants/sequelize.constant';
 import SHIPPING from '@constants/shipping.constant';
 import CATEGORY from '@constants/category.constant';
+import { COUNTRIES } from '@constants/countries.constant';
 
 /**
  *
@@ -19,7 +20,18 @@ import CATEGORY from '@constants/category.constant';
 export const getShippingFee = async productIds =>
   new Promise(async (resolve, reject) => {
     try {
-      const product1 = await Products.findOne({ where: { id: productIds[0] } });
+      const product1 = await Products.findOne({
+        include: ['country'],
+        where: { id: productIds[0] }
+      });
+
+      if (product1.country.code === COUNTRIES.BRUNEI.CODE) {
+        const bruneiShippingFee = await ShippingFees.findOne({
+          where: { countryId: product1.country.id }
+        });
+
+        return resolve(bruneiShippingFee.get());
+      }
 
       if (productIds.length === 2) {
         const shippingFee = await ShippingFees.scope([
@@ -233,13 +245,15 @@ export const getOneProductShippingFee = (categoryId, sizeId) =>
     try {
       const category = await Categories.findOne({
         where: { id: categoryId },
-        include: [
-          {
-            model: ShippingFees,
-            as: 'shippingFee'
-          }
-        ]
+        include: ['shippingFee', 'country']
       });
+
+      if (category.country.code === COUNTRIES.BRUNEI.CODE) {
+        const bruneiShippingFee = await ShippingFees.findOne({
+          where: { countryId: category.country.id }
+        });
+        return resolve(bruneiShippingFee.get());
+      }
 
       if (category.title !== CATEGORY.SHOES) {
         return resolve(category.shippingFee);
