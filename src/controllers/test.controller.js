@@ -1,5 +1,6 @@
 import { createDeliveryTask } from '@services/tookan.service';
 import { getShippingFee, getOneProductShippingFee } from '@services/product.service';
+import { generateOrder } from '@services/pay-beep.service';
 
 export const test = async (req, res, next) => {
   try {
@@ -17,6 +18,9 @@ export const test = async (req, res, next) => {
     // });
 
     // console.log(`response`, response.data);
+
+    const response = await generateOrder({ orderId: 2, orderAmount: 10.0 });
+    console.log(`response`, response);
 
     return res.status(404).json({
       message: 'Not Found'

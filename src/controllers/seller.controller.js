@@ -25,7 +25,8 @@ import {
   Categories,
   DeliverySlips,
   Commissions,
-  CommissionFreeCampaigns
+  CommissionFreeCampaigns,
+  Addresses
 } from '@models';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 
@@ -41,6 +42,7 @@ import { Op } from 'sequelize';
 import { uploadFileToS3 } from '@tools/s3';
 import S3_CONFIG from '@configs/s3.config';
 import { uploadFiles } from '@tools/multer.tool';
+import { createDeliveryTask } from '@services/tookan.service';
 
 const { AWS_S3_URL } = process.env;
 
@@ -702,6 +704,52 @@ export const getProductCommission = async (req, res, next) => {
         commission
       }
     });
+  } catch (e) {
+    return next(e);
+  }
+};
+
+export const schedulePickupDelivery = async (req, res, next) => {
+  try {
+    const { timeSlot, orderId } = req.body;
+
+    const order = await SalesOrders.findOne({
+      where: { id: orderId },
+      include: [
+        'buyer',
+        {
+          model: Users,
+          as: 'seller',
+          include: [{ model: Addresses, as: 'addresses', where: { isDefault: true } }]
+        }
+      ]
+    });
+
+    if (req.user.id !== order.sellerId) {
+      throw new Error('You are not allowed to perform this action.');
+    }
+
+    const buyerAddress = await Addresses.findOne({ where: { id: order.addressId } });
+
+    const response = await createDeliveryTask({
+      orderId,
+      description: 'TEST ONLY',
+      buyerName: order.buyer.fullName || order.buyer.username,
+      buyerPhoneNo: order.buyer.completePhoneNumber,
+      buyerAddress: buyerAddress.stringified,
+      deliveryDateTime: timeSlot,
+      sellerPhoneNo: order.seller.completePhoneNumber,
+      sellerName: order.seller.fullName || order.seller.username,
+      sellerAddress: order.seller.addresses[0].stringified,
+      pickupDateTime: timeSlot
+    });
+
+    await order.update({
+      deliveryStatus: DELIVERY_STATUS.SHIPPED,
+      deliveryTrackingUrl: response.data.data.delivery_tracing_link
+    });
+
+    return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
   }

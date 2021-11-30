@@ -386,7 +386,8 @@ export const senangpayCallback = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({ message: 'success' });
+    return res.send('OK');
+    // return res.status(200).json({ message: 'success' });
   } catch (e) {
     return next(e);
   }
@@ -456,5 +457,16 @@ export const senangpayRedirect = async (req, res) => {
         );
       </script>
     `);
+  }
+};
+
+export const beepPayCallback = async (req, res, next) => {
+  try {
+    console.log(`req.body`, req.body);
+    console.log(`req.query`, req.query);
+    console.log(`req.params`, req.params);
+    return res.status(200).send('OK');
+  } catch (e) {
+    return next(e);
   }
 };

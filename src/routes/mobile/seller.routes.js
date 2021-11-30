@@ -9,7 +9,8 @@ import {
   updateProduct,
   publication,
   getSellerCategories,
-  getProductCommission
+  getProductCommission,
+  schedulePickupDelivery
 } from '@controllers/seller.controller';
 import { getShippingFeeValidator } from '@validators/seller.validator';
 import { multerMiddleware } from '@middlewares/multer.middleware';
@@ -22,6 +23,7 @@ router.patch('/product/:productId/publication', publication);
 router.get('/shipping-fee', getShippingFeeValidator, getProductShippingFee);
 router.patch('/mark-as-shipped', multerMiddleware, markAsShipped);
 router.get('/product-commission', getProductCommission);
+router.post('/schedule-pickup-delivery', schedulePickupDelivery);
 
 router.get('/:sellerId/products', getProducts);
 router.get('/:sellerId/details', getSellerDetail);

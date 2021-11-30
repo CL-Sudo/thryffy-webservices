@@ -82,6 +82,10 @@ const SalesOrders = SequelizeConnector.define(
       type: Sequelize.TEXT,
       field: 'delivery_tracking_no'
     },
+    deliveryTrackingUrl: {
+      type: Sequelize.TEXT,
+      field: 'delivery_tracking_url'
+    },
     subTotal: {
       type: Sequelize.DECIMAL(10, 2),
       field: 'sub_total'
