@@ -386,7 +386,7 @@ export const senangpayCallback = async (req, res, next) => {
       }
     });
 
-    return res.status(200).json({ message: 'success' });
+    return res.send('OK');
   } catch (e) {
     return next(e);
   }
