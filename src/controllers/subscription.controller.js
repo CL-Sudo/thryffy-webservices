@@ -1,7 +1,9 @@
-import { Subscriptions, Packages, Users } from '@models';
+import { Subscriptions, Packages, Users, Countries } from '@models';
 import { requestValidator } from '@validators';
 import Billplz from '@services/billplz.service';
 import { getCountryId } from '@utils/index';
+import { COUNTRIES } from '@constants/countries.constant';
+import { getBeepPayPaymentHTML } from '@services/pay-beep.service';
 
 export const subscribe = async (req, res, next) => {
   try {
@@ -11,6 +13,8 @@ export const subscribe = async (req, res, next) => {
     const { packageId } = req.body;
 
     const countryId = await getCountryId(req);
+
+    const country = await Countries.findOne({ where: { id: countryId } });
 
     const pkg = await Packages.scope([{ method: ['byCountry', countryId] }]).findOne({
       where: { id: packageId }
@@ -22,21 +26,34 @@ export const subscribe = async (req, res, next) => {
 
     const user = await Users.findOne({ where: { id } });
 
-    const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
-    const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
+    if (country.code === COUNTRIES.MALAYSIA.CODE) {
+      const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
+      const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
 
-    const billplz = new Billplz();
-    const response = await billplz.createBill({
-      amount: pkg.price,
-      callbackUrl: `${serverUrl}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
-      email: user.email,
-      mobile: user.completePhoneNumber,
-      name: user.fullName || user.username || user.email,
-      itemName: `Package ${pkg.title}`,
-      redirectUrl: `${serverUrl}/api/publics/subscriptions/redirect?userId=${id}`
-    });
+      const billplz = new Billplz();
+      const response = await billplz.createBill({
+        amount: pkg.price,
+        callbackUrl: `${serverUrl}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
+        email: user.email,
+        mobile: user.completePhoneNumber,
+        name: user.fullName || user.username || user.email,
+        itemName: `Package ${pkg.title}`,
+        redirectUrl: `${serverUrl}/api/publics/subscriptions/redirect?userId=${id}`
+      });
 
-    return res.status(200).json({ message: 'success', payload: response.data });
+      return res.status(200).json({ message: 'success', payload: response.data });
+    }
+
+    if (country.code === COUNTRIES.BRUNEI.CODE) {
+      const html = await getBeepPayPaymentHTML({
+        orderAmount: pkg.price,
+        data: { userId: user.id, packageId: pkg.id }
+      });
+
+      return res
+        .status(200)
+        .json({ message: 'success', payload: { html, description: `Subscribing ${pkg.title}` } });
+    }
   } catch (e) {
     return next(e);
   }

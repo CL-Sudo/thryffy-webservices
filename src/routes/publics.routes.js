@@ -7,7 +7,7 @@ import {
   trackingMoreWebHook,
   senangpayCallback,
   senangpayRedirect,
-  beepPayCallback
+  beepPayRedirect
 } from '@controllers/public.controller';
 
 import {
@@ -68,6 +68,6 @@ router.get('/country', async (req, res, next) => {
   }
 });
 
-router.all('/beep-pay-callback', beepPayCallback);
+router.all('/beep-pay-redirect', beepPayRedirect);
 
 export default router;

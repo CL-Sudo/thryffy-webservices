@@ -30,6 +30,117 @@ import { sendCloudMessage } from '@services/notification.service';
 
 import { DELIVERY } from '@templates/notification.template';
 
+import queryString from 'querystring';
+
+const BEEPPAY_PAYMENT_STATUS = {
+  SUCCESS: 'success',
+  FAILED: 'failure'
+};
+
+const parsePayBeepReqeustQuery = requestQuery => {
+  const trasactionObj = JSON.parse(
+    _.chain(requestQuery)
+      .omit(['Type', 'order_id'])
+      .map((o, k) => k + o)
+      .take()
+      .value()
+  );
+
+  return { Type: requestQuery.Type, order_id: requestQuery.order_id, ...trasactionObj };
+};
+
+const onSuccessSubscribing = async (userId, packageId) =>
+  sequelize.transaction(async trasaction => {
+    const currentSubscription = await Subscriptions.findOne({ where: { userId }, trasaction });
+
+    if (currentSubscription) {
+      await currentSubscription.update(
+        {
+          packageId
+        },
+        { trasaction }
+      );
+    } else {
+      await Subscriptions.create(
+        {
+          packageId,
+          userId
+        },
+        { trasaction }
+      );
+    }
+
+    const subscription = await Subscriptions.findOne({
+      trasaction,
+      where: { userId },
+      include: [
+        { model: Users, as: 'user' },
+        { model: Packages, as: 'package' }
+      ]
+    });
+
+    subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
+  });
+
+const onPaymentForItemSuccess = async (orderId, transactionId, paymentMethod = null) =>
+  sequelize.transaction(async transaction => {
+    const now = new Date();
+    const order = await SalesOrders.scope({
+      method: ['orderDetails', orderId]
+    }).findOne({ where: { id: orderId }, transaction });
+
+    await order.update(
+      {
+        paymentStatus: PAYMENT_STATUS.SUCCESS,
+        deliveryStatus: DELIVERY_STATUS.TO_SHIP,
+        transactionId,
+        paidAt: now,
+        paymentMethod: paymentMethod || PAYMENT_METHOD.ONLINE_BANKING
+      },
+      { transaction }
+    );
+
+    const orderItems = await OrderItems.findAll({
+      where: { salesOrderId: orderId },
+      include: [
+        {
+          model: Products,
+          as: 'product'
+        }
+      ],
+      transaction
+    });
+
+    const productIds = orderItems.map(instance => instance.product.id);
+
+    await Promise.all(
+      orderItems.map(instance =>
+        instance.product.update({ isPurchased: true, soldAt: now }, transaction)
+      )
+    );
+
+    const { seller } = order.orderItems[0].product;
+    const payload = R.assoc('seller', seller)(order.dataValues);
+
+    cartListener.emit(LISTENER.CART.PAYMENT_MADE, productIds, payload);
+  });
+
+const onPaymentForItemFailed = async orderId =>
+  sequelize.transaction(async transaction => {
+    const order = await SalesOrders.scope({
+      method: ['orderDetails', orderId]
+    }).findOne({ where: { id: orderId }, transaction });
+
+    await order.update(
+      {
+        paymentStatus: PAYMENT_STATUS.FAILED
+      },
+      { transaction }
+    );
+
+    cartListener.emit(LISTENER.CART.PAYMENT_NOT_MADE, orderId);
+  });
+
 export const billplzCallback = async (req, res, next) => {
   try {
     const { orderId } = req.query;
@@ -460,13 +571,90 @@ export const senangpayRedirect = async (req, res) => {
   }
 };
 
-export const beepPayCallback = async (req, res, next) => {
+export const beepPayRedirect = async (req, res) => {
   try {
-    console.log(`req.body`, req.body);
-    console.log(`req.query`, req.query);
-    console.log(`req.params`, req.params);
-    return res.status(200).send('OK');
+    const {
+      Type: paymentStatus,
+      order_id: data,
+      transaction,
+      sourceOfFunds
+    } = parsePayBeepReqeustQuery(req.query);
+
+    const { orderId = null, packageId = null, userId = null } = queryString.parse(data);
+
+    // For Merchandises
+    if (orderId) {
+      if (paymentStatus === BEEPPAY_PAYMENT_STATUS.SUCCESS) {
+        await onPaymentForItemSuccess(
+          orderId,
+          _.get(transaction, 'acquirer.transactionId', ''),
+          _.get(sourceOfFunds, 'provided.card.fundingMethod', '')
+        );
+
+        const order = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
+
+        return res.status(200).send(`
+        <script>
+          window.ReactNativeWebView.postMessage(
+            ${JSON.stringify(
+              JSON.stringify({
+                status: true,
+                payload: order.get()
+              })
+            )}
+          );
+        </script>
+      `);
+      }
+
+      if (paymentStatus === BEEPPAY_PAYMENT_STATUS.FAILED) {
+        await onPaymentForItemFailed(orderId);
+
+        const order = await SalesOrders.scope({ method: ['orderDetails', orderId] }).findOne();
+
+        return res.status(200).send(`
+        <script>
+          window.ReactNativeWebView.postMessage(
+            ${JSON.stringify(JSON.stringify({ status: false, payload: order.get() }))}
+          );
+        </script>
+      `);
+      }
+    }
+
+    // For Subscription
+    if (packageId) {
+      await onSuccessSubscribing(userId, packageId);
+
+      const subscription = await Subscriptions.findOne({
+        where: { userId },
+        include: [{ model: Packages, as: 'package' }]
+      });
+
+      const payload = R.isNil(subscription)
+        ? { paymentStatus: PAYMENT_STATUS.FAILED }
+        : { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.get() };
+
+      return res.status(200).send(`
+        <script>
+          window.ReactNativeWebView.postMessage(
+            ${JSON.stringify(
+              JSON.stringify({
+                status: true,
+                payload
+              })
+            )}
+          );
+        </script>
+      `);
+    }
   } catch (e) {
-    return next(e);
+    return res.status(200).send(`
+      <script>
+        window.ReactNativeWebView.postMessage(
+          ${JSON.stringify(JSON.stringify({ status: false, message: e.message }))}
+        );
+      </script>
+    `);
   }
 };

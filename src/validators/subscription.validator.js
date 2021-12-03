@@ -6,7 +6,7 @@ export const subscribeValidator = [
     .exists()
     .isLength({ min: 1 })
     .custom(async (packageId, { req }) => {
-      const pck = await Packages.scope([{ method: ['byProduct', req.user.countryId] }]).findOne({
+      const pck = await Packages.scope([{ method: ['byCountry', req.user.countryId] }]).findOne({
         where: { id: packageId }
       });
 

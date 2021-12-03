@@ -5,7 +5,8 @@ import {
   Addresses,
   SalesOrders,
   OrderItems,
-  FavouriteProducts
+  FavouriteProducts,
+  Countries
 } from '@models';
 import * as services from '@services/checkout.service';
 import R from 'ramda';
@@ -13,6 +14,8 @@ import { PAYMENT_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
 import { getCountryId, paginate } from '@utils';
+import { COUNTRIES } from '@constants/countries.constant';
+import { getBeepPayPaymentHTML } from '@services/pay-beep.service';
 
 import Billplz from '@services/billplz.service';
 
@@ -192,10 +195,12 @@ export const pay = async (req, res, next) => {
 
     const countryId = await getCountryId(req);
 
+    const country = await Countries.findOne({ where: { id: countryId } });
+
     const { subTotal, tax, total, shippingFeeId } = await services.getPriceSummary(productIds);
 
     const orderId = await Sequelize.transaction(async transaction => {
-      const product = await Products.findOne({ where: { id: productIds[0] } });
+      const product = await Products.findOne({ where: { id: productIds[0] }, transaction });
 
       const saleOrder = await SalesOrders.create(
         {
@@ -219,6 +224,7 @@ export const pay = async (req, res, next) => {
         })
       )(
         await Products.findAll({
+          transaction,
           where: { id: productIds }
         })
       );
@@ -238,19 +244,32 @@ export const pay = async (req, res, next) => {
     const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
     const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
 
-    const response = await billplz.createBill({
-      amount: order.total,
-      email: user.email,
-      mobile: user.completePhoneNumber,
-      name: user.fullName || user.username || user.email,
-      itemName: `Order ${order.orderRef}`,
-      redirectUrl: `${serverUrl}/api/publics/billplz/redirect?orderId=${order.id}`,
-      callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
-    });
+    if (country.code === COUNTRIES.MALAYSIA.CODE) {
+      const response = await billplz.createBill({
+        amount: order.total,
+        email: user.email,
+        mobile: user.completePhoneNumber,
+        name: user.fullName || user.username || user.email,
+        itemName: `Order ${order.orderRef}`,
+        redirectUrl: `${serverUrl}/api/publics/billplz/redirect?orderId=${order.id}`,
+        callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
+      });
 
-    await order.update({ billId: response.data.id });
+      await order.update({ billId: response.data.id });
 
-    return res.status(200).json({ message: 'success', payload: response.data });
+      return res.status(200).json({ message: 'success', payload: response.data });
+    }
+
+    if (country.code === COUNTRIES.BRUNEI.CODE) {
+      const html = await getBeepPayPaymentHTML({
+        orderAmount: order.total,
+        data: { orderId: order.id }
+      });
+
+      return res
+        .status(200)
+        .json({ message: 'success', payload: { html, description: `Order ${order.orderRef}` } });
+    }
   } catch (e) {
     return next(e);
   }
