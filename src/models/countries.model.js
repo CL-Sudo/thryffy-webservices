@@ -21,6 +21,10 @@ const Countries = SequelizeConnector.define(
       field: 'currency_symbol',
       type: Sequelize.STRING(5)
     },
+    dialingCode: {
+      field: 'dialing_code',
+      type: Sequelize.STRING(5)
+    },
     ...AT_RECORDER,
     ...BY_RECORDER
   },
