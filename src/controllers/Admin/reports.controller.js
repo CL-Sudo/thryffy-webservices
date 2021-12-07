@@ -13,6 +13,24 @@ import { dateRangeQuery } from '@utils/query.util';
 
 import { DELIVERY_STATUS } from '@constants';
 
+const BANKS = [
+  'Affin Bank Berhad',
+  'Alliance Bank',
+  'Am Bank',
+  'Bank Islam',
+  'Bank Muamalat',
+  'Bank Rakyat',
+  'Bank Simpanan Nasional',
+  'CIMB Bank',
+  'Citibank',
+  'Hong Leong Bank',
+  'Maybank',
+  'OCBC Bank',
+  'Public Bank',
+  'RHB Bank',
+  'Standard Chartered Bank'
+];
+
 export const exportOrderToExcel = async (req, res, next) => {
   try {
     const { from = '2000-01-01', to = moment().format('YYYY-MM-DD HH:mm:ss') } = req.query;
@@ -194,7 +212,7 @@ export const exportOrderToExcel = async (req, res, next) => {
         };
       }
 
-      if (rowNumber > 9) {
+      if (rowNumber > 10) {
         row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
           cell.border = {
             top: { style: 'thin' },
@@ -208,6 +226,16 @@ export const exportOrderToExcel = async (req, res, next) => {
               type: 'list',
               allowBlank: true,
               formulae: ['"NRIC,Old IC, Passport,BRN Police ID,Army ID"']
+            };
+          }
+
+          if (colNumber === 2) {
+            cell.dataValidation = {
+              type: 'list',
+              allowBlank: true,
+              formulae: [
+                '"Affin Bank Berhad, Alliance Bank, Am Bank, Bank Islam, Bank Muamalat, Bank Rakyat, Bank Simpanan Nasional, CIMB Bank, Citibank, Hong Leong Bank, Maybank, OCBC Bank, Public Bank, RHB Bank, Standard Chartered Bank"'
+              ]
             };
           }
         });

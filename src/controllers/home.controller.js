@@ -1,8 +1,9 @@
 import R from 'ramda';
 import { shuffle } from 'lodash';
-import { Preferences, Products, Banners, FeatureItems, Sizes, Categories } from '@models';
+import { Preferences, Products, Banners, FeatureItems, Sizes, Categories, Brands } from '@models';
 import { paginate } from '@utils';
 import { Op } from 'sequelize';
+import { defaultExcludeFields } from '@constants/sequelize.constant';
 
 export const getBannersList = async (req, res, next) => {
   try {
@@ -105,8 +106,22 @@ export const getCuratedList = async (req, res, next) => {
       }
     });
 
-    const data = await Products.scope(['productList', 'visibleByPublic']).findAndCountAll({
-      // distinct: true,
+    const data = await Products.scope(['visibleByPublic']).findAndCountAll({
+      attributes: { exclude: defaultExcludeFields },
+      include: [
+        { model: Brands, as: 'brand', attributes: ['title'] },
+        {
+          model: Sizes,
+          as: 'size',
+          attributes: { exclude: defaultExcludeFields }
+        },
+        {
+          model: Categories,
+          as: 'category',
+          attributes: ['default']
+        }
+      ],
+      distinct: true,
       where,
       limit: Number(limit) || null,
       offset: Number(offset) || null
@@ -134,8 +149,22 @@ export const getCuratedList = async (req, res, next) => {
 export const publicCuratedList = async (req, res, next) => {
   try {
     const { limit, offset } = req.query;
-    const data = await Products.scope(['productList', 'visibleByPublic']).findAndCountAll({
-      // distinct: true,
+    const data = await Products.scope(['visibleByPublic']).findAndCountAll({
+      attributes: { exclude: defaultExcludeFields },
+      include: [
+        { model: Brands, as: 'brand', attributes: ['title'] },
+        {
+          model: Sizes,
+          as: 'size',
+          attributes: { exclude: defaultExcludeFields }
+        },
+        {
+          model: Categories,
+          as: 'category',
+          attributes: ['default']
+        }
+      ],
+      distinct: true,
       limit: Number(limit) || null,
       offset: Number(offset) || null,
       order: [['createdAt', 'DESC']]
