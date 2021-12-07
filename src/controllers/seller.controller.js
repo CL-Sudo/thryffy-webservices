@@ -716,14 +716,14 @@ export const schedulePickupDelivery = async (req, res, next) => {
     const order = await SalesOrders.findOne({
       where: { id: orderId },
       include: [
-        'buyer',
         {
           model: Users,
-          as: 'seller',
-          include: [{ model: Addresses, as: 'addresses', where: { isDefault: true } }]
+          as: 'buyer'
         }
       ]
     });
+
+    const seller = await Users.findOne({ where: { id: order.sellerId }, include: ['addresses'] });
 
     if (req.user.id !== order.sellerId) {
       throw new Error('You are not allowed to perform this action.');
@@ -738,9 +738,9 @@ export const schedulePickupDelivery = async (req, res, next) => {
       buyerPhoneNo: order.buyer.completePhoneNumber,
       buyerAddress: buyerAddress.stringified,
       deliveryDateTime: timeSlot,
-      sellerPhoneNo: order.seller.completePhoneNumber,
-      sellerName: order.seller.fullName || order.seller.username,
-      sellerAddress: order.seller.addresses[0].stringified,
+      sellerPhoneNo: seller.completePhoneNumber,
+      sellerName: seller.fullName || order.seller.username,
+      sellerAddress: seller.addresses[0].stringified,
       pickupDateTime: timeSlot
     });
 
