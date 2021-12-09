@@ -3,12 +3,13 @@
 import { CronJob } from 'cron';
 import { subscriptionRenewReminder } from '@services/subscription.service';
 import { setAsDeliveredAfterShipping } from '@services/sale_orders.service';
-import { remindSellerToShipParcel } from '@services/cronjob.service';
+import { remindBuyerOfRefund, remindSellerToShipParcel } from '@services/cronjob.service';
 
 const runJobEveryMorning = () => {
   console.log(`Cronjob every day 9am...`);
   subscriptionRenewReminder();
   setAsDeliveredAfterShipping();
+  remindBuyerOfRefund();
 };
 
 const runJobEveryTenMinutes = () => {

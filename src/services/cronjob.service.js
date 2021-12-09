@@ -6,7 +6,6 @@ import { HOURS_TO_REMIND, MAX_HOUR_BEFORE_SHIPPING } from '@constants/cronjob.co
 import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 import NOTIFIABLE_TYPE from '@constants/model.constant';
 import { DELIVERY } from '@templates/notification.template';
-import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { sendCloudMessage } from './notification.service';
 
 export const remindSellerToShipParcel = async () => {
@@ -93,7 +92,8 @@ export const remindBuyerOfRefund = async () => {
       where: {
         paymentStatus: PAYMENT_STATUS.SUCCESS,
         deliveryStatus: DELIVERY_STATUS.TO_SHIP,
-        shippingReminderCount: HOURS_TO_REMIND.length
+        hasRefunded: false,
+        hasRemindedBuyerOfRefund: false
       },
       include: [
         {
@@ -130,7 +130,7 @@ export const remindBuyerOfRefund = async () => {
               data
             });
 
-            await order.increment('shippingReminderCount');
+            await order.update({ hasRemindedBuyerOfRefund: true });
             return resolve();
           } catch (e) {
             return reject(e);
