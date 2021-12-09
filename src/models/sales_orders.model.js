@@ -126,6 +126,16 @@ const SalesOrders = SequelizeConnector.define(
       defaultValue: 0,
       field: 'shipping_reminder_count'
     },
+    hasRefunded: {
+      type: Sequelize.BOOLEAN,
+      field: 'has_refunded',
+      defaultValue: false
+    },
+    hasRemindedBuyerOfRefund: {
+      type: Sequelize.BOOLEAN,
+      field: 'has_reminded_buyer_of_refund',
+      defaultValue: false
+    },
     hoursAfterPayment: {
       type: Sequelize.VIRTUAL,
       get() {
