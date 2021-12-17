@@ -41,7 +41,6 @@ const Addresses = SequelizeConnector.define(
     },
     district: {
       type: Sequelize.STRING(100),
-      allowNull: false
     },
     postcode: {
       type: Sequelize.STRING(100),
