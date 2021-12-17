@@ -5,12 +5,14 @@ import R from 'ramda';
 
 export const list = async (req, res, next) => {
   try {
-    const { parent, childId, limit, offset } = req.query;
     requestValidator(req);
+    const { parent, childId, limit, offset } = req.query;
 
     const getChildren = async () => {
       try {
-        const parentObject = await Categories.findOne({
+        const parentObject = await Categories.scope({
+          method: ['byCountry', req.user.countryId]
+        }).findOne({
           where: {
             title: {
               [Op.like]: `%${parent}%`
