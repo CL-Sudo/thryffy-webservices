@@ -37,8 +37,7 @@ const Addresses = SequelizeConnector.define(
       allowNull: false
     },
     state: {
-      type: Sequelize.STRING(100),
-      allowNull: false
+      type: Sequelize.STRING(100)
     },
     district: {
       type: Sequelize.STRING(100),
