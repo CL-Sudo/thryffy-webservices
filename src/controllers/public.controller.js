@@ -46,7 +46,13 @@ const parsePayBeepReqeustQuery = requestQuery => {
       .value()
   );
 
-  return { Type: requestQuery.Type, order_id: requestQuery.order_id, ...trasactionObj };
+  return {
+    Type: requestQuery.Type,
+    order_id: requestQuery.order_id,
+    pacakgeId: requestQuery.pacakgeId,
+    userId: requestQuery.userId,
+    ...trasactionObj
+  };
 };
 
 const onSuccessSubscribing = async (userId, packageId) =>
@@ -573,14 +579,25 @@ export const senangpayRedirect = async (req, res) => {
 
 export const beepPayRedirect = async (req, res) => {
   try {
+    console.log(`req.query`, req.query);
+    console.log(`req.query.order_id`, req.query.order_id);
     const {
       Type: paymentStatus,
-      order_id: data,
+      order_id: orderId,
+      packageId = null,
+      userId = null,
       transaction,
       sourceOfFunds
     } = parsePayBeepReqeustQuery(req.query);
 
-    const { orderId = null, packageId = null, userId = null } = queryString.parse(data);
+    console.log(`paymentStatus`, paymentStatus);
+    console.log(`transaction`, transaction);
+    console.log(`sourceOfFunds`, sourceOfFunds);
+    console.log(`orderId`, orderId);
+    console.log(`packageId`, packageId);
+    console.log(`userId`, userId);
+    console.log(`transactionId`, _.get(transaction, 'acquirer.transactionId', ''));
+    console.log(`fundingMethod`, _.get(sourceOfFunds, 'provided.card.fundingMethod', ''));
 
     // For Merchandises
     if (orderId) {

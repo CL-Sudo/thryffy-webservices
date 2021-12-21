@@ -40,7 +40,7 @@ const Addresses = SequelizeConnector.define(
       type: Sequelize.STRING(100)
     },
     district: {
-      type: Sequelize.STRING(100),
+      type: Sequelize.STRING(100)
     },
     postcode: {
       type: Sequelize.STRING(100),
@@ -56,7 +56,7 @@ const Addresses = SequelizeConnector.define(
       get() {
         return `${this.get('addressLine1')} ${this.get('addressLine2')}, ${this.get(
           'postcode'
-        )}, ${this.get('city')}, ${this.get('state')}`;
+        )}, ${this.get('city')}, ${this.get('state') || this.get('district')}`;
       }
     },
     ...AT_RECORDER,

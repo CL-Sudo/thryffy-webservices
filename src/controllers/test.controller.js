@@ -24,16 +24,18 @@ export const test = async (req, res, next) => {
 
     // res.send(html);
 
+    const orderId = Math.floor(Math.random() * 1000 + 500);
+
     const html = await getBeepPayPaymentHTML({
-      // orderAmount: 10.99,
-      // data: { userId: 1, packageId: 3 }
+      orderAmount: 0.05,
+      data: { userId: 1, packageId: 3, orderId }
     });
 
-    // res.send(html);
+    res.send(html);
 
-    res.status(404).json({
-      message: 'Not Found'
-    });
+    // res.status(404).json({
+    //   message: 'Not Found'
+    // });
   } catch (e) {
     return next(e);
   }
