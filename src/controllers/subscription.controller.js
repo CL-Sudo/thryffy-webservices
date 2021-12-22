@@ -3,7 +3,7 @@ import { requestValidator } from '@validators';
 import Billplz from '@services/billplz.service';
 import { getCountryId } from '@utils/index';
 import { COUNTRIES } from '@constants/countries.constant';
-import { getBeepPayPaymentHTML } from '@services/pay-beep.service';
+import { getBeepPayPaymentUrl } from '@services/pay-beep.service';
 
 export const subscribe = async (req, res, next) => {
   try {
@@ -45,14 +45,11 @@ export const subscribe = async (req, res, next) => {
     }
 
     if (country.code === COUNTRIES.BRUNEI.CODE) {
-      const html = await getBeepPayPaymentHTML({
-        orderAmount: pkg.price,
-        data: { userId: user.id, packageId: pkg.id }
-      });
+      const url = await getBeepPayPaymentUrl(pkg.price, `u${user.id}-p${pkg.id}`);
 
       return res
         .status(200)
-        .json({ message: 'success', payload: { html, description: `Subscribing ${pkg.title}` } });
+        .json({ message: 'success', payload: { url, description: `Subscribing ${pkg.title}` } });
     }
   } catch (e) {
     return next(e);

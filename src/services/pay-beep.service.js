@@ -1,20 +1,22 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import * as _ from 'lodash';
 
 const { NODE_ENV, NGROK_URL, SERVER_URL, BEEP_PAY_API_KEY, BEEP_PAY_MERCHANT_ID } = process.env;
 
 const returnUrl = `${NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL}/api/publics/beep-pay-redirect`;
 
-console.log(`returnUrl`, returnUrl);
-
-export const getBeepPayPaymentHTML = async ({ orderAmount, data = {} }) => {
+/**
+ *
+ * @param {*} orderAmount
+ * @param {*} data Example: 'u23-p2-o13' u=userId,  p=packageId, o=orderId
+ * @returns
+ */
+export const getBeepPayPaymentUrl = async (orderAmount, data) => {
   const form = new FormData();
   form.append('user', BEEP_PAY_MERCHANT_ID);
   form.append('apiToken', BEEP_PAY_API_KEY);
   form.append('returnUrl', returnUrl);
-  // form.append('order_id', queryString.stringify({ dummy: 'dummy', ...data }));
-  form.append('order_id', data.orderId);
+  form.append('order_id', data);
   form.append('order_amount', orderAmount);
 
   const formHeaders = form.getHeaders();
@@ -29,10 +31,5 @@ export const getBeepPayPaymentHTML = async ({ orderAmount, data = {} }) => {
 
   const { Token } = response.data.result;
 
-  const { data: paymentPageHTML } = await axios({
-    url: `https://pay.beep.solutions/order?Token=${Token}`,
-    method: 'GET'
-  });
-
-  return paymentPageHTML;
+  return `https://pay.beep.solutions/order?Token=${Token}`;
 };

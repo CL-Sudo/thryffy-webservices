@@ -15,7 +15,7 @@ import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.co
 import { requestValidator } from '@validators';
 import { getCountryId, paginate } from '@utils';
 import { COUNTRIES } from '@constants/countries.constant';
-import { getBeepPayPaymentHTML } from '@services/pay-beep.service';
+import { getBeepPayPaymentUrl } from '@services/pay-beep.service';
 
 import Billplz from '@services/billplz.service';
 
@@ -261,14 +261,11 @@ export const pay = async (req, res, next) => {
     }
 
     if (country.code === COUNTRIES.BRUNEI.CODE) {
-      const html = await getBeepPayPaymentHTML({
-        orderAmount: order.total,
-        data: { orderId: order.id }
-      });
+      const url = await getBeepPayPaymentUrl(order.total, `o${order.id}`);
 
       return res
         .status(200)
-        .json({ message: 'success', payload: { html, description: `Order ${order.orderRef}` } });
+        .json({ message: 'success', payload: { url, description: `Order ${order.orderRef}` } });
     }
   } catch (e) {
     return next(e);

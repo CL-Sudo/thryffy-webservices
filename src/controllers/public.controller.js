@@ -30,8 +30,6 @@ import { sendCloudMessage } from '@services/notification.service';
 
 import { DELIVERY } from '@templates/notification.template';
 
-import queryString from 'querystring';
-
 const BEEPPAY_PAYMENT_STATUS = {
   SUCCESS: 'success',
   FAILED: 'failure'
@@ -46,11 +44,31 @@ const parsePayBeepReqeustQuery = requestQuery => {
       .value()
   );
 
+  const arr = _.split(requestQuery.order_id, '-');
+
+  const obj = { userId: null, packageId: null, orderId: null };
+
+  _.forEach(arr, ins => {
+    if (_.includes(ins, 'u')) {
+      _.merge(obj, { userId: _.toInteger(_.replace(ins, 'u', '')) });
+    }
+
+    if (_.includes(ins, 'p')) {
+      _.merge(obj, { packageId: _.toInteger(_.replace(ins, 'p', '')) });
+    }
+
+    if (_.includes(ins, 'o')) {
+      _.merge(obj, { orderId: _.toInteger(_.replace(ins, 'o', '')) });
+    }
+  });
+
+  // console.log(`obj`, obj);
+
   return {
     Type: requestQuery.Type,
-    order_id: requestQuery.order_id,
-    pacakgeId: requestQuery.pacakgeId,
-    userId: requestQuery.userId,
+    orderId: obj.orderId,
+    packageId: obj.packageId,
+    userId: obj.userId,
     ...trasactionObj
   };
 };
@@ -579,25 +597,28 @@ export const senangpayRedirect = async (req, res) => {
 
 export const beepPayRedirect = async (req, res) => {
   try {
-    console.log(`req.query`, req.query);
-    console.log(`req.query.order_id`, req.query.order_id);
+    // console.log(`req.query`, req.query);
+    // console.log(`req.query.order_id`, req.query.order_id);
+
     const {
       Type: paymentStatus,
-      order_id: orderId,
+      orderId = null,
       packageId = null,
       userId = null,
       transaction,
       sourceOfFunds
     } = parsePayBeepReqeustQuery(req.query);
 
-    console.log(`paymentStatus`, paymentStatus);
-    console.log(`transaction`, transaction);
-    console.log(`sourceOfFunds`, sourceOfFunds);
-    console.log(`orderId`, orderId);
-    console.log(`packageId`, packageId);
-    console.log(`userId`, userId);
-    console.log(`transactionId`, _.get(transaction, 'acquirer.transactionId', ''));
-    console.log(`fundingMethod`, _.get(sourceOfFunds, 'provided.card.fundingMethod', ''));
+    // console.log(`orderId`, orderId);
+
+    // console.log(`paymentStatus`, paymentStatus);
+    // console.log(`transaction`, transaction);
+    // console.log(`sourceOfFunds`, sourceOfFunds);
+    // console.log(`orderId`, orderId);
+    // console.log(`packageId`, packageId);
+    // console.log(`userId`, userId);
+    // console.log(`transactionId`, _.get(transaction, 'acquirer.transactionId', ''));
+    // console.log(`fundingMethod`, _.get(sourceOfFunds, 'provided.card.fundingMethod', ''));
 
     // For Merchandises
     if (orderId) {
@@ -641,29 +662,46 @@ export const beepPayRedirect = async (req, res) => {
 
     // For Subscription
     if (packageId) {
-      await onSuccessSubscribing(userId, packageId);
+      if (paymentStatus === BEEPPAY_PAYMENT_STATUS.SUCCESS) {
+        await onSuccessSubscribing(userId, packageId);
 
-      const subscription = await Subscriptions.findOne({
-        where: { userId },
-        include: [{ model: Packages, as: 'package' }]
-      });
+        const subscription = await Subscriptions.findOne({
+          where: { userId },
+          include: [{ model: Packages, as: 'package' }]
+        });
 
-      const payload = R.isNil(subscription)
-        ? { paymentStatus: PAYMENT_STATUS.FAILED }
-        : { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.get() };
+        const payload = { paymentStatus: PAYMENT_STATUS.SUCCESS, ...subscription.get() };
 
-      return res.status(200).send(`
-        <script>
-          window.ReactNativeWebView.postMessage(
-            ${JSON.stringify(
-              JSON.stringify({
-                status: true,
-                payload
-              })
-            )}
-          );
-        </script>
-      `);
+        return res.status(200).send(`
+          <script>
+            window.ReactNativeWebView.postMessage(
+              ${JSON.stringify(
+                JSON.stringify({
+                  status: true,
+                  payload
+                })
+              )}
+            );
+          </script>
+        `);
+      }
+
+      if (paymentStatus === BEEPPAY_PAYMENT_STATUS.FAILED) {
+        const payload = { paymentStatus: PAYMENT_STATUS.FAILED };
+
+        return res.status(200).send(`
+          <script>
+            window.ReactNativeWebView.postMessage(
+              ${JSON.stringify(
+                JSON.stringify({
+                  status: true,
+                  payload
+                })
+              )}
+            );
+          </script>
+        `);
+      }
     }
   } catch (e) {
     return res.status(200).send(`
