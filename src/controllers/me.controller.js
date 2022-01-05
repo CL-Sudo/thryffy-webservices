@@ -264,13 +264,13 @@ export const updateProfile = async (req, res, next) => {
       const { id } = req.user;
 
       const userById = await Users.findOne({ where: { id } });
-      if (
-        userById.username !== null &&
-        userById.username.length > 0 &&
-        username !== userById.username
-      ) {
-        throw new Error('You are not allowed to change your username');
-      }
+      // if (
+      //   userById.username !== null &&
+      //   userById.username.length > 0 &&
+      //   username !== userById.username
+      // ) {
+      //   throw new Error('You are not allowed to change your username');
+      // }
 
       if (username) {
         const userByUsername = await Users.findOne({ where: { username } });
@@ -292,7 +292,7 @@ export const updateProfile = async (req, res, next) => {
 
       const user = await Users.findOne({ where: { id } });
 
-      await user.update(fields);
+      await user.update({ ..._.omit(fields, ['username']) });
 
       if (profilePicture) {
         await deleteExistingProfilePicture(id);
