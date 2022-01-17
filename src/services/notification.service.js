@@ -64,32 +64,6 @@ export const subscribeTokenToTopic = (tokens, topic) =>
         }
       });
 
-      await sequelize.transaction(async transaction => {
-        const notificationTopic = await NotificationTopics.findOrCreate({
-          where: { title: topic },
-          defaults: { title: topic },
-          transaction
-        });
-
-        await Promise.all(
-          tokenArr.map(async token => {
-            const user = await Users.findOne({ where: { deviceToken: token }, transaction });
-            const notificationTopicUser = await NotificationTopicUsers.findOne({
-              where: { userId: user.id, topicId: notificationTopic[0].id }
-            });
-            if (!notificationTopicUser) {
-              await NotificationTopicUsers.create(
-                {
-                  userId: user.id,
-                  topicId: notificationTopic[0].id
-                },
-                { transaction }
-              );
-            }
-          })
-        );
-      });
-
       return resolve(res);
     } catch (e) {
       return reject(e);
@@ -118,23 +92,6 @@ export const unsubscribeTokensFromTopic = (tokens, topic) =>
         }
       });
 
-      await sequelize.transaction(async transaction => {
-        const notificationTopic = await NotificationTopics.findOne({
-          where: { title: topic },
-          transaction
-        });
-
-        await Promise.all(
-          tokenArr.map(async token => {
-            const user = await Users.findOne({ where: { deviceToken: token }, transaction });
-            await NotificationTopicUsers.destroy({
-              force: true,
-              where: { userId: user.id, topicId: notificationTopic.id },
-              transaction
-            });
-          })
-        );
-      });
       return resolve(res);
     } catch (e) {
       return reject(e);
