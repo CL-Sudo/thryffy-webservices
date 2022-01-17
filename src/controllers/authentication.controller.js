@@ -465,6 +465,26 @@ export const verifyOTP = async (req, res, next) => {
       throw new Error('OTP expired, please resend OTP again.');
     }
 
+    const userByUsername = await Users.findOne({ where: { username } });
+
+    if (userByUsername) {
+      throw new Error('Username not available');
+    }
+
+    const userByEmail = await Users.findOne({ where: { email } });
+
+    if (userByEmail) {
+      throw new Error('Email not available');
+    }
+
+    const userByPhoneNumber = await Users.findOne({
+      where: { phoneCountryCode, phoneNumber }
+    });
+
+    if (userByPhoneNumber) {
+      throw new Error('Phone No. not available');
+    }
+
     const jsonData = await sequelize.transaction(async transaction => {
       const refreshToken = generateRefreshToken();
 
