@@ -36,10 +36,10 @@ const sendNotification = async productId => {
 
       const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-      await sendCloudMessage({
+      sendCloudMessage({
         token: notifier.deviceToken,
         title: PUBLICATION.UNPUBLISHED,
-        data: data.dataValues
+        data: data.get()
       });
     });
 

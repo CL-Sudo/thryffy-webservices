@@ -19,92 +19,128 @@ export const exportOrderToExcel = async (req, res, next) => {
     const workbook = new Excel.Workbook();
     const worksheet = workbook.addWorksheet('Orders');
 
-    worksheet.columns = [
-      {
-        key: 'beneficiaryName',
-        header: 'Beneficiary Name'
-      },
-      {
-        key: 'beneficiaryBank',
-        header: 'Beneficiary Bank'
-      },
-      {
-        key: 'beneficiaryAccountNo',
-        header: 'Beneficiary Account No'
-      },
-      {
-        key: 'identityType',
-        header: 'Identity Type'
-      },
-      {
-        key: 'identityNo',
-        header: 'Identity Number'
-      },
-      {
-        key: 'paymentAmount',
-        header: 'Payment Amount'
-      },
-      {
-        key: 'paymentRef',
-        header: 'Payment Reference'
-      },
-      {
-        key: 'paymentDescription',
-        header: 'Payment Description'
-      },
-      {
-        key: 'orderRef',
-        header: 'Order Reference'
-      },
-      {
-        key: 'parcelType',
-        header: 'Parcel Type'
-      },
-      {
-        key: 'paymentStatus',
-        header: 'Payment Status'
-      },
-      {
-        key: 'deliveryStatus',
-        header: 'Delivery Status'
-      },
-      {
-        key: 'deliveryTrackingNo',
-        header: 'Tracking No.'
-      },
-      {
-        key: 'subTotal',
-        header: 'Sub Total'
-      },
-      {
-        key: 'shippingFee',
-        header: 'Shipping Fee'
-      },
-      {
-        key: 'tax',
-        header: 'Tax'
-      },
-      {
-        key: 'total',
-        header: 'Total'
-      },
-      {
-        key: 'commission',
-        header: 'Commission'
-      },
-      {
-        key: 'isCommissionPaid',
-        header: 'Is Commision Paid'
-      },
-      {
-        key: 'commissionPaidAt',
-        header: 'Commission Paid At'
-      },
-      {
-        key: 'createdAt',
-        header: 'Created At'
-      }
-    ];
+    worksheet.columns =
+      req.user.country.code === 'BN'
+        ? [
+            {
+              key: 'beneficiaryName',
+              header: 'Beneficiary Name'
+            },
+            {
+              key: 'beneficiaryBank',
+              header: 'Beneficiary Bank'
+            },
+            {
+              key: 'beneficiaryAccountNo',
+              header: 'Beneficiary Account No'
+            },
+            {
+              key: 'identityType',
+              header: 'ID Type'
+            },
+            {
+              key: 'identityNo',
+              header: 'ID Number'
+            },
+            {
+              key: 'paymentAmount',
+              header: 'Payment Amount'
+            },
+            {
+              key: 'paymentRef',
+              header: 'Payment Reference'
+            },
+            {
+              key: 'paymentDescription',
+              header: 'Payment Description'
+            }
+          ]
+        : [
+            {
+              key: 'beneficiaryName',
+              header: 'Beneficiary Name'
+            },
+            {
+              key: 'beneficiaryBank',
+              header: 'Beneficiary Bank'
+            },
+            {
+              key: 'beneficiaryAccountNo',
+              header: 'Beneficiary Account No'
+            },
+            {
+              key: 'identityType',
+              header: 'Identity Type'
+            },
+            {
+              key: 'identityNo',
+              header: 'Identity Number'
+            },
+            {
+              key: 'paymentAmount',
+              header: 'Payment Amount'
+            },
+            {
+              key: 'paymentRef',
+              header: 'Payment Reference'
+            },
+            {
+              key: 'paymentDescription',
+              header: 'Payment Description'
+            },
+            {
+              key: 'orderRef',
+              header: 'Order Reference'
+            },
+            {
+              key: 'parcelType',
+              header: 'Parcel Type'
+            },
+            {
+              key: 'paymentStatus',
+              header: 'Payment Status'
+            },
+            {
+              key: 'deliveryStatus',
+              header: 'Delivery Status'
+            },
+            {
+              key: 'deliveryTrackingNo',
+              header: 'Tracking No.'
+            },
+            {
+              key: 'subTotal',
+              header: 'Sub Total'
+            },
+            {
+              key: 'shippingFee',
+              header: 'Shipping Fee'
+            },
+            {
+              key: 'tax',
+              header: 'Tax'
+            },
+            {
+              key: 'total',
+              header: 'Total'
+            },
+            {
+              key: 'commission',
+              header: 'Commission'
+            },
+            {
+              key: 'isCommissionPaid',
+              header: 'Is Commision Paid'
+            },
+            {
+              key: 'commissionPaidAt',
+              header: 'Commission Paid At'
+            },
+            {
+              key: 'createdAt',
+              header: 'Created At'
+            }
+          ];
 
     worksheet.insertRow(1, ['From:', parseDate(new Date(from))]);
     worksheet.insertRow(2, ['To:', parseDate(new Date(to))]);
@@ -202,12 +238,19 @@ export const exportOrderToExcel = async (req, res, next) => {
             bottom: { style: 'thin' },
             right: { style: 'thin' }
           };
+        });
+      }
 
+      if (rowNumber > 10) {
+        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
           if (colNumber === 4) {
             cell.dataValidation = {
               type: 'list',
               allowBlank: true,
-              formulae: ['"NRIC,Old IC, Passport,BRN Police ID,Army ID"']
+              formulae:
+                req.user.country.code === 'BN'
+                  ? ['"ID,Passport,Driving License"']
+                  : ['"NRIC,Old IC, Passport,BRN Police ID,Army ID"']
             };
           }
         });

@@ -13,7 +13,7 @@ const sendEmail = async data => {
   try {
     const { userId, type, subject, description = '-' } = data;
 
-    const user = await Users.findOne({ where: { id: userId } });
+    const user = await Users.findOne({ where: { id: userId }, include: ['country'] });
 
     const decideReceiverEmail = enquiryType => {
       switch (enquiryType) {
@@ -36,6 +36,7 @@ const sendEmail = async data => {
       receiverEmail: decideReceiverEmail(type),
       template: EMAIL_TEMPLATE.CONTACT_US,
       templateData: {
+        country: user.country.name,
         customerName: user.fullName || user.username || 'NA',
         customerEmail: user.email || 'NA',
         userId,

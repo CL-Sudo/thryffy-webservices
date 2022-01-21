@@ -1,5 +1,5 @@
 import { check } from 'express-validator/check';
-import { SalesOrders, Addresses, Categories, Brands, Conditions } from '@models';
+import { SalesOrders, Addresses, Categories, Brands, Conditions, Sizes } from '@models';
 import R from 'ramda';
 import { DELIVERY_STATUS } from '@constants';
 
@@ -153,7 +153,29 @@ export const updatePreferencesValidator = [
       }
       return Promise.resolve();
     })
-    .customSanitizer(conditionId => R.uniq(conditionId))
+    .customSanitizer(conditionId => R.uniq(conditionId)),
+
+  check('sizeId')
+    .custom(async (sizeId = []) => {
+      if (sizeId.length === 0) return Promise.resolve(sizeId);
+
+      const processedSizeId = R.pipe(R.uniq)(sizeId);
+
+      const sizeIdsInDB = R.map(R.prop('id'))(
+        await Sizes.findAll({
+          attributes: ['id'],
+          raw: true
+        })
+      );
+
+      const removedSizeIds = R.without(processedSizeId)(sizeIdsInDB);
+
+      if (removedSizeIds.length !== sizeIdsInDB.length - processedSizeId.length) {
+        throw new Error('Invalid sizeId given');
+      }
+      return Promise.resolve();
+    })
+    .customSanitizer(sizeId => R.uniq(sizeId))
 ];
 
 export const updateIdentityNoValidators = [

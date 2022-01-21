@@ -10,7 +10,7 @@ export const getPriceSummary = async productIds =>
       const summary = {
         shippingFeeId: null,
         subTotal: 0,
-        shippingFee: 0,
+        shippingFee: {},
         tax: 0,
         total: 0
       };
@@ -45,31 +45,19 @@ export const getPriceSummary = async productIds =>
 
       const addShippingFee = async summaryObj => {
         try {
-          const shippingLens = R.lens(R.prop('shippingFee'), R.assoc('shippingFee'));
-          const totalLens = R.lens(R.prop('total'), R.assoc('total'));
-          const shippingFeeLens = R.lens(R.prop('shippingFeeId'), R.assoc('shippingFeeId'));
-
-          const setShipping = R.set(shippingLens);
-          const setTotal = R.set(totalLens);
-          const setShippingFeeId = R.set(shippingFeeLens);
-
-          const assignShippingFeeObj = R.assoc('shippingFee');
-
-          const total = R.view(totalLens)(summaryObj);
-
           const { price, id } = await getShippingFee(productIds);
           const shippingFeeObj = await ShippingFees.findOne({ where: { id } });
 
-          const newTotal = R.add(total, price);
+          const newTotal = R.add(summaryObj.total, price);
 
-          const newSummary = R.pipe(
-            setShipping(price),
-            setTotal(newTotal),
-            setShippingFeeId(id),
-            assignShippingFeeObj(shippingFeeObj)
-          )(summaryObj);
+          const obj = {
+            ...summaryObj,
+            shippingFeeId: id,
+            shippingFee: shippingFeeObj.get(),
+            total: newTotal
+          };
 
-          return Promise.resolve(newSummary);
+          return Promise.resolve(obj);
         } catch (e) {
           return Promise.reject(e);
         }
@@ -98,7 +86,7 @@ export const getPriceSummary = async productIds =>
           if (product.country.code === COUNTRIES.MALAYSIA.CODE) {
             newTax = CHARGE.TRANSACTION_FEE;
           } else if (product.country.code === COUNTRIES.BRUNEI.CODE) {
-            newTax = 1 + 0.05 * summaryObj.total;
+            newTax = 0.05 * (summaryObj.subTotal + summaryObj.shippingFee.price);
           }
 
           // const newTax = (subTotal + shippingFee) * CHARGE.TAX_PERCENTAGE + CHARGE.TRANSACTION_FEE;

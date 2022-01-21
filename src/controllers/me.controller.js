@@ -586,10 +586,10 @@ export const updateDeviceToken = async (req, res, next) => {
 
 export const updatePreferences = async (req, res, next) => {
   try {
-    requestValidator(req);
+    // requestValidator(req);
 
     const { id } = req.user;
-    const { categoryId, brandId, conditionId, sizeId } = req.body;
+    const { categoryId = [], brandId = [], conditionId = [], sizeId = [] } = req.body;
 
     const groupId = (acc, { preferableId }) => acc.concat(preferableId);
     const toType = R.prop('preferableType');

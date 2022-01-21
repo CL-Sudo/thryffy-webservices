@@ -711,7 +711,8 @@ export const getProductCommission = async (req, res, next) => {
 
 export const schedulePickupDelivery = async (req, res, next) => {
   try {
-    const { timeSlot, orderId } = req.body;
+    const { NODE_ENV } = process.env;
+    const { timeSlot, orderId, addressId } = req.body;
 
     const order = await SalesOrders.findOne({
       where: { id: orderId },
@@ -719,11 +720,14 @@ export const schedulePickupDelivery = async (req, res, next) => {
         {
           model: Users,
           as: 'buyer'
-        }
+        },
+        'address'
       ]
     });
 
-    const seller = await Users.findOne({ where: { id: order.sellerId }, include: ['addresses'] });
+    await order.update({ addressId });
+
+    const seller = await Users.findOne({ where: { id: order.sellerId } });
 
     if (req.user.id !== order.sellerId) {
       throw new Error('You are not allowed to perform this action.');
@@ -733,14 +737,14 @@ export const schedulePickupDelivery = async (req, res, next) => {
 
     const response = await createDeliveryTask({
       orderId,
-      description: 'TEST ONLY',
+      description: NODE_ENV === 'DEV' ? 'TEST ONLY' : '-',
       buyerName: order.buyer.fullName || order.buyer.username,
       buyerPhoneNo: order.buyer.completePhoneNumber,
       buyerAddress: buyerAddress.stringified,
       deliveryDateTime: timeSlot,
       sellerPhoneNo: seller.completePhoneNumber,
-      sellerName: seller.fullName || order.seller.username,
-      sellerAddress: seller.addresses[0].stringified,
+      sellerName: seller.fullName || seller.username,
+      sellerAddress: order.address.stringified,
       pickupDateTime: timeSlot
     });
 

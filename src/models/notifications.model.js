@@ -49,7 +49,8 @@ const Notifications = SequelizeConnector.define(
     underscored: false,
     defaultScope: {
       include: [
-        { model: Products, as: 'product', include: [{ all: true }] },
+        // { model: Products, as: 'product', include: [{ all: true }] },
+        { model: Products, as: 'product' },
         {
           model: Disputes,
           as: 'dispute',

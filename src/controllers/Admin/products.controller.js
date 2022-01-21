@@ -90,6 +90,19 @@ export const getProductListRequest = async (req, res, next) => {
     const { brandName } = req.query;
     const { limit, offset } = getLimitOffset(req);
     const scopes = getScopes(Products)(req);
+    let brandIds = [];
+
+    if (brandName) {
+      brandIds = await Brands.findAll({
+        attributes: ['id'],
+        raw: true,
+        where: {
+          title: {
+            [Op.like]: `%${brandName}%`
+          }
+        }
+      }).then(brands => _.map(brands, 'id'));
+    }
 
     const data = await Products.scope([
       ...scopes,
@@ -98,21 +111,14 @@ export const getProductListRequest = async (req, res, next) => {
       include: [
         {
           model: Brands,
-          as: 'brand',
-          required: !_.isEmpty(brandName),
-          where: !_.isEmpty(brandName)
-            ? {
-                title: {
-                  [Op.like]: `%${brandName}%`
-                }
-              }
-            : null
+          as: 'brand'
         },
         { model: Categories, as: 'category', required: false, attributes: ['title'] },
         { model: Users, as: 'seller', required: false, attributes: ['email'] },
         { model: Galleries, as: 'photos', required: false, attributes: ['filePath'] }
       ],
       distinct: true,
+      where: brandName ? { brandId: brandIds } : {},
       order: [['createdAt', 'DESC']],
       limit,
       offset
