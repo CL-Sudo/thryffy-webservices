@@ -23,7 +23,8 @@ export const search = async (req, res, next) => {
             }
           }
         ],
-        isVerified: true
+        isVerified: true,
+        active: true
       }
     });
 
