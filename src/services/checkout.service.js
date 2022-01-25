@@ -86,7 +86,7 @@ export const getPriceSummary = async productIds =>
           if (product.country.code === COUNTRIES.MALAYSIA.CODE) {
             newTax = CHARGE.TRANSACTION_FEE;
           } else if (product.country.code === COUNTRIES.BRUNEI.CODE) {
-            newTax = 0.05 * (summaryObj.subTotal + summaryObj.shippingFee.price);
+            newTax = 0.99 + 0.05 * (summaryObj.subTotal + summaryObj.shippingFee.price);
           }
 
           // const newTax = (subTotal + shippingFee) * CHARGE.TAX_PERCENTAGE + CHARGE.TRANSACTION_FEE;

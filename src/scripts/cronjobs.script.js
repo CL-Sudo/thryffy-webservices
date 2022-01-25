@@ -17,4 +17,4 @@ const runJobEveryTenMinutes = () => {
 };
 
 new CronJob('00 09 * * *', runJobEveryMorning, null, true, null, null, true);
-new CronJob('00 */10 * * * *', runJobEveryTenMinutes, null, true, null, null, true);
+new CronJob('00 */30 * * * *', runJobEveryTenMinutes, null, true, null, null, true);
