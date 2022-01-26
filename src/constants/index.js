@@ -10,7 +10,8 @@ export const USER_TYPE = {
 };
 
 export const COURIER = {
-  POSTLAJU: 'POSTLAJU'
+  POSTLAJU: 'POSTLAJU',
+  ONZ: 'ONZ'
 };
 
 export const PAYMENT_METHOD = {

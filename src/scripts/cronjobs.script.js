@@ -12,7 +12,7 @@ const runJobEveryMorning = () => {
 };
 
 const runJobEveryTenMinutes = () => {
-  console.log(`Cronjob every 10 mins...`);
+  console.log(`Cronjob every 30 mins...`);
   remindSellerToShipParcel();
 };
 

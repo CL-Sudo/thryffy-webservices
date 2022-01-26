@@ -36,6 +36,14 @@ export const parseParcelName = parcelType => {
       parcelName = PARCEL_NAME.LARGE_PARCEL;
       break;
 
+    case PARCEL_TYPE.ONZ_STANDARD:
+      parcelName = PARCEL_NAME.ONZ_STANDARD;
+      break;
+
+    case PARCEL_TYPE.ONZ_FREE_SHIPPING:
+      parcelName = PARCEL_NAME.ONZ_STANDARD;
+      break;
+
     default:
   }
 

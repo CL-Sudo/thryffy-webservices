@@ -10,7 +10,7 @@ import {
 } from '@models';
 import * as services from '@services/checkout.service';
 import R from 'ramda';
-import { PAYMENT_STATUS } from '@constants';
+import { COURIER, PAYMENT_STATUS } from '@constants';
 import { SequelizeConnector as Sequelize } from '@configs/sequelize-connector.config';
 import { requestValidator } from '@validators';
 import { getCountryId, paginate } from '@utils';
@@ -212,7 +212,8 @@ export const pay = async (req, res, next) => {
           subTotal,
           shippingFeeId,
           tax,
-          total
+          total,
+          courier: country.code === 'BN' ? COURIER.ONZ : COURIER.POSTLAJU
         },
         { transaction }
       );

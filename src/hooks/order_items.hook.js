@@ -47,6 +47,10 @@ OrderItems.addHook('afterBulkCreate', 'getParcelType', async (results, options) 
           throw new Error('Invalid order size');
       }
     }
+
+    if (order.country.code === COUNTRIES.BRUNEI.CODE) {
+      await order.update({ parcelType: PARCEL_TYPES.ONZ_STANDARD }, { transaction });
+    }
   } catch (e) {
     throw e;
   }

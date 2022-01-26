@@ -12,41 +12,16 @@ module.exports = {
       }
     );
 
-    const [shippingFee] = await queryInterface.sequelize.query(
-      `select * from shipping_fees where country_id=${brunei.id}`,
-      {
-        type: Sequelize.QueryTypes.SELECT
-      }
-    );
-
-    if (shippingFee) {
-      return queryInterface.bulkUpdate(
-        'shipping_fees',
-
-        {
-          country_id: brunei.id,
-          price: 3,
-          markup_price: 4,
-          actual_price: 6,
-          parcel_name: PARCEL_NAME.ONZ_STANDARD,
-          type: PARCEL_TYPE.ONZ_STANDARD
-        },
-        {
-          id: shippingFee.id
-        }
-      );
-    }
-
     return queryInterface.bulkInsert(
       'shipping_fees',
       [
         {
           country_id: brunei.id,
-          price: 3,
-          markup_price: 4,
-          actual_price: 6,
+          price: 0,
+          markup_price: 0,
+          actual_price: 0,
           parcel_name: PARCEL_NAME.ONZ_STANDARD,
-          type: PARCEL_TYPE.ONZ_STANDARD,
+          type: PARCEL_TYPE.ONZ_FREE_SHIPPING,
           created_at: new Date(),
           updated_at: new Date()
         }

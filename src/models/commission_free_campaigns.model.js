@@ -26,15 +26,17 @@ const CommissionFreeCampaigns = SequelizeConnector.define(
     tableName: 'commission_free_campaigns',
     scopes: {
       search: params => search(CommissionFreeCampaigns, params, []),
-      runningCampaign: {
-        where: {
-          startDate: {
-            [Op.lte]: new Date()
-          },
-          endDate: {
-            [Op.gte]: new Date()
+      runningCampaign(now) {
+        return {
+          where: {
+            startDate: {
+              [Op.lte]: now
+            },
+            endDate: {
+              [Op.gte]: now
+            }
           }
-        }
+        };
       },
       byCountry(countryId) {
         return {

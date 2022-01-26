@@ -3,6 +3,8 @@ export const BUYER_DISPUTE = orderId => `Buyer - ${orderId}`;
 export const SALE_MADE_SELLER = {
   TITLE: 'Cha-Ching! You made a sale!',
   DESCRIPTION: 'Please input the tracking number and mark order as shipped.'
+  // DESCRIPTION:
+  //   'Please input the tracking number and mark order as shipped. And also remember to take clear photos of your item with the shipping label as your reference and ship your item in 48 Hours.'
 };
 
 export const SALE_REVIEWED = "You've received a review";

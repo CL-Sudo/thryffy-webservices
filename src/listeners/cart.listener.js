@@ -16,8 +16,8 @@ import { sendCloudMessage } from '@services/notification.service';
 
 import SENDGRID_CONFIG from '@configs/sendgrid.config';
 
-import { SALE_MADE_SELLER, PAYMENT, REMIND_TAKE_PHOTO } from '@templates/notification.template';
-import EMAIL_TEMPLATE, { MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP } from '@templates/email.template';
+import { SALE_MADE_SELLER, PAYMENT } from '@templates/notification.template';
+import EMAIL_TEMPLATE from '@templates/email.template';
 
 import { sendMail } from '@tools/sendgrid';
 
@@ -61,55 +61,55 @@ const pushNotification = async (productIds, orderData) => {
         data
       });
 
-      const sellerNotification = await Notifications.create(
-        {
-          title: REMIND_TAKE_PHOTO,
-          notifierId: seller.id,
-          actorId: order.userId,
-          type: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
-          notifiableId: order.id,
-          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
-        },
-        { transaction }
-      );
+      // const sellerNotification = await Notifications.create(
+      //   {
+      //     title: REMIND_TAKE_PHOTO,
+      //     notifierId: seller.id,
+      //     actorId: order.userId,
+      //     type: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
+      //     notifiableId: order.id,
+      //     notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER
+      //   },
+      //   { transaction }
+      // );
 
-      const sellerNotificationData = await Notifications.findOne({
-        where: { id: sellerNotification.id },
-        transaction
-      });
+      // const sellerNotificationData = await Notifications.findOne({
+      //   where: { id: sellerNotification.id },
+      //   transaction
+      // });
 
-      await sendCloudMessage({
-        token: seller.deviceToken,
-        title: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
-        data: sellerNotificationData
-      });
+      // await sendCloudMessage({
+      //   token: seller.deviceToken,
+      //   title: NOTIFICATION_TYPE.REMIND_TAKE_PHOTO_BEFORE_SHIPPING,
+      //   data: sellerNotificationData
+      // });
     });
 
-    await sequelize.transaction(async transaction => {
-      const shippingReminderNotification = await Notifications.create(
-        {
-          title: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName),
-          notifierId: seller.id,
-          actorId: order.useId,
-          type: NOTIFICATION_TYPE.REMIND_SELLER_TO_SHIP_PARCEL,
-          notifiableId: order.id,
-          notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
-          deeplink: `thryffy://orders/seller/${order.id}`
-        },
-        { transaction }
-      );
+    // await sequelize.transaction(async transaction => {
+    //   const shippingReminderNotification = await Notifications.create(
+    //     {
+    //       title: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName),
+    //       notifierId: seller.id,
+    //       actorId: order.useId,
+    //       type: NOTIFICATION_TYPE.REMIND_SELLER_TO_SHIP_PARCEL,
+    //       notifiableId: order.id,
+    //       notifiableType: MODEL_CONSTANT.POLYMORPHISM.NOTIFICATIONS.SALE_ORDER,
+    //       deeplink: `thryffy://orders/seller/${order.id}`
+    //     },
+    //     { transaction }
+    //   );
 
-      const shippingReminderNotificationData = await Notifications.findOne({
-        where: { id: shippingReminderNotification.id },
-        transaction
-      });
+    //   const shippingReminderNotificationData = await Notifications.findOne({
+    //     where: { id: shippingReminderNotification.id },
+    //     transaction
+    //   });
 
-      await sendCloudMessage({
-        token: seller.deviceToken,
-        title: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName),
-        data: shippingReminderNotificationData
-      });
-    });
+    //   await sendCloudMessage({
+    //     token: seller.deviceToken,
+    //     title: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName),
+    //     data: shippingReminderNotificationData
+    //   });
+    // });
 
     await sequelize.transaction(async transaction => {
       const notification = await Notifications.create(
@@ -139,7 +139,7 @@ const pushNotification = async (productIds, orderData) => {
 
 const sendEmail = async (_, order) => {
   try {
-    const receiver = await Users.findOne({ where: { id: order.userId } });
+    const receiver = await Users.findOne({ where: { id: order.userId }, include: ['country'] });
     const address = await Addresses.findOne({ where: { id: order.addressId } });
 
     const receiverFullName = receiver.fullName || receiver.username;
@@ -163,6 +163,7 @@ const sendEmail = async (_, order) => {
       template: EMAIL_TEMPLATE.INVOICE_TEMPLATE,
       type: SENDGRID_CONFIG.TYPE.BILLING,
       templateData: {
+        currencySymbol: receiver.country.currencySymbol,
         receiverFullName,
         addressLine1,
         addressLine2,
@@ -180,15 +181,15 @@ const sendEmail = async (_, order) => {
       }
     });
 
-    await sendMail({
-      receiverEmail: order.seller.email,
-      receiverFirstName: order.seller.firstName || '',
-      receiverLastName: order.seller.lastName || '',
-      template: EMAIL_TEMPLATE.SELLER_SHIPPING_REMINDER,
-      templateData: {
-        message: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName)
-      }
-    });
+    // await sendMail({
+    //   receiverEmail: order.seller.email,
+    //   receiverFirstName: order.seller.firstName || '',
+    //   receiverLastName: order.seller.lastName || '',
+    //   template: EMAIL_TEMPLATE.SELLER_SHIPPING_REMINDER,
+    //   templateData: {
+    //     message: MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP.LEFT_48_HOURS(order.parcelName)
+    //   }
+    // });
   } catch (e) {
     console.log('e', e);
   }

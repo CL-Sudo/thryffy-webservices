@@ -40,11 +40,13 @@ const SalesOrders = SequelizeConnector.define(
   'SalesOrders',
   {
     id: primaryKey,
-    countryId: foreignKey('country_id', 'countries', { allowNull: true, onDelete: 'SET NULL' }),
+    countryId: foreignKey('country_id', 'countries', { allowNull: true }),
     shippingFeeId: foreignKey('shipping_fee_id', 'shipping_fees', false),
     userId: foreignKey('user_id', 'users', false),
     sellerId: foreignKey('seller_id', 'users', false),
     addressId: foreignKey('address_id', 'addresses', false),
+    pickupAddressId: foreignKey('pickup_address_id', 'addresses', { allowNull: true }),
+    pickupDateTime: { type: Sequelize.DATE, field: 'pickup_date_time' },
     billId: {
       type: Sequelize.STRING,
       field: 'bill_id'
@@ -131,6 +133,7 @@ const SalesOrders = SequelizeConnector.define(
       defaultValue: 0,
       field: 'shipping_reminder_count'
     },
+
     hoursAfterPayment: {
       type: Sequelize.VIRTUAL,
       get() {
@@ -229,6 +232,13 @@ const SalesOrders = SequelizeConnector.define(
             {
               model: Addresses,
               as: 'address',
+              paranoid: false,
+              attributes: { exclude: defaultExcludeFields }
+            },
+            {
+              model: Addresses,
+              as: 'pickupAddress',
+              paranoid: false,
               attributes: { exclude: defaultExcludeFields }
             },
             {

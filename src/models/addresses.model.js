@@ -54,7 +54,7 @@ const Addresses = SequelizeConnector.define(
     stringified: {
       type: Sequelize.VIRTUAL,
       get() {
-        return `${this.get('addressLine1')} ${this.get('addressLine2')}, ${this.get(
+        return `${this.get('addressLine1')} ${this.get('addressLine2') || ''}, ${this.get(
           'postcode'
         )}, ${this.get('city')}, ${this.get('state') || this.get('district')}`;
       }

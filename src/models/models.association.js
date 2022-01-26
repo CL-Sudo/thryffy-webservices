@@ -98,6 +98,10 @@ Models.Addresses.belongsTo(Models.Users, { foreignKey: 'userId', as: 'user' });
 Models.SalesOrders.belongsTo(Models.Users, { foreignKey: 'userId', as: 'buyer' });
 Models.SalesOrders.hasMany(Models.OrderItems, { foreignKey: 'salesOrderId', as: 'orderItems' });
 Models.SalesOrders.belongsTo(Models.Addresses, { foreignKey: 'addressId', as: 'address' });
+Models.SalesOrders.belongsTo(Models.Addresses, {
+  foreignKey: 'pickupAddressId',
+  as: 'pickupAddress'
+});
 Models.SalesOrders.hasOne(Models.Reviews, { foreignKey: 'orderId', as: 'review' });
 Models.SalesOrders.belongsTo(Models.ShippingFees, {
   foreignKey: 'shippingFeeId',

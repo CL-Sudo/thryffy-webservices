@@ -690,7 +690,7 @@ export const getProductCommission = async (req, res, next) => {
     const commissions = await Commissions.scope([{ method: ['byCountry', countryId] }]).findAll();
 
     const freeCommissionCampaign = await CommissionFreeCampaigns.scope([
-      'runningCampaign',
+      { method: ['runningCampaign', new Date()] },
       { method: ['byCountry', countryId] }
     ]).findOne();
 
@@ -712,7 +712,11 @@ export const getProductCommission = async (req, res, next) => {
 export const schedulePickupDelivery = async (req, res, next) => {
   try {
     const { NODE_ENV } = process.env;
-    const { timeSlot, orderId, addressId } = req.body;
+    const { timeSlot, orderId, pickupAddressId } = req.body;
+
+    if (!pickupAddressId) {
+      throw new Error('Please select your pickup address');
+    }
 
     const order = await SalesOrders.findOne({
       where: { id: orderId },
@@ -725,7 +729,8 @@ export const schedulePickupDelivery = async (req, res, next) => {
       ]
     });
 
-    await order.update({ addressId });
+    await order.update({ pickupAddressId, pickupDateTime: timeSlot });
+    const pickupAddress = await Addresses.findOne({ where: { id: pickupAddressId } });
 
     const seller = await Users.findOne({ where: { id: order.sellerId } });
 
@@ -744,7 +749,7 @@ export const schedulePickupDelivery = async (req, res, next) => {
       deliveryDateTime: timeSlot,
       sellerPhoneNo: seller.completePhoneNumber,
       sellerName: seller.fullName || seller.username,
-      sellerAddress: order.address.stringified,
+      sellerAddress: pickupAddress.stringified,
       pickupDateTime: timeSlot
     });
 

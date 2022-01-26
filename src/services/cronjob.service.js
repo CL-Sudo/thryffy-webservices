@@ -1,18 +1,20 @@
 /* eslint-disable no-console */
-import { Notifications, SalesOrders, Users } from '@models';
+import { Notifications, SalesOrders, Users, Countries } from '@models';
 import { DELIVERY_STATUS, PAYMENT_STATUS } from '@constants';
 import { MESSAGE_FOR_EMAIL_REMINDER_TO_SHIP } from '@templates/email.template';
 import { HOURS_TO_REMIND, MAX_HOUR_BEFORE_SHIPPING } from '@constants/cronjob.constant';
 import NOTIFICATION_CONSTANT from '@constants/notification.constant';
 import NOTIFIABLE_TYPE from '@constants/model.constant';
 import { DELIVERY } from '@templates/notification.template';
+import { COUNTRIES } from '@constants/countries.constant';
 import { sendCloudMessage } from './notification.service';
 
 export const remindSellerToShipParcel = async () => {
   try {
     const operations = [];
 
-    const orders = await SalesOrders.findAll({
+    const country = await Countries.findOne({ where: { code: COUNTRIES.MALAYSIA.CODE } });
+    const orders = await SalesOrders.scope([{ method: ['byCountry', country.id] }]).findAll({
       where: {
         paymentStatus: PAYMENT_STATUS.SUCCESS,
         deliveryStatus: DELIVERY_STATUS.TO_SHIP

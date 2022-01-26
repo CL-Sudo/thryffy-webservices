@@ -26,6 +26,16 @@ export const getShippingFee = async productIds =>
       });
 
       if (product1.country.code === COUNTRIES.BRUNEI.CODE) {
+        if (productIds.length === 3) {
+          const shippingFee = await ShippingFees.scope([
+            { method: ['byCountry', product1.countryId] }
+          ]).findOne({
+            where: { type: Parcel.ONZ_FREE_SHIPPING }
+          });
+
+          return resolve(shippingFee.get());
+        }
+
         const bruneiShippingFee = await ShippingFees.findOne({
           where: { countryId: product1.country.id }
         });

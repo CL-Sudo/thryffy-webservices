@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import moment from 'moment';
 import LISTENER from '@constants/listener.constant';
 import { sendMail } from '@tools/sendgrid';
-import { Users, Addresses } from '@models';
+import { Users, Addresses, Countries } from '@models';
 import SENDGRID_CONFIG from '@configs/sendgrid.config';
 import EMAIL_TEMPLATE from '@templates/email.template';
 
@@ -11,7 +11,7 @@ const subscriptionListner = new EventEmitter();
 
 const sendEmail = async data => {
   try {
-    const user = await Users.findOne({ where: { id: data.userId } });
+    const user = await Users.findOne({ where: { id: data.userId }, include: ['country'] });
     const address = await Addresses.findOne({ where: { userId: user.id, isDefault: true } });
 
     const receiverFullName = user.fullName;
@@ -33,6 +33,7 @@ const sendEmail = async data => {
       type: SENDGRID_CONFIG.TYPE.BILLING,
       template: EMAIL_TEMPLATE.SUBSCRIPTION_INVOICE,
       templateData: {
+        currencySymbol: user.country.currencySymbol,
         receiverFullName,
         addressLine1: _.get(address, 'addressLine1', null),
         addressLine2: _.get(address, 'addressLine2', null),

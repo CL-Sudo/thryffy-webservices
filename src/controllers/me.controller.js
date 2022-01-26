@@ -116,7 +116,7 @@ export const removeAddress = async (req, res, next) => {
       throw new Error('Invalid addressId given, no address found');
     }
 
-    await address.destroy({ force: true });
+    await address.destroy();
 
     const addresses = await Addresses.findAndCountAll({ raw: true, where: { userId: id } });
 
