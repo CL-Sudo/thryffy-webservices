@@ -715,6 +715,8 @@ export const schedulePickupDelivery = async (req, res, next) => {
     const { NODE_ENV } = process.env;
     const { timeSlot, orderId, pickupAddressId } = req.body;
 
+    const parsedTimeSlot = moment.tz(timeSlot, 'Asia/Kuala_Lumpur').format();
+
     if (!pickupAddressId) {
       throw new Error('Please select your pickup address');
     }
@@ -732,7 +734,7 @@ export const schedulePickupDelivery = async (req, res, next) => {
 
     await order.update({
       pickupAddressId,
-      pickupDateTime: moment(timeSlot, 'YYYY-MM-DD HH:mm').tz('Asia/Kuala_Lumpur')
+      pickupDateTime: parsedTimeSlot
     });
     const pickupAddress = await Addresses.findOne({ where: { id: pickupAddressId } });
 
@@ -750,11 +752,11 @@ export const schedulePickupDelivery = async (req, res, next) => {
       buyerName: order.buyer.fullName || order.buyer.username,
       buyerPhoneNo: order.buyer.completePhoneNumber,
       buyerAddress: buyerAddress.stringified,
-      deliveryDateTime: moment(timeSlot, 'YYYY-MM-DD HH:mm').tz('Asia/Kuala_Lumpur'),
+      deliveryDateTime: parsedTimeSlot,
       sellerPhoneNo: seller.completePhoneNumber,
       sellerName: seller.fullName || seller.username,
       sellerAddress: pickupAddress.stringified,
-      pickupDateTime: moment(timeSlot, 'YYYY-MM-DD HH:mm').tz('Asia/Kuala_Lumpur')
+      pickupDateTime: parsedTimeSlot
     });
 
     await order.update({
