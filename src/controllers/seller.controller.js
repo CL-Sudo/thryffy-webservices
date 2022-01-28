@@ -730,7 +730,10 @@ export const schedulePickupDelivery = async (req, res, next) => {
       ]
     });
 
-    await order.update({ pickupAddressId, pickupDateTime: timeSlot });
+    await order.update({
+      pickupAddressId,
+      pickupDateTime: moment(timeSlot, 'YYYY-MM-DD HH:mm').tz('Asia/Kuala_Lumpur')
+    });
     const pickupAddress = await Addresses.findOne({ where: { id: pickupAddressId } });
 
     const seller = await Users.findOne({ where: { id: order.sellerId } });
