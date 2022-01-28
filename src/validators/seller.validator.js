@@ -170,16 +170,16 @@ export const getShippingFeeValidator = [
       if (!category) throw new Error('Invalid categoryId given.');
 
       return Promise.resolve();
-    }),
-
-  check('sizeId')
-    .exists()
-    .isLength({ min: 1 })
-    .withMessage('Required')
-    .custom(async sizeId => {
-      const size = await Sizes.findOne({ where: { id: sizeId } });
-      if (!size) throw new Error('Invalid sizeId given.');
-
-      return Promise.resolve();
     })
+
+  // check('sizeId')
+  //   .exists()
+  //   .isLength({ min: 1 })
+  //   .withMessage('Required')
+  //   .custom(async sizeId => {
+  //     const size = await Sizes.findOne({ where: { id: sizeId } });
+  //     if (!size) throw new Error('Invalid sizeId given.');
+
+  //     return Promise.resolve();
+  //   })
 ];

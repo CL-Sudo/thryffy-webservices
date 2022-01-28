@@ -43,6 +43,7 @@ import { uploadFileToS3 } from '@tools/s3';
 import S3_CONFIG from '@configs/s3.config';
 import { uploadFiles } from '@tools/multer.tool';
 import { createDeliveryTask } from '@services/tookan.service';
+import moment from 'moment';
 
 const { AWS_S3_URL } = process.env;
 
@@ -746,11 +747,11 @@ export const schedulePickupDelivery = async (req, res, next) => {
       buyerName: order.buyer.fullName || order.buyer.username,
       buyerPhoneNo: order.buyer.completePhoneNumber,
       buyerAddress: buyerAddress.stringified,
-      deliveryDateTime: timeSlot,
+      deliveryDateTime: moment(timeSlot, 'YYYY-MM-DD HH:mm').tz('Asia/Kuala_Lumpur'),
       sellerPhoneNo: seller.completePhoneNumber,
       sellerName: seller.fullName || seller.username,
       sellerAddress: pickupAddress.stringified,
-      pickupDateTime: timeSlot
+      pickupDateTime: moment(timeSlot, 'YYYY-MM-DD HH:mm').tz('Asia/Kuala_Lumpur')
     });
 
     await order.update({
