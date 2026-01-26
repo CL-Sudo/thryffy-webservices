@@ -7,13 +7,13 @@ export const authListener = new EventEmitter();
 
 const sendWelcomeEmail = async user => {
   try {
-    await sendMail({
-      receiverEmail: user.email,
-      template: EMAIL_TEMPLATE.WELCOME_EMAIL,
-      templateData: {
-        username: user.fullName || user.username
-      }
-    });
+    // await sendMail({
+    //   receiverEmail: user.email,
+    //   template: EMAIL_TEMPLATE.WELCOME_EMAIL,
+    //   templateData: {
+    //     username: user.fullName || user.username
+    //   }
+    // });
   } catch (e) {
     console.log(e);
   }

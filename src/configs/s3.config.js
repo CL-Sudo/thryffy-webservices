@@ -1,5 +1,6 @@
 export default {
-  AWS_S3_URL: process.env.AWS_S3_URL,
+  // AWS_S3_URL: process.env.AWS_S3_URL,
+  AWS_S3_URL: process.env.SUPABASE_URL,
 
   PROFILE_PHOTO_DIR: 'thryffy/profile_pictures/',
 

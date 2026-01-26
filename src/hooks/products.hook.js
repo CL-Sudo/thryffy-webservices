@@ -40,18 +40,18 @@ Products.addHook('afterUpdate', 'remindFollowers', async (instance, { transactio
                 { transaction }
               );
 
-              const data = await Notifications.findOne({
-                where: { id: notification.id },
-                transaction
-              });
+              // const data = await Notifications.findOne({
+              //   where: { id: notification.id },
+              //   transaction
+              // });
 
-              await sendCloudMessage({
-                title: PRODUCT.NEW_PRODUCT_ADDED(
-                  following.seller.username || following.seller.fullName
-                ),
-                token: following.follower.deviceToken,
-                data
-              });
+              // await sendCloudMessage({
+              //   title: PRODUCT.NEW_PRODUCT_ADDED(
+              //     following.seller.username || following.seller.fullName
+              //   ),
+              //   token: following.follower.deviceToken,
+              //   data
+              // });
 
               return resolve();
             } catch (e) {

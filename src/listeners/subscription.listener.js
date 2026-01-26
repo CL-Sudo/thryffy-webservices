@@ -28,25 +28,25 @@ const sendEmail = async data => {
       }
     ];
 
-    await sendMail({
-      receiverEmail,
-      type: SENDGRID_CONFIG.TYPE.BILLING,
-      template: EMAIL_TEMPLATE.SUBSCRIPTION_INVOICE,
-      templateData: {
-        currencySymbol: user.country.currencySymbol,
-        receiverFullName,
-        addressLine1: _.get(address, 'addressLine1', null),
-        addressLine2: _.get(address, 'addressLine2', null),
-        city: _.get(address, 'city', null),
-        state: _.get(address, 'state', null),
-        postcode: _.get(address, 'postcode', null),
-        phoneNumber: _.get(address, 'phoneNumber', null),
-        dateTime,
-        expiryDate,
-        total: `${total}`,
-        items
-      }
-    });
+    // await sendMail({
+    //   receiverEmail,
+    //   type: SENDGRID_CONFIG.TYPE.BILLING,
+    //   template: EMAIL_TEMPLATE.SUBSCRIPTION_INVOICE,
+    //   templateData: {
+    //     currencySymbol: user.country.currencySymbol,
+    //     receiverFullName,
+    //     addressLine1: _.get(address, 'addressLine1', null),
+    //     addressLine2: _.get(address, 'addressLine2', null),
+    //     city: _.get(address, 'city', null),
+    //     state: _.get(address, 'state', null),
+    //     postcode: _.get(address, 'postcode', null),
+    //     phoneNumber: _.get(address, 'phoneNumber', null),
+    //     dateTime,
+    //     expiryDate,
+    //     total: `${total}`,
+    //     items
+    //   }
+    // });
   } catch (e) {
     console.log('e', e);
   }

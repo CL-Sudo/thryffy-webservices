@@ -54,12 +54,12 @@ const pushNotification = async (productIds, orderData) => {
 
       const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-      await sendCloudMessage({
-        token: seller.deviceToken,
-        title: SALE_MADE_SELLER.TITLE,
-        message: SALE_MADE_SELLER.DESCRIPTION,
-        data
-      });
+      // await sendCloudMessage({
+      //   token: seller.deviceToken,
+      //   title: SALE_MADE_SELLER.TITLE,
+      //   message: SALE_MADE_SELLER.DESCRIPTION,
+      //   data
+      // });
 
       // const sellerNotification = await Notifications.create(
       //   {
@@ -126,11 +126,11 @@ const pushNotification = async (productIds, orderData) => {
 
       const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-      await sendCloudMessage({
-        token: buyer.deviceToken,
-        title: PAYMENT.ORDER.SUCCESS(order.orderRef),
-        data
-      });
+      // await sendCloudMessage({
+      //   token: buyer.deviceToken,
+      //   title: PAYMENT.ORDER.SUCCESS(order.orderRef),
+      //   data
+      // });
     });
   } catch (e) {
     console.error('e', e);
@@ -158,28 +158,28 @@ const sendEmail = async (_, order) => {
       price: `${item.product.displayPrice.toFixed(2)}`
     }))(order.orderItems);
 
-    await sendMail({
-      receiverEmail,
-      template: EMAIL_TEMPLATE.INVOICE_TEMPLATE,
-      type: SENDGRID_CONFIG.TYPE.BILLING,
-      templateData: {
-        currencySymbol: receiver.country.currencySymbol,
-        receiverFullName,
-        addressLine1,
-        addressLine2,
-        postcode,
-        city,
-        state,
-        phoneNumber,
-        orderRef,
-        dateTime,
-        subTotal: `${subTotal.toFixed(2)}`,
-        tax: `${tax.toFixed(2)}`,
-        shippingFee: `${shippingFee.toFixed(2)}`,
-        total: `${total}`,
-        items
-      }
-    });
+    // await sendMail({
+    //   receiverEmail,
+    //   template: EMAIL_TEMPLATE.INVOICE_TEMPLATE,
+    //   type: SENDGRID_CONFIG.TYPE.BILLING,
+    //   templateData: {
+    //     currencySymbol: receiver.country.currencySymbol,
+    //     receiverFullName,
+    //     addressLine1,
+    //     addressLine2,
+    //     postcode,
+    //     city,
+    //     state,
+    //     phoneNumber,
+    //     orderRef,
+    //     dateTime,
+    //     subTotal: `${subTotal.toFixed(2)}`,
+    //     tax: `${tax.toFixed(2)}`,
+    //     shippingFee: `${shippingFee.toFixed(2)}`,
+    //     total: `${total}`,
+    //     items
+    //   }
+    // });
 
     // await sendMail({
     //   receiverEmail: order.seller.email,
@@ -228,11 +228,11 @@ const pushFailedPaymentNotification = async orderId => {
 
       const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-      await sendCloudMessage({
-        token: buyer.deviceToken,
-        title: PAYMENT.ORDER.FAILED,
-        data
-      });
+      // await sendCloudMessage({
+      //   token: buyer.deviceToken,
+      //   title: PAYMENT.ORDER.FAILED,
+      //   data
+      // });
     });
   } catch (e) {
     console.log(`e`, e);

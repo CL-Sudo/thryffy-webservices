@@ -34,13 +34,13 @@ const sendNotification = async productId => {
         { transaction }
       );
 
-      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+      // const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-      sendCloudMessage({
-        token: notifier.deviceToken,
-        title: PUBLICATION.UNPUBLISHED,
-        data: data.get()
-      });
+      // sendCloudMessage({
+      //   token: notifier.deviceToken,
+      //   title: PUBLICATION.UNPUBLISHED,
+      //   data: data.get()
+      // });
     });
 
     return Promise.resolve();

@@ -73,7 +73,7 @@ const parsePayBeepReqeustQuery = requestQuery => {
   };
 };
 
-const onSuccessSubscribing = async (userId, packageId) =>
+export const onSuccessSubscribing = async (userId, packageId) =>
   sequelize.transaction(async trasaction => {
     const currentSubscription = await Subscriptions.findOne({ where: { userId }, trasaction });
 
@@ -104,9 +104,11 @@ const onSuccessSubscribing = async (userId, packageId) =>
     });
 
     subscriptionListner.emit(LISTENER.SUBSCRIPTION.CREATED, subscription);
+
+    return subscription;
   });
 
-const onPaymentForItemSuccess = async (orderId, transactionId, paymentMethod = null) =>
+export const onPaymentForItemSuccess = async (orderId, transactionId, paymentMethod = null) =>
   sequelize.transaction(async transaction => {
     const now = new Date();
     const order = await SalesOrders.scope({

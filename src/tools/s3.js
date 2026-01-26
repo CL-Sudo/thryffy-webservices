@@ -1,3 +1,4 @@
+import 'isomorphic-fetch';
 import fs from 'fs';
 import _ from 'lodash';
 import AWS from 'aws-sdk';
@@ -7,6 +8,7 @@ import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import mime from 'mime-types';
 import { parsePathForDeleting } from '@utils/s3.util';
+import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
 // // For dev purposes only
@@ -24,49 +26,76 @@ const s3BucketPublic = new AWS.S3({
   region: 'ap-southeast-1'
 });
 
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+// export const uploadToS3 = (
+//   s3Directory,
+//   filestream,
+//   extension,
+//   { publicAccess = true, publicBucket = false, filename } = {}
+// ) =>
+//   new Promise((resolve, reject) => {
+//     const configs = {};
+//     if (publicAccess) configs.ACL = 'public-read';
+//     const bucket = publicBucket ? s3BucketPublic : s3Bucket;
+//     return bucket.upload(
+//       {
+//         Key: `${s3Directory}${filename || `${uuidv4()}${extension}`}`,
+//         Body: filestream,
+//         ...configs
+//       },
+//       (err, res) => {
+//         if (err) return reject(err);
+//         return resolve({ path: res.key, filename });
+//       }
+//     );
+//   });
+
+// export const uploadFileToS3 = (
+//   files,
+//   s3Directory,
+//   { publicAccess = false, publicBucket = false } = {}
+// ) =>
+//   new Promise(async (resolve, reject) => {
+//     try {
+//       let data;
+//       if (_.isArray(files)) {
+//         const fileUploadPromises = [];
+//         _.forEach(files, async file => {
+//           const filestream = fs.readFileSync(file.path);
+//           let extension = path.extname(file.name);
+//           if (!extension)
+//             extension = mime.extension(file.type) ? `.${mime.extension(file.type)}` : undefined;
+//           fileUploadPromises.push(
+//             uploadToS3(s3Directory, filestream, extension, { publicAccess, publicBucket })
+//           );
+//         });
+//         data = await Promise.all(fileUploadPromises);
+//       } else {
+//         const filestream = fs.readFileSync(files.path);
+//         let extension = path.extname(files.name);
+//         if (!extension)
+//           extension = mime.extension(files.type) ? `.${mime.extension(files.type)}` : undefined;
+//         data = await uploadToS3(s3Directory, filestream, extension, { publicBucket });
+//       }
+//       return resolve(data);
+//     } catch (e) {
+//       return reject(e);
+//     }
+//   });
+
 export const uploadToS3 = (
   s3Directory,
   filestream,
   extension,
-  { publicAccess = true, publicBucket = false, filename } = {}
+  { publicAccess = true, publicBucket = false, filename = `${uuidv4()}${extension}` } = {}
 ) =>
-  new Promise((resolve, reject) => {
-    const configs = {};
-    if (publicAccess) configs.ACL = 'public-read';
-    const bucket = publicBucket ? s3BucketPublic : s3Bucket;
-    return bucket.upload(
-      {
-        Key: `${s3Directory}${filename || `${uuidv4()}${extension}`}`,
-        Body: filestream,
-        ...configs
-      },
-      (err, res) => {
-        if (err) return reject(err);
-        return resolve({ path: res.key, filename });
-      }
-    );
-  });
-
-export const deleteObjectFromS3 = (filePath, publicBucket = false) =>
-  new Promise((resolve, reject) => {
-    if (!filePath) resolve();
-    const bucket = publicBucket ? s3BucketPublic : s3Bucket;
-    bucket.deleteObject({ Key: parsePathForDeleting(filePath) }, (error, data) => {
-      if (error !== null) return reject(error);
-      return resolve(data);
-    });
-  });
-
-export const getObjectFromS3 = (filePath, publicBucket = false) =>
-  new Promise((resolve, reject) => {
-    const bucket = publicBucket ? s3BucketPublic : s3Bucket;
-    bucket.getObject({ Key: filePath }, (error, data) => {
-      if (error != null) {
-        reject(error);
-      } else {
-        resolve(data);
-      }
-    });
+  new Promise(async (resolve, reject) => {
+    const { data, error } = await supabase.storage
+      .from(process.env.SUPABASE_BUCKET)
+      .upload(`${s3Directory}/${filename}`, filestream);
+    if (error) return reject(error);
+    return resolve({ path: data.fullPath, filename });
   });
 
 export const uploadFileToS3 = (
@@ -100,6 +129,47 @@ export const uploadFileToS3 = (
     } catch (e) {
       return reject(e);
     }
+  });
+
+// export const deleteObjectFromS3 = (filePath, publicBucket = false) =>
+//   new Promise((resolve, reject) => {
+//     if (!filePath) resolve();
+//     const bucket = publicBucket ? s3BucketPublic : s3Bucket;
+//     bucket.deleteObject({ Key: parsePathForDeleting(filePath) }, (error, data) => {
+//       if (error !== null) return reject(error);
+//       return resolve(data);
+//     });
+//   });
+export const deleteObjectFromS3 = (filePath, publicBucket = false) =>
+  new Promise(async (resolve, reject) => {
+    try {
+      if (!filePath) resolve();
+      const pathForDeletion = parsePathForDeleting(filePath);
+      const data = await supabase.storage
+        .from(process.env.SUPABASE_BUCKET)
+        .remove([pathForDeletion]);
+      return resolve(data);
+    } catch (e) {
+      return reject(e);
+    }
+
+    // const bucket = publicBucket ? s3BucketPublic : s3Bucket;
+    // bucket.deleteObject({ Key: parsePathForDeleting(filePath) }, (error, data) => {
+    //   if (error !== null) return reject(error);
+    //   return resolve(data);
+    // });
+  });
+
+export const getObjectFromS3 = (filePath, publicBucket = false) =>
+  new Promise((resolve, reject) => {
+    const bucket = publicBucket ? s3BucketPublic : s3Bucket;
+    bucket.getObject({ Key: filePath }, (error, data) => {
+      if (error != null) {
+        reject(error);
+      } else {
+        resolve(data);
+      }
+    });
   });
 
 export const uploadFileStreamToS3 = ({ s3Directory, filename, fileStream, publicAccess }) => {

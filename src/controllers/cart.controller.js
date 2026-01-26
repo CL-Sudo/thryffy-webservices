@@ -16,8 +16,10 @@ import { requestValidator } from '@validators';
 import { getCountryId, paginate } from '@utils';
 import { COUNTRIES } from '@constants/countries.constant';
 import { getBeepPayPaymentUrl } from '@services/pay-beep.service';
+import * as _ from 'lodash';
 
 import Billplz from '@services/billplz.service';
+import { onPaymentForItemSuccess } from './public.controller';
 
 const getLatestCartList = async userId => {
   try {
@@ -245,29 +247,35 @@ export const pay = async (req, res, next) => {
     const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
     const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
 
-    if (country.code === COUNTRIES.MALAYSIA.CODE) {
-      const response = await billplz.createBill({
-        amount: order.total,
-        email: user.email,
-        mobile: user.completePhoneNumber,
-        name: user.fullName || user.username || user.email,
-        itemName: `Order ${order.orderRef}`,
-        redirectUrl: `${serverUrl}/api/publics/billplz/redirect?orderId=${order.id}`,
-        callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
-      });
+    await onPaymentForItemSuccess(order.id, `${_.random(111111111111111, 999999999999999)}`);
 
-      await order.update({ billId: response.data.id });
+    await order.get();
 
-      return res.status(200).json({ message: 'success', payload: response.data });
-    }
+    return res.status(200).json({ message: 'success', payload: order });
 
-    if (country.code === COUNTRIES.BRUNEI.CODE) {
-      const url = await getBeepPayPaymentUrl(order.total, `o${order.id}`);
+    // if (country.code === COUNTRIES.MALAYSIA.CODE) {
+    //   const response = await billplz.createBill({
+    //     amount: order.total,
+    //     email: user.email,
+    //     mobile: user.completePhoneNumber,
+    //     name: user.fullName || user.username || user.email,
+    //     itemName: `Order ${order.orderRef}`,
+    //     redirectUrl: `${serverUrl}/api/publics/billplz/redirect?orderId=${order.id}`,
+    //     callbackUrl: `${serverUrl}/api/publics/billplz/callback?orderId=${order.id}`
+    //   });
 
-      return res
-        .status(200)
-        .json({ message: 'success', payload: { url, description: `Order ${order.orderRef}` } });
-    }
+    //   await order.update({ billId: response.data.id });
+
+    //   return res.status(200).json({ message: 'success', payload: response.data });
+    // }
+
+    // if (country.code === COUNTRIES.BRUNEI.CODE) {
+    //   const url = await getBeepPayPaymentUrl(order.total, `o${order.id}`);
+
+    //   return res
+    //     .status(200)
+    //     .json({ message: 'success', payload: { url, description: `Order ${order.orderRef}` } });
+    // }
   } catch (e) {
     return next(e);
   }

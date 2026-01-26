@@ -25,8 +25,8 @@ const pushNotification = async order => {
         },
         { transaction }
       );
-      const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
-      await sendCloudMessage({ token: buyer.deviceToken, title: MARKED_AS_SHIPPED, data });
+      // const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+      // await sendCloudMessage({ token: buyer.deviceToken, title: MARKED_AS_SHIPPED, data });
     });
   } catch (e) {
     console.error(e);

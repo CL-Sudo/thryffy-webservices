@@ -4,6 +4,7 @@ import Billplz from '@services/billplz.service';
 import { getCountryId } from '@utils/index';
 import { COUNTRIES } from '@constants/countries.constant';
 import { getBeepPayPaymentUrl } from '@services/pay-beep.service';
+import { onSuccessSubscribing } from '@controllers/public.controller';
 
 export const subscribe = async (req, res, next) => {
   try {
@@ -24,33 +25,39 @@ export const subscribe = async (req, res, next) => {
       throw new Error('Invalid packageId given,, package not found');
     }
 
+    const subscriptionData = await onSuccessSubscribing(id, packageId);
+
     const user = await Users.findOne({ where: { id } });
 
-    if (country.code === COUNTRIES.MALAYSIA.CODE) {
-      const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
-      const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
+    return res
+      .status(200)
+      .json({ message: 'success', payload: { subscriptionData, paymentStatus: 'SUCCESS' } });
 
-      const billplz = new Billplz();
-      const response = await billplz.createBill({
-        amount: pkg.price,
-        callbackUrl: `${serverUrl}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
-        email: user.email,
-        mobile: user.completePhoneNumber,
-        name: user.fullName || user.username || user.email,
-        itemName: `Package ${pkg.title}`,
-        redirectUrl: `${serverUrl}/api/publics/subscriptions/redirect?userId=${id}`
-      });
+    // if (country.code === COUNTRIES.MALAYSIA.CODE) {
+    //   const { NODE_ENV, SERVER_URL, NGROK_URL } = process.env;
+    //   const serverUrl = NODE_ENV === 'DEV' ? NGROK_URL : SERVER_URL;
 
-      return res.status(200).json({ message: 'success', payload: response.data });
-    }
+    //   const billplz = new Billplz();
+    //   const response = await billplz.createBill({
+    //     amount: pkg.price,
+    //     callbackUrl: `${serverUrl}/api/publics/subscriptions/callback?userId=${id}&packageId=${packageId}`,
+    //     email: user.email,
+    //     mobile: user.completePhoneNumber,
+    //     name: user.fullName || user.username || user.email,
+    //     itemName: `Package ${pkg.title}`,
+    //     redirectUrl: `${serverUrl}/api/publics/subscriptions/redirect?userId=${id}`
+    //   });
 
-    if (country.code === COUNTRIES.BRUNEI.CODE) {
-      const url = await getBeepPayPaymentUrl(pkg.price, `u${user.id}-p${pkg.id}`);
+    //   return res.status(200).json({ message: 'success', payload: response.data });
+    // }
 
-      return res
-        .status(200)
-        .json({ message: 'success', payload: { url, description: `Subscribing ${pkg.title}` } });
-    }
+    // if (country.code === COUNTRIES.BRUNEI.CODE) {
+    //   const url = await getBeepPayPaymentUrl(pkg.price, `u${user.id}-p${pkg.id}`);
+
+    //   return res
+    //     .status(200)
+    //     .json({ message: 'success', payload: { url, description: `Subscribing ${pkg.title}` } });
+    // }
   } catch (e) {
     return next(e);
   }

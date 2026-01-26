@@ -32,13 +32,13 @@ FavouriteProducts.addHook('afterCreate', 'pushNotification', async (instance, { 
       { transaction }
     );
 
-    const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+    // const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-    await sendCloudMessage({
-      title: FAVOURITE.ADD(user.username || user.fullName),
-      token: product.seller.deviceToken,
-      data
-    });
+    // await sendCloudMessage({
+    //   title: FAVOURITE.ADD(user.username || user.fullName),
+    //   token: product.seller.deviceToken,
+    //   data
+    // });
   } catch (e) {
     throw e;
   }

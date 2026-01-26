@@ -31,22 +31,22 @@ const sendEmail = async data => {
       }
     };
 
-    await sendMail({
-      receiverFirstName: 'Thryffy',
-      receiverEmail: decideReceiverEmail(type),
-      template: EMAIL_TEMPLATE.CONTACT_US,
-      templateData: {
-        country: user.country.name,
-        customerName: user.fullName || user.username || 'NA',
-        customerEmail: user.email || 'NA',
-        userId,
-        type,
-        subject,
-        description,
-        images: data.images.map(instance => ({ path: instance.path })),
-        dateTime: Moment(data.createdAt).format('DD-MM-YY HH:mm')
-      }
-    });
+    // await sendMail({
+    //   receiverFirstName: 'Thryffy',
+    //   receiverEmail: decideReceiverEmail(type),
+    //   template: EMAIL_TEMPLATE.CONTACT_US,
+    //   templateData: {
+    //     country: user.country.name,
+    //     customerName: user.fullName || user.username || 'NA',
+    //     customerEmail: user.email || 'NA',
+    //     userId,
+    //     type,
+    //     subject,
+    //     description,
+    //     images: data.images.map(instance => ({ path: instance.path })),
+    //     dateTime: Moment(data.createdAt).format('DD-MM-YY HH:mm')
+    //   }
+    // });
   } catch (e) {
     console.log('e', e.response.data.errors);
   }

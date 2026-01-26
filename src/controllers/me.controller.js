@@ -476,11 +476,11 @@ export const confirmOrderReceived = async (req, res, next) => {
 
     const data = await Notifications.findOne({ where: { id: notification.id } });
 
-    await sendCloudMessage({
-      title: DELIVERY.COMPLETED(order.orderRef),
-      token: order.seller.deviceToken,
-      data
-    });
+    // await sendCloudMessage({
+    //   title: DELIVERY.COMPLETED(order.orderRef),
+    //   token: order.seller.deviceToken,
+    //   data
+    // });
 
     const payload = await SalesOrders.scope({ method: ['orderDetails', order.id] }).findOne();
     await payload.getExtraFields();
@@ -573,10 +573,10 @@ export const updateDeviceToken = async (req, res, next) => {
     });
     await user.update({ deviceToken });
 
-    await subscribeTokenToTopic(
-      deviceToken,
-      generateTopicName(NOTIFICATION_CONSTANT.MARKETING, user.country.name)
-    );
+    // await subscribeTokenToTopic(
+    //   deviceToken,
+    //   generateTopicName(NOTIFICATION_CONSTANT.MARKETING, user.country.name)
+    // );
 
     return res.status(200).json({ message: 'success' });
   } catch (e) {

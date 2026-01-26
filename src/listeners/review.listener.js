@@ -29,11 +29,11 @@ const pushNotification = async review => {
           { transaction }
         );
 
-        const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+        // const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-        if (notifier.deviceToken) {
-          await sendCloudMessage({ title: SALE_REVIEWED, token: notifier.deviceToken, data });
-        }
+        // if (notifier.deviceToken) {
+        //   await sendCloudMessage({ title: SALE_REVIEWED, token: notifier.deviceToken, data });
+        // }
       });
     }
   } catch (e) {

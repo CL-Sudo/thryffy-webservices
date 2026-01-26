@@ -94,25 +94,25 @@ const sendEmailToAdmin = async response => {
       await ResponseImages.findAll({ where: { responseId: response.id } })
     );
 
-    await sendMail({
-      template: EMAIL_TEMPLATE.DISPUTE_RESPONDED_EMAIL,
-      senderEmail: seller.email,
-      receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
-      templateData: {
-        sellerName: seller.fullName || seller.username || 'NA',
-        sellerEmail: seller.email || 'NA',
-        buyerName: buyer.fullName || buyer.username || 'NA',
-        buyerEmail: buyer.email || 'NA',
-        orderRef: order.orderRef,
-        disputeTitle,
-        disputeDescription,
-        disputeDateTime,
-        disputeImages,
-        response: responseDescription,
-        responseDateTime,
-        responseImages
-      }
-    });
+    // await sendMail({
+    //   template: EMAIL_TEMPLATE.DISPUTE_RESPONDED_EMAIL,
+    //   senderEmail: seller.email,
+    //   receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
+    //   templateData: {
+    //     sellerName: seller.fullName || seller.username || 'NA',
+    //     sellerEmail: seller.email || 'NA',
+    //     buyerName: buyer.fullName || buyer.username || 'NA',
+    //     buyerEmail: buyer.email || 'NA',
+    //     orderRef: order.orderRef,
+    //     disputeTitle,
+    //     disputeDescription,
+    //     disputeDateTime,
+    //     disputeImages,
+    //     response: responseDescription,
+    //     responseDateTime,
+    //     responseImages
+    //   }
+    // });
   } catch (e) {
     console.log(`e`, e);
     console.log('e', e.response.data.errors);
@@ -130,20 +130,20 @@ const sendEmailWhenBuyerDispute = async (order, dispute) => {
       await DisputesImages.findAll({ where: { disputeId: dispute.id } })
     );
 
-    await sendMail({
-      template: EMAIL_TEMPLATE.DISPUTE_CREATED_EMAIL,
-      receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
-      senderEmail: buyer.email,
-      templateData: {
-        buyerName: buyer.fullName || buyer.username || 'NA',
-        buyerEmail: buyer.email || 'NA',
-        orderRef: order.orderRef,
-        disputeTitle,
-        disputeDescription,
-        disputeDateTime,
-        disputeImages
-      }
-    });
+    // await sendMail({
+    //   template: EMAIL_TEMPLATE.DISPUTE_CREATED_EMAIL,
+    //   receiverEmail: SENDGRID_CONFIG.SENDGRID_SUPPORT_SENDER,
+    //   senderEmail: buyer.email,
+    //   templateData: {
+    //     buyerName: buyer.fullName || buyer.username || 'NA',
+    //     buyerEmail: buyer.email || 'NA',
+    //     orderRef: order.orderRef,
+    //     disputeTitle,
+    //     disputeDescription,
+    //     disputeDateTime,
+    //     disputeImages
+    //   }
+    // });
   } catch (e) {
     console.log('e', e.response.data.errors);
   }

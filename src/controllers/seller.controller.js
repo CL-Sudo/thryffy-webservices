@@ -44,6 +44,7 @@ import S3_CONFIG from '@configs/s3.config';
 import { uploadFiles } from '@tools/multer.tool';
 import { createDeliveryTask } from '@services/tookan.service';
 import moment from 'moment';
+import { parsePathForDBStoring } from '@utils/s3.util';
 
 const { AWS_S3_URL } = process.env;
 
@@ -143,7 +144,8 @@ export const addProduct = async (req, res, next) => {
           await Promise.all(
             parseImageWithIndex(images).map(async instance => {
               const uploaded = await uploadFileToS3(instance.image, S3_CONFIG.GALLERY_URL);
-              const filePath = `${AWS_S3_URL}/${uploaded.path}`;
+              // const filePath = `${AWS_S3_URL}/${uploaded.path}`;
+              const filePath = parsePathForDBStoring(uploaded.path);
 
               await Galleries.create(
                 {

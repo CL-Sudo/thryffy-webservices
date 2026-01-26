@@ -24,13 +24,13 @@ Followings.addHook('afterCreate', 'pushNotification', async (instance, { transac
       { transaction }
     );
 
-    const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
+    // const data = await Notifications.findOne({ where: { id: notification.id }, transaction });
 
-    await sendCloudMessage({
-      title: FOLLOWING.BEING_FOLLOWED(follower.username || follower.fullName),
-      token: seller.deviceToken,
-      data
-    });
+    // await sendCloudMessage({
+    //   title: FOLLOWING.BEING_FOLLOWED(follower.username || follower.fullName),
+    //   token: seller.deviceToken,
+    //   data
+    // });
   } catch (e) {
     throw e;
   }
