@@ -28,14 +28,13 @@ router.post('/logout', mobileAuth, async (req, res, next) => {
     const user = await Users.findOne({
       where: { id }
     });
-    // await unsubscribeTokensFromTopic(
-    //   user.deviceToken || 'null',
-    //   generateTopicName(NOTIFICATION.TOPIC.MARKETING, user.countryId)
-    // );
+    await unsubscribeTokensFromTopic(
+      user.deviceToken || 'null',
+      generateTopicName(NOTIFICATION.TOPIC.MARKETING, user.countryId)
+    );
     user.update({ deviceToken: null });
     return res.status(200).json({ message: 'Logout successfuly' });
   } catch (e) {
-    console.error(e);
     return next(e);
   }
 });

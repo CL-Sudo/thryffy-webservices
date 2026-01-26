@@ -22,7 +22,7 @@ dotenv.config();
 
 require('./tools/passport');
 require('./scripts');
-// require('./scripts/cronjobs.script');
+require('./scripts/cronjobs.script');
 // require('./utils/scheduler');
 
 const pe = new PrettyError();
