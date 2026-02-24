@@ -7,7 +7,7 @@ export const test = async (req, res, next) => {
     const { q } = req.query;
 
     // const response = await axios({
-    //   url: 'https://iid.googleapis.com/iid/info/***REMOVED***',
+    //   url: '',
     //   method: 'GET',
     //   headers: {
     //     'Content-Type': 'application/json',
