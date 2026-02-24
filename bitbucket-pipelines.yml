@@ -49,8 +49,8 @@ pipelines:
         script:
           - pipe: atlassian/aws-lambda-deploy:0.2.1
             variables:
-              AWS_ACCESS_KEY_ID: '***REMOVED***'
-              AWS_SECRET_ACCESS_KEY: '***REMOVED***'
+              AWS_ACCESS_KEY_ID: ''
+              AWS_SECRET_ACCESS_KEY: ''
               AWS_DEFAULT_REGION: 'ap-southeast-1'
               FUNCTION_NAME: 'sbiz-mock-api'
               COMMAND: 'update'
